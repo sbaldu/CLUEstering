@@ -137,8 +137,8 @@ public:
 				float dist_ij { distance(point_id, j) };
 
 				if(dist_ij <= dc_) {
-				// sum weights within N_{dc_}(i)
-				points_.rho[point_id] += (point_id == j ? 1.f : 0.5f) * points_.weight[j];
+					// sum weights within N_{dc_}(i)
+					points_.rho[point_id] += (point_id == j ? 1.f : 0.5f) * points_.weight[j];
 				}
 			} // end of interate inside this bin
 			return;
