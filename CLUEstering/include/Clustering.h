@@ -14,6 +14,7 @@
 
 #include "Point.h"
 #include "Tiles.h"
+#include "Kernels.h"
 
 ////////////////////////////
 //////  Clustering.h  //////
@@ -33,7 +34,7 @@ public:
 	float dc_;  // cut-off distance in the calculation of local density
 	float rhoc_;  // minimum density to promote a point as a seed or the maximum density to demote a point as an outlier
 	float outlierDeltaFactor_;
-	int pointsPerTile_; // average number of points found in a tile
+	int pointsPerTile_; // average number of points in a tile
     
 	Points<Ndim> points_;
   
@@ -93,7 +94,7 @@ public:
 		return tileSizes;
 	}
 
-	std::vector<std::vector<int>> makeClusters() {
+	std::vector<std::vector<int>> makeClusters(kernel ker) {
 		tiles<Ndim> Tiles;
 		Tiles.nTiles = calculateNTiles(pointsPerTile_);
 		Tiles.resizeTiles();
@@ -107,7 +108,7 @@ public:
 		std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
     
 		start = std::chrono::high_resolution_clock::now();
-		calculateLocalDensity(Tiles);
+		calculateLocalDensity(Tiles, ker);
 		finish = std::chrono::high_resolution_clock::now();
 		elapsed = finish - start;
 		std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
@@ -124,7 +125,7 @@ public:
 	}
 
 	template <uint8_t N_>
-	void for_recursion(std::vector<int> &base_vector,  std::vector<int> &dim_min, std::vector<int> &dim_max, tiles<Ndim>& lt_, int point_id) {
+	void for_recursion(std::vector<int> &base_vector, std::vector<int> &dim_min, std::vector<int> &dim_max, tiles<Ndim>& lt_, kernel ker, int point_id) {
 		if constexpr (N_ == 0) {
 			int binId { lt_.getGlobalBinByBin(base_vector) };
 			// get the size of this bin
@@ -145,7 +146,7 @@ public:
 		} else {
 			for(int i { dim_min[dim_min.size() - N_] }; i <= dim_max[dim_max.size() - N_]; ++i) {
 				base_vector[base_vector.size() - N_] = i;
-				for_recursion<N_-1>(base_vector, dim_min, dim_max, lt_, point_id);
+				for_recursion<N_-1>(base_vector, dim_min, dim_max, lt_, ker, point_id);
 			}
 		}
 	}
@@ -200,7 +201,7 @@ private:
     }
   }
 
-  void calculateLocalDensity(tiles<Ndim>& tiles) {
+  void calculateLocalDensity(tiles<Ndim>& tiles, kernel ker) {
     // loop over all points
     for(int i {}; i < points_.n; ++i) {
       // get search box
@@ -223,7 +224,7 @@ private:
         }
       }
 
-		for_recursion<Ndim>(binVec,dimMin,dimMax,tiles,i);
+		for_recursion<Ndim>(binVec,dimMin,dimMax,tiles,ker,i);
     } // end of loop over points
   }
 
