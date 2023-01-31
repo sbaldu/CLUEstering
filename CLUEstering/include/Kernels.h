@@ -33,14 +33,14 @@ class kernel{
 			if(point_id == j) {
 				return 1.f;
 			} else {
-				return m_exp_amplitude*exp(-m_exp_avg*dist_ij);
+				return m_gaus_amplitude*exp(-pow(dist_ij - m_gaus_avg,2)/(2*pow(m_gaus_std,2)));
 			}
 		}
 		float exponential(float dist_ij, int point_id, int j) {
 			if(point_id == j) {
 				return 1.f;
 			} else {
-				return m_gaus_amplitude*exp(-pow(dist_ij - m_gaus_avg,2)/(2*pow(m_gaus_std,2)));
+				return m_exp_amplitude*exp(-m_exp_avg*dist_ij);
 			}
 		}
 };
