@@ -129,7 +129,7 @@ public:
 		if constexpr (N_ == 0) {
 			int binId { lt_.getGlobalBinByBin(base_vector) };
 			// get the size of this bin
-			int binSize { lt_[binId].size() };
+			int binSize { static_cast<int>(lt_[binId].size()) };
       
 			// iterate inside this bin
 			for (int binIter {}; binIter < binSize; ++binIter) {
@@ -159,7 +159,7 @@ public:
 
         int binId { lt_.getGlobalBinByBin(base_vector) };
         // get the size of this bin
-        int binSize { lt_[binId].size() };
+        int binSize { static_cast<int>(lt_[binId].size()) };
         
         // iterate inside this bin
         for (int binIter {}; binIter < binSize; ++binIter) {
