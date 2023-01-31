@@ -178,6 +178,8 @@ std::vector<std::vector<int>> mainRun(float dc,
 			return run10(dc,rhoc,outlier,pPBin,ker,coords,weight);
 			break;
 		[[unlikely]] default:
+			std::cout << "This library only works up to 10 dimensions\n";
+			return {};
 			break;
 	}
 }
