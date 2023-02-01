@@ -27,6 +27,7 @@ def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
     sigma (float): The standard deviation of the gaussian distribution of the z values.
     """
 
+    sqrtSamples = sqrt(nSamples)
     centers = []
     if Ndim == 2:
         data = {'x0': [], 'x1': [], 'weight': []}
@@ -41,11 +42,11 @@ def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
         return pd.DataFrame(data)
     if Ndim == 3:
         data = {'x0': [], 'x1': [], 'x2': [], 'weight': []}
-        z = np.random.normal(mean,sigma,100)
+        z = np.random.normal(mean,sigma,sqrtSamples)
         for i in range(nBlobs):
             centers.append([sign()*15*rnd.random(),sign()*15*rnd.random()]) # the centers are 2D because we create them for each layer
         for value in z: # for every z value, a layer is generated.
-            blob_data, blob_labels = make_blobs(n_samples=nSamples,centers=np.array(centers))
+            blob_data, blob_labels = make_blobs(n_samples=sqrtSamples,centers=np.array(centers))
             for i in range(nSamples):
                 data['x0'] += [blob_data[i][0]]
                 data['x1'] += [blob_data[i][1]]
@@ -267,5 +268,3 @@ class clusterer:
         data['clusterIds'] = self.clusterIds
         data['isSeed'] = self.isSeed
 
-        df = pd.DataFrame(data)
-        df.to_csv(outPath,index=False)
