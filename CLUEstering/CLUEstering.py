@@ -70,6 +70,7 @@ class clusterer:
 		except ValueError as ve:
 			print(ve)
 			exit()
+		self.kernel = Algo.kernel(0.5)
 	def readData(self, inputData):
 		"""
 		Reads the data in input and fills the class members containing the coordinates of the points, the energy weight, the number of dimensions and the number of points.
@@ -149,6 +150,12 @@ class clusterer:
 				exit()
 
 		print('Finished reading points')
+	def chooseKernel(self, gaus_avg, gaus_std, gaus_amplitude):
+		self.kernel = Algo.kernel(gaus_avg, gaus_std, gaus_amplitude)
+	def chooseKernel(self, exp_avg, exp_amplitude):
+		self.kernel = Algo.kernel(exp_avg, exp_amplitude)
+	def chooseKernel(self, flat):
+		self.kernel = Algo.kernel(flat)
 	def runCLUE(self):
 		"""
 		Executes the CLUE clustering algorithm.
@@ -162,7 +169,7 @@ class clusterer:
 		"""
 
 		start = time.time_ns()
-		clusterIdIsSeed = Algo.mainRun(self.dc,self.rhoc,self.outlier,self.pPBin,self.coords,self.weight,self.Ndim)
+		clusterIdIsSeed = Algo.mainRun(self.dc,self.rhoc,self.outlier,self.pPBin,self.kernel,self.coords,self.weight,self.Ndim)
 		finish = time.time_ns()
 		self.clusterIds = clusterIdIsSeed[0]
 		self.isSeed = clusterIdIsSeed[1]

@@ -15,7 +15,8 @@ std::vector<std::vector<int>> run1(float dc,
 											  float outlier, 
 											  int pPBin, 
 											  kernel ker,
-		                             std::vector<std::vector<float>> const& coordinates, 											 std::vector<float> const& weight) {
+		                             std::vector<std::vector<float>> const& coordinates, 											 
+											  std::vector<float> const& weight) {
 	ClusteringAlgo<1> algo(dc,rhoc,outlier,pPBin);
 	algo.setPoints(coordinates[0].size(), coordinates, weight);
 
