@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 
+// Define the kernels used for the calculation of local density
+// The base class allows to define a generic kernel
 class kernel {
 protected:
   float m_dist_ij;
@@ -22,6 +24,7 @@ public:
   }
 };
 
+// Some derived classes are defined to simplify the use of the most common kernels
 class flatKernel : public kernel {
 private:
   float m_flat;
