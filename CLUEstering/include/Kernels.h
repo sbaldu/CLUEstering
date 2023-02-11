@@ -7,39 +7,39 @@
 #include <iostream>
 #include <vector>
 
+using KernelType = std::function<float(float, int, int)>;
+
 // Define the kernels used for the calculation of local density
 // The base class allows to define a generic kernel
 class kernel {
 protected:
-  float m_dist_ij;
-  int m_point_id;
-  int m_j;
+  KernelType m_kernel_func;
 
 public:
-  kernel(float dist_ij, int point_id, int j)
-      : m_dist_ij(dist_ij), m_point_id(point_id), m_j(j) {}
+  kernel() = default;
+  kernel(KernelType kernel_function)
+      : m_kernel_func(kernel_function) {}
 
-  virtual float applyKernel(std::function<float(float, int, int)> func) {
-    return func(m_dist_ij, m_point_id, m_j);
+  virtual float applyKernel(float dist_ij, int point_id, int j) {
+    return m_kernel_func(dist_ij, point_id, j);
   }
 };
 
-// Some derived classes are defined to simplify the use of the most common kernels
+// Some derived classes are defined to simplify the use of the most common
+// kernels
 class flatKernel : public kernel {
 private:
   float m_flat;
 
 public:
-  flatKernel(float dist_ij, int point_id, int j, float flat)
-      : kernel(dist_ij, point_id, j), m_flat(flat) {}
-  float applyKernel() {
-    return kernel::applyKernel([=, this](float distij_, int id_, int j_) {
+  flatKernel(float flat) : m_flat(flat) {
+    m_kernel_func = [=, this](float distij_, int id_, int j_) {
       if (id_ == j_) {
         return 1.f;
       } else {
         return m_flat;
       }
-    });
+    };
   }
 };
 
@@ -50,13 +50,10 @@ private:
   float m_gaus_amplitude;
 
 public:
-  gaussianKernel(float dist_ij, int point_id, int j, float gaus_avg,
-                 float gaus_std, float gaus_amplitude)
-      : kernel(dist_ij, point_id, j), m_gaus_avg(gaus_avg),
-        m_gaus_std(gaus_std), m_gaus_amplitude(gaus_amplitude) {}
-
-  float applyKernel() {
-    return kernel::applyKernel([=, this](float distij_, int id_, int j_) {
+  gaussianKernel(float gaus_avg, float gaus_std, float gaus_amplitude)
+      : m_gaus_avg(gaus_avg), m_gaus_std(gaus_std),
+        m_gaus_amplitude(gaus_amplitude) {
+    m_kernel_func = [=, this](float distij_, int id_, int j_) {
       if (id_ == j_) {
         return 1.f;
       } else {
@@ -64,7 +61,7 @@ public:
             m_gaus_amplitude *
             exp(-pow(distij_ - m_gaus_avg, 2) / (2 * pow(m_gaus_std, 2))));
       }
-    });
+    };
   }
 };
 
@@ -74,19 +71,15 @@ private:
   float m_exp_amplitude;
 
 public:
-  exponentialKernel(float dist_ij, int point_id, int j, float exp_avg,
-                    float exp_amplitude)
-      : kernel(dist_ij, point_id, j), m_exp_avg(exp_avg),
-        m_exp_amplitude(exp_amplitude) {}
-
-  float applyKernel() {
-    return kernel::applyKernel([=, this](float distij_, int id_, int j_) {
+  exponentialKernel(float exp_avg, float exp_amplitude)
+      : m_exp_avg(exp_avg), m_exp_amplitude(exp_amplitude) {
+    m_kernel_func = [=, this](float distij_, int id_, int j_) {
       if (id_ == j_) {
         return 1.f;
       } else {
         return static_cast<float>(m_exp_amplitude * exp(-m_exp_avg * distij_));
       }
-    });
+    };
   }
 };
 
