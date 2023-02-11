@@ -5,8 +5,7 @@ import time
 import matplotlib.pyplot as plt
 import CLUEsteringCPP as Algo 
 from sklearn.datasets import make_blobs
-from multipledispatch import dispatch
-# import multidispatch
+from math import sqrt
 
 def sign():
     sign = rnd.random()
@@ -153,16 +152,17 @@ class clusterer:
                 exit()
 
         print('Finished reading points')
-    @dispatch(float, float, float)
-    def chooseKernel(self, gaus_avg, gaus_std, gaus_amplitude):
-      self.kernel = Algo.kernel(gaus_avg, gaus_std, gaus_amplitude)
-    @dispatch(float, float)
-    def chooseKernel(self, exp_avg, exp_amplitude):
-      self.kernel = Algo.kernel(exp_avg, exp_amplitude)
-    @dispatch(float)
-    def chooseKernel(self, flat):
-      self.kernel = Algo.kernel(flat)
-
+    
+    def chooseKernel(self, choice, parameters, function = lambda : 0):
+        if choice == "flat":
+            self.kernel = Algo.flatKernel(parameters[0])
+        elif choice == "exp":
+            self.kernel = Algo.exponentialKernel(parameters[0], parameters[1])
+        elif choice == "gaus":
+            self.kernel = Algo.gaussianKernel(parameters[0], parameters[1], parameters[2])
+        elif choice == "custom":
+            self.kernel = Algo.kernel(function)
+        
     def runCLUE(self):
         """
         Executes the CLUE clustering algorithm.
