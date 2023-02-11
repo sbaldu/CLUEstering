@@ -72,7 +72,7 @@ class clusterer:
         except ValueError as ve:
             print(ve)
             exit()
-        self.kernel = Algo.kernel(0.5)
+        self.kernel = Algo.flatKernel(0.5)
     def readData(self, inputData):
         """
         Reads the data in input and fills the class members containing the coordinates of the points, the energy weight, the number of dimensions and the number of points.
