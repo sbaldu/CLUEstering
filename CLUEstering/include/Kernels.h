@@ -17,8 +17,9 @@ protected:
 
 public:
   kernel() = default;
-  kernel(KernelType kernel_function)
-      : m_kernel_func(kernel_function) {}
+  kernel(KernelType kernel_function) {
+    m_kernel_func = std::move(kernel_function);
+  }
 
   virtual float applyKernel(float dist_ij, int point_id, int j) {
     return m_kernel_func(dist_ij, point_id, j);
