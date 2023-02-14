@@ -55,13 +55,9 @@ public:
       : m_gaus_avg(gaus_avg), m_gaus_std(gaus_std),
         m_gaus_amplitude(gaus_amplitude) {
     m_kernel_func = [=, this](float distij_, int id_, int j_) {
-      if (id_ == j_) {
-        return 1.f;
-      } else {
-        return static_cast<float>(
-            m_gaus_amplitude *
-            exp(-pow(distij_ - m_gaus_avg, 2) / (2 * pow(m_gaus_std, 2))));
-      }
+	  return static_cast<float>(
+		  m_gaus_amplitude *
+		  exp(-pow(distij_ - m_gaus_avg, 2) / (2 * pow(m_gaus_std, 2))));
     };
   }
 };
@@ -75,11 +71,7 @@ public:
   exponentialKernel(float exp_avg, float exp_amplitude)
       : m_exp_avg(exp_avg), m_exp_amplitude(exp_amplitude) {
     m_kernel_func = [=, this](float distij_, int id_, int j_) {
-      if (id_ == j_) {
-        return 1.f;
-      } else {
-        return static_cast<float>(m_exp_amplitude * exp(-m_exp_avg * distij_));
-      }
+	  return static_cast<float>(m_exp_amplitude * exp(-m_exp_avg * distij_));
     };
   }
 };
