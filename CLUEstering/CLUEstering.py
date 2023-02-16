@@ -72,7 +72,7 @@ class clusterer:
         except ValueError as ve:
             print(ve)
             exit()
-        self.kernel = Algo.flatKernel(0.5)
+        self.kernel = Algo.kernel(0.5)
     def readData(self, inputData):
         """
         Reads the data in input and fills the class members containing the coordinates of the points, the energy weight, the number of dimensions and the number of points.
@@ -155,11 +155,11 @@ class clusterer:
     
     def chooseKernel(self, choice, parameters, function = lambda : 0):
         if choice == "flat":
-            self.kernel = Algo.flatKernel(parameters[0])
+            self.kernel = Algo.kernel(parameters[0])
         elif choice == "exp":
-            self.kernel = Algo.exponentialKernel(parameters[0], parameters[1])
+            self.kernel = Algo.kernel(parameters[0], parameters[1])
         elif choice == "gaus":
-            self.kernel = Algo.gaussianKernel(parameters[0], parameters[1], parameters[2])
+            self.kernel = Algo.kernel(parameters[0], parameters[1], parameters[2])
         elif choice == "custom":
             self.kernel = Algo.kernel(function)
         

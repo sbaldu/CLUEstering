@@ -7,15 +7,15 @@
 #include <iostream>
 #include <vector>
 
-using KernelType = std::function<float(float, int, int)>;
+using kernel_t = std::function<float(float, int, int)>;
 
 // Define the kernels used for the calculation of local density
 class kernel {
 protected:
-  KernelType m_kernel_func;
+  kernel_t m_kernel_func;
 
 public:
-  kernel(KernelType kernel_function)
+  kernel(kernel_t kernel_function)
       : m_kernel_func{std::move(kernel_function)} {}
 
   kernel(float flat) {

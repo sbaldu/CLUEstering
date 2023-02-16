@@ -147,7 +147,7 @@ public:
 
         if (dist_ij <= dc_) {
           // sum weights within N_{dc_}(i) using the chosen kernel
-		  points_.rho[point_id] += ker.applyKernel(dist_ij, point_id, j) * points_.weight[j];
+		  points_.rho[point_id] += ker(dist_ij, point_id, j) * points_.weight[j];
         }
       } // end of interate inside this bin
       return;

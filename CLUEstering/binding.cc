@@ -161,17 +161,11 @@ PYBIND11_MODULE(CLUEsteringCPP, m) {
   m.doc() = "Binding for CLUE";
 
   pybind11::class_<kernel>(m, "kernel")
-      .def(pybind11::init<KernelType>())
-      .def("applyKernel", &kernel::applyKernel, "");
-  pybind11::class_<flatKernel, kernel>(m, "flatKernel")
+      .def(pybind11::init<kernel_t>())
       .def(pybind11::init<float>())
-      .def("applyKernel", &flatKernel::applyKernel, "");
-  pybind11::class_<gaussianKernel, kernel>(m, "gaussianKernel")
       .def(pybind11::init<float, float, float>())
-      .def("applyKernel", &gaussianKernel::applyKernel, "");
-  pybind11::class_<exponentialKernel, kernel>(m, "exponentialKernel")
       .def(pybind11::init<float, float>())
-      .def("applyKernel", &exponentialKernel::applyKernel, "");
+      .def("operator()", &kernel::operator());
 
   m.def("mainRun", &mainRun, "mainRun");
 }
