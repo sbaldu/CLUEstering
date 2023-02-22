@@ -13,6 +13,18 @@ def sign():
         return 1
     else:
         return -1
+        
+def findCentroid(punti):
+    """
+    Function that finds the centroids
+    """
+    centroid = []
+    for i in range(len(punti[0])):
+        centroid_i = 0
+        for point in punti:
+            centroid_i += point[i]
+        centroid.append(centroid_i/len(punti))
+    return centroid
 
 def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
     """
@@ -152,28 +164,49 @@ class clusterer:
 
         print('Finished reading points')
     
-    #def parameterTuning(self, dimensions, separation, expNClusters):
-    #    """
-    #    Function that takes the expected number of clusters and modifies the input parameters until that number is met
-    #    """
-#
-    #    self.dc = max(dimensions)
-    #    self.outlier = 
-    #    self.rhoc = 
-#
-    #    while 
-         
-    def parameterTuning(self, dimensions, expNClusters):
+    def parameterTuning(self, dimensions, expNClusters, noise = False):
+        # Remember to write the docstring
         goodCombinations = []
 
-        for i in range(1000):
-            self.dc = np.random.uniform(0., min(dimensions))
-            self.rhoc = np.random.uniform(0., 100.)
-            self.outlier = np.random.uniform(1., max(dimensions)/self.dc)
+        # If you expect to have noise, in addition to the clusters, 
+        # the number of expected clusters is increased
+        if noise:
+            expNClusters += 1
+        
+        # The lower bound for dc is calculated as the smallest difference between the 
+        # coordinates of two neighbouring points
+        min_dcs = []
+        for coord in self.coords:
+            coord_ = coord.copy()
+            coord_.sort()
+            min_dcs.append(abs(min(np.diff(coord_))))
+        min_dc = pow(self.Ndim, 1/self.Ndim) * pow(max(min_dcs), 2/self.Ndim)
+
+        # The algorithm is run many times using random sets of parameters sampled in the 
+        # ranges calculated using the user's expected dimension of clusters. Then, only 
+        # the combinations that produce the right number of clusters are saved
+        for i in range(2000):
+            self.dc = np.random.uniform(min_dc, min(dimensions))
+            self.rhoc = np.random.uniform(0., 500.)
+            self.outlier = np.random.uniform(1., max(dimensions)/(2*self.dc)) 
             self.runCLUE()
-            if self.NClusters == expNClusters or self.NClusters == expNClusters + 1: # you must also consider noise
+            if self.NClusters == expNClusters:
                 goodCombinations.append([self.dc, self.rhoc, self.outlier])
         self.goodCombinations = goodCombinations
+
+        # To find the best combination of parameters among all the good ones, the centroid 
+        # of the region in the "phase space" is calculated
+        optimalParameters = findCentroid(self.goodCombinations)
+        self.dc = optimalParameters[0]
+        self.rhoc = optimalParameters[1]
+        self.outlier = optimalParameters[2]
+
+        #for comb in self.goodCombinations:
+        #    plt.scatter(x=comb[1], y=comb[0], color = 'blue')
+        #plt.show()
+
+        #plt.scatter(x=comb[1], y=comb[0], color = 'blue')
+        #plt.show()
 
     def runCLUE(self):
         """
@@ -243,6 +276,8 @@ class clusterer:
                 plt.scatter(dfi.x0, dfi.x1, s=10, marker='.')
             df_seed = df[df.isSeed == 1] # Only Seeds
             plt.scatter(df_seed.x0, df_seed.x1, s=25, color='r', marker='*')
+            plt.xlabel('x', fontsize=18)
+            plt.ylabel('y', fontsize=18)
             plt.show()
         if self.Ndim == 3:
             data = {'x0':self.coords[0], 'x1':self.coords[1], 'x2':self.coords[2], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
@@ -262,6 +297,9 @@ class clusterer:
 
             df_seed = df[df.isSeed == 1] # Only Seeds
             ax.scatter(df_seed.x0, df_seed.x1, df_seed.x2, s=20, color = 'r', marker = '*')
+            ax.set_xlabel('x', fontsize=14)
+            ax.set_ylabel('y', fontsize=14)
+            ax.set_zlabel('z', fontsize=14)
 
             plt.show()
     def toCSV(self,outputFolder,fileName):
