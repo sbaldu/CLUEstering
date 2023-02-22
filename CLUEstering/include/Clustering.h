@@ -97,7 +97,7 @@ public:
     return tileSizes;
   }
 
-  std::vector<std::vector<int>> makeClusters(kernel ker) {
+  std::vector<std::vector<int>> makeClusters(kernel const& ker) {
     tiles<Ndim> Tiles;
     Tiles.nTiles = calculateNTiles(pointsPerTile_);
     Tiles.resizeTiles();
@@ -132,7 +132,7 @@ public:
 
   template <uint8_t N_>
   void for_recursion(std::vector<int> &base_vector, std::vector<int> &dim_min,
-                     std::vector<int> &dim_max, tiles<Ndim> &lt_, kernel ker,
+                     std::vector<int> &dim_max, tiles<Ndim> &lt_, kernel const& ker,
                      int point_id) {
     if constexpr (N_ == 0) {
       int binId{lt_.getGlobalBinByBin(base_vector)};
@@ -219,7 +219,7 @@ private:
     }
   }
 
-  void calculateLocalDensity(tiles<Ndim> &tiles, kernel ker) {
+  void calculateLocalDensity(tiles<Ndim> &tiles, kernel const& ker) {
     // loop over all points
     for (int i{}; i < points_.n; ++i) {
       // get search box
