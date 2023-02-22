@@ -102,7 +102,7 @@ class clusterer:
                 if len(inputData) < 2:
                     raise ValueError('Error: Inadequate data. The data must contain at least one coordinate and the energy.')
                 self.coords = [coord for coord in inputData[:-1]]
-                self.weight = inputData[-1] 
+                self.weight = inputData[-1]
                 if len(inputData[:-1]) > 10:
                     raise ValueError('Error: The maximum number of dimensions supported is 10')
                 self.Ndim = len(inputData[:-1])
@@ -166,6 +166,20 @@ class clusterer:
     
     def parameterTuning(self, dimensions, expNClusters, noise = False):
         # Remember to write the docstring
+        
+        # We set a limit of points as a time limit (otherwise it takes too long)
+        limit = 2000
+        ratio = 1.
+        if self.Npoints > limit:
+            ratio = self.Npoints/limit # used to multiply the estimated rhoc
+            self.Npoints = limit
+            transposed = np.array(self.coords).T.tolist()
+            rnd.shuffle(transposed)
+            del transposed[limit:-1]
+            self.coords = np.array(transposed).T.tolist()
+            del self.weight[limit:-1]
+            # print("called:",len(self.coords[0]),self.Npoints)
+        
         goodCombinations = []
 
         # If you expect to have noise, in addition to the clusters, 
@@ -182,10 +196,10 @@ class clusterer:
             min_dcs.append(abs(min(np.diff(coord_))))
         min_dc = pow(self.Ndim, 1/self.Ndim) * pow(max(min_dcs), 2/self.Ndim)
 
-        # The algorithm is run many times using random sets of parameters sampled in the 
+        # The algorithm is run many (2500) times using random sets of parameters sampled in the 
         # ranges calculated using the user's expected dimension of clusters. Then, only 
         # the combinations that produce the right number of clusters are saved
-        for i in range(2000):
+        for i in range(1500):
             self.dc = np.random.uniform(min_dc, min(dimensions))
             self.rhoc = np.random.uniform(0., 500.)
             self.outlier = np.random.uniform(1., max(dimensions)/(2*self.dc)) 
@@ -198,9 +212,9 @@ class clusterer:
         # of the region in the "phase space" is calculated
         optimalParameters = findCentroid(self.goodCombinations)
         self.dc = optimalParameters[0]
-        self.rhoc = optimalParameters[1]
+        self.rhoc = optimalParameters[1]*ratio
         self.outlier = optimalParameters[2]
-
+        
         #for comb in self.goodCombinations:
         #    plt.scatter(x=comb[1], y=comb[0], color = 'blue')
         #plt.show()
@@ -238,8 +252,8 @@ class clusterer:
         self.outputDF = pd.DataFrame(data) 
 
         self.elapsed_time = (finish - start)/(10**6)
-        print('CLUE run in ' + str(self.elapsed_time) + ' ms')
-        print('Number of clusters found: ', self.NClusters)
+        # print('CLUE run in ' + str(self.elapsed_time) + ' ms')
+        # print('Number of clusters found: ', self.NClusters)
     def inputPlotter(self):
         """
         Plots the the points in input.
