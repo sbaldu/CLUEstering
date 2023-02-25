@@ -93,7 +93,7 @@ class clusterer:
                 self.weight = inputData[-1]
                 if len(inputData[:-1]) > 10:
                     raise ValueError('Error: The maximum number of dimensions supported is 10')
-                self.Ndim = self.coords.size
+                self.Ndim = len(self.coords)
                 self.Npoints = self.weight.size
             except ValueError as ve:
                 print(ve)
@@ -108,7 +108,7 @@ class clusterer:
                 self.weight = np.array(inputData[-1])
                 if len(inputData[:-1]) > 10:
                     raise ValueError('Error: The maximum number of dimensions supported is 10')
-                self.Ndim = self.coords.size
+                self.Ndim = len(self.coords)
                 self.Npoints = self.weight.size
             except ValueError as ve:
                 print(ve)
