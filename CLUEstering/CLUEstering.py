@@ -170,16 +170,16 @@ class clusterer:
         start = time.time_ns()
         clusterIdIsSeed = Algo.mainRun(self.dc,self.rhoc,self.outlier,self.pPBin,self.coords,self.weight,self.Ndim)
         finish = time.time_ns()
-        self.clusterIds = clusterIdIsSeed[0]
-        self.isSeed = clusterIdIsSeed[1]
-        self.NClusters = len(list(set(self.clusterIds))) 
+        self.clusterIds = np.array(clusterIdIsSeed[0])
+        self.isSeed = np.array(clusterIdIsSeed[1])
+        self.NClusters = len(np.unique(self.clusterIds))
 
         clusterPoints = [[] for i in range(self.NClusters)]
         for i in range(self.Npoints):
             clusterPoints[self.clusterIds[i]].append(i)
 
-        self.clusterPoints = clusterPoints
-        self.pointsPerCluster = [len(clust) for clust in clusterPoints]
+        self.clusterPoints = np.array(clusterPoints)
+        self.pointsPerCluster = np.array([len(clust) for clust in clusterPoints])
 
         data = {'clusterIds': self.clusterIds, 'isSeed': self.isSeed}
         self.outputDF = pd.DataFrame(data) 
