@@ -14,7 +14,7 @@ def sign():
     else:
         return -1
         
-def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
+def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5, x_max=15, y_max=15):
     """
     Returns a test dataframe containing randomly generated 2-dimensional or 3-dimensional blobs. 
 
@@ -24,6 +24,8 @@ def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
     nBlobs (int): The number of blobs that should be produced. By default it is set to 4.
     mean (float): The mean of the gaussian distribution of the z values.
     sigma (float): The standard deviation of the gaussian distribution of the z values.
+    x_max (flaot): Limit of the space where the blobs are created in the x direction.
+    y_max (flaot): Limit of the space where the blobs are created in the y direction.
     """
 
     sqrtSamples = sqrt(nSamples)
@@ -31,7 +33,7 @@ def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5):
     if Ndim == 2:
         data = {'x0': [], 'x1': [], 'weight': []}
         for i in range(nBlobs):
-            centers.append([sign()*15*rnd.random(),sign()*15*rnd.random()])
+            centers.append([sign()*x_max*rnd.random(),sign()*y_max*rnd.random()])
         blob_data, blob_labels = make_blobs(n_samples=nSamples,centers=np.array(centers))
         for i in range(nSamples):
             data['x0'] += [blob_data[i][0]]
