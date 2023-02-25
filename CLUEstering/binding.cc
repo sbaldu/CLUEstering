@@ -163,16 +163,16 @@ PYBIND11_MODULE(CLUEsteringCPP, m) {
   pybind11::class_<kernel>(m, "kernel")
       .def(pybind11::init<>())
       .def("operator()", &kernel::operator());
-  pybind11::class_<flatKernel, kernel>(m, "kernel")
+  pybind11::class_<flatKernel, kernel>(m, "flatKernel")
       .def(pybind11::init<float>())
       .def("operator()", &flatKernel::operator());
-  pybind11::class_<gaussianKernel, kernel>(m, "kernel")
+  pybind11::class_<gaussianKernel, kernel>(m, "gaussianKernel")
       .def(pybind11::init<float, float, float>())
       .def("operator()", &gaussianKernel::operator());
-  pybind11::class_<exponentialKernel, kernel>(m, "kernel")
+  pybind11::class_<exponentialKernel, kernel>(m, "exponentialKernel")
       .def(pybind11::init<float, float>())
       .def("operator()", &exponentialKernel::operator());
-  pybind11::class_<customKernel, kernel>(m, "kernel")
+  pybind11::class_<customKernel, kernel>(m, "customKernel")
       .def(pybind11::init<kernel_t>())
       .def("operator()", &customKernel::operator());
 
