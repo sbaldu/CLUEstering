@@ -185,8 +185,8 @@ class clusterer:
         self.outputDF = pd.DataFrame(data) 
 
         self.elapsed_time = (finish - start)/(10**6)
-        # print('CLUE run in ' + str(self.elapsed_time) + ' ms')
-        # print('Number of clusters found: ', self.NClusters)
+        print('CLUE run in ' + str(self.elapsed_time) + ' ms')
+        print('Number of clusters found: ', self.NClusters)
 
     def inputPlotter(self, plot_title='', label_size=16, pt_size=1, pt_colour='b'):
         """
