@@ -72,6 +72,7 @@ class clusterer:
         except ValueError as ve:
             print(ve)
             exit()
+            
     def readData(self, inputData):
         """
         Reads the data in input and fills the class members containing the coordinates of the points, the energy weight, the number of dimensions and the number of points.
@@ -184,25 +185,46 @@ class clusterer:
         self.elapsed_time = (finish - start)/(10**6)
         # print('CLUE run in ' + str(self.elapsed_time) + ' ms')
         # print('Number of clusters found: ', self.NClusters)
-    def inputPlotter(self):
+
+    def inputPlotter(self, plot_title='', label_size=16, pt_size=1, pt_colour='b'):
         """
         Plots the the points in input.
+
+        Parameters:
+        plot_title (string): Title of the plot
+        label_size (int): Fontsize of the axis labels
+        pt_size (int): Size of the points in the plot
+        pt_colour (string): Colour of the points in the plot
         """
 
         if self.Ndim == 2:
-            plt.scatter(self.coords[0],self.coords[1], s=1)
+            plt.scatter(self.coords[0],self.coords[1], s=pt_size, color=pt_colour)
+            plt.title(plot_title)
+            plt.xlabel('x', fontsize=label_size)
+            plt.ylabel('y', fontsize=label_size)
             plt.show()
         if self.Ndim >= 3:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
-            ax.scatter(self.coords[0],self.coords[1],self.coords[2])
-
+            ax.scatter(self.coords[0],self.coords[1],self.coords[2], s=pt_size, color=pt_colour)
+            ax.set_title(plot_title)
+            ax.set_xlabel('x', fontsize=label_size)
+            ax.set_ylabel('y', fontsize=label_size)
+            ax.set_zlabel('z', fontsize=label_size)
             plt.show()
-    def clusterPlotter(self):
+
+    def clusterPlotter(self, plot_title='', label_size=16, outl_size=10, pt_size=10, seed_size=25):
         """
         Plots the clusters with a different colour for every cluster. 
 
         The points assigned to a cluster are prints as points, the seeds as stars and the outliers as little grey crosses. 
+
+        Parameters:
+        plot_title (string): Title of the plot
+        label_size (int): Fontsize of the axis labels
+        outl_size (int): Size of the outliers in the plot
+        pt_size (int): Size of the points in the plot
+        seed_size (int): Size of the seeds in the plot
         """
         
         if self.Ndim == 2:
@@ -214,14 +236,15 @@ class clusterer:
             dfs = df["isSeed"]
 
             df_out = df[df.clusterIds == -1] # Outliers
-            plt.scatter(df_out.x0, df_out.x1, s=10, marker='x', color='0.4')
+            plt.scatter(df_out.x0, df_out.x1, s=outl_size, marker='x', color='0.4')
             for i in range(0,M+1):
                 dfi = df[df.clusterIds == i] # ith cluster
-                plt.scatter(dfi.x0, dfi.x1, s=10, marker='.')
+                plt.scatter(dfi.x0, dfi.x1, s=pt_size, marker='.')
             df_seed = df[df.isSeed == 1] # Only Seeds
-            plt.scatter(df_seed.x0, df_seed.x1, s=25, color='r', marker='*')
-            plt.xlabel('x', fontsize=18)
-            plt.ylabel('y', fontsize=18)
+            plt.scatter(df_seed.x0, df_seed.x1, s=seed_size, color='r', marker='*')
+            plt.title(plot_title)
+            plt.xlabel('x', fontsize=label_size)
+            plt.ylabel('y', fontsize=label_size)
             plt.show()
         if self.Ndim == 3:
             data = {'x0':self.coords[0], 'x1':self.coords[1], 'x2':self.coords[2], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
@@ -234,25 +257,26 @@ class clusterer:
             ax = fig.add_subplot(projection='3d')
 
             df_out = df[df.clusterIds == -1]
-            ax.scatter(df_out.x0, df_out.x1, df_out.x2, s=15, color = 'grey', marker = 'x')
+            ax.scatter(df_out.x0, df_out.x1, df_out.x2, s=outl_size, color = 'grey', marker = 'x')
             for i in range(0,M+1):
                 dfi = df[df.clusterIds == i]
-                ax.scatter(dfi.x0, dfi.x1, dfi.x2, s=5, marker = '.')
+                ax.scatter(dfi.x0, dfi.x1, dfi.x2, s=pt_size, marker = '.')
 
             df_seed = df[df.isSeed == 1] # Only Seeds
-            ax.scatter(df_seed.x0, df_seed.x1, df_seed.x2, s=20, color = 'r', marker = '*')
-            ax.set_xlabel('x', fontsize=14)
-            ax.set_ylabel('y', fontsize=14)
-            ax.set_zlabel('z', fontsize=14)
-
+            ax.scatter(df_seed.x0, df_seed.x1, df_seed.x2, s=seed_size, color = 'r', marker = '*')
+            ax.set_title(plot_title)
+            ax.set_xlabel('x', fontsize=label_size)
+            ax.set_ylabel('y', fontsize=label_size)
+            ax.set_zlabel('z', fontsize=label_size)
             plt.show()
+
     def toCSV(self,outputFolder,fileName):
         """
         Creates a file containing the coordinates of all the points, their clusterIds and isSeed.   
 
         Parameters: 
         outputFolder (string): Full path to the desired ouput folder.
-        fileName(string): Name of the file, with the '.csv' suffix.
+        fileName (string): Name of the file, with the '.csv' suffix.
         """
 
         outPath = outputFolder + fileName
