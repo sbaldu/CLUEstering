@@ -86,7 +86,7 @@ class clusterer:
         inputData (list or numpy array): The list or numpy array should contain a list of lists for the coordinates and a list for the weight.
         """
 
-        print('Start reading points')
+        #print('Start reading points')
         
         # numpy array
         if type(inputData) == np.array:
@@ -154,7 +154,7 @@ class clusterer:
                 print(ve)
                 exit()
 
-        print('Finished reading points')
+        #print('Finished reading points')
 
     def chooseKernel(self, choice, parameters, function = lambda : 0):
         """
@@ -199,15 +199,15 @@ class clusterer:
         for i in range(self.Npoints):
             clusterPoints[self.clusterIds[i]].append(i)
 
-        self.clusterPoints = np.array(clusterPoints)
+        self.clusterPoints = clusterPoints
         self.pointsPerCluster = np.array([len(clust) for clust in clusterPoints])
 
         data = {'clusterIds': self.clusterIds, 'isSeed': self.isSeed}
         self.outputDF = pd.DataFrame(data) 
 
         self.elapsed_time = (finish - start)/(10**6)
-        print('CLUE run in ' + str(self.elapsed_time) + ' ms')
-        print('Number of clusters found: ', self.NClusters)
+        #print('CLUE run in ' + str(self.elapsed_time) + ' ms')
+        #print('Number of clusters found: ', self.NClusters)
 
     def inputPlotter(self, plot_title='', label_size=16, pt_size=1, pt_colour='b'):
         """
