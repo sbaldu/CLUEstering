@@ -28,33 +28,46 @@ def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5, x_max=15, y_max=15):
     y_max (flaot): Limit of the space where the blobs are created in the y direction.
     """
 
-    sqrtSamples = sqrt(nSamples)
-    centers = []
-    if Ndim == 2:
-        data = {'x0': [], 'x1': [], 'weight': []}
-        for i in range(nBlobs):
-            centers.append([sign()*x_max*rnd.random(),sign()*y_max*rnd.random()])
-        blob_data, blob_labels = make_blobs(n_samples=nSamples,centers=np.array(centers))
-        for i in range(nSamples):
-            data['x0'] += [blob_data[i][0]]
-            data['x1'] += [blob_data[i][1]]
-            data['weight'] += [1]
+    try:
+        if x_max < 0. or y_max < 0.:
+            raise ValueError('Error\nx_max and y_max must be positive')
+        if nBlobs < 0:
+            raise ValueError('Error\nThe number of blobs must be positive')
+        if mean < 0. or sigma < 0.:
+            raise ValueError('Error\nThe mean and sigma of the blobs must non negative')
 
-        return pd.DataFrame(data)
-    if Ndim == 3:
-        data = {'x0': [], 'x1': [], 'x2': [], 'weight': []}
-        z = np.random.normal(mean,sigma,sqrtSamples)
-        for i in range(nBlobs):
-            centers.append([sign()*x_max*rnd.random(),sign()*x_max*rnd.random()]) # the centers are 2D because we create them for each layer
-        for value in z: # for every z value, a layer is generated.
-            blob_data, blob_labels = make_blobs(n_samples=sqrtSamples,centers=np.array(centers))
+        sqrtSamples = sqrt(nSamples)
+        centers = []
+        if Ndim == 2:
+            data = {'x0': [], 'x1': [], 'weight': []}
+            for i in range(nBlobs):
+                centers.append([sign()*x_max*rnd.random(),sign()*y_max*rnd.random()])
+            blob_data, blob_labels = make_blobs(n_samples=nSamples,centers=np.array(centers))
             for i in range(nSamples):
                 data['x0'] += [blob_data[i][0]]
                 data['x1'] += [blob_data[i][1]]
-                data['x2'] += [value]
                 data['weight'] += [1]
 
-        return pd.DataFrame(data)
+            return pd.DataFrame(data)
+        elif Ndim == 3:
+            data = {'x0': [], 'x1': [], 'x2': [], 'weight': []}
+            z = np.random.normal(mean,sigma,sqrtSamples)
+            for i in range(nBlobs):
+                centers.append([sign()*x_max*rnd.random(),sign()*x_max*rnd.random()]) # the centers are 2D because we create them for each layer
+            for value in z: # for every z value, a layer is generated.
+                blob_data, blob_labels = make_blobs(n_samples=sqrtSamples,centers=np.array(centers))
+                for i in range(nSamples):
+                    data['x0'] += [blob_data[i][0]]
+                    data['x1'] += [blob_data[i][1]]
+                    data['x2'] += [value]
+                    data['weight'] += [1]
+
+            return pd.DataFrame(data)
+        else:
+            raise ValueError('Error: wrong number of dimensions\nBlobs can only be generated in 2 or 3 dimensions')
+    except ValueError as ve:
+        print(ve)
+        exit()
 
 class clusterer:
     def __init__(self, dc, rhoc, outlier, pPBin=10): 
@@ -156,7 +169,7 @@ class clusterer:
 
         #print('Finished reading points')
 
-    def chooseKernel(self, choice, parameters, function = lambda : 0):
+    def chooseKernel(self, choice, parameters=[], function = lambda : 0):
         """
         Changes the kernel used in the calculation of local density. The default kernel is a flat kernel with parameter 0.5
 
@@ -167,18 +180,36 @@ class clusterer:
         and the custom doesn't require any, so an empty list should be passed.
         function (function object): Function that should be used as kernel when the custom kernel is chosen.
         """
-        if choice == "flat":
-            self.kernel = Algo.flatKernel(parameters[0])
-        elif choice == "exp":
-            self.kernel = Algo.exponentialKernel(parameters[0], parameters[1])
-        elif choice == "gaus":
-            self.kernel = Algo.gaussianKernel(parameters[0], parameters[1], parameters[2])
-        elif choice == "custom":
-            self.kernel = Algo.customKernel(function)
+
+        try:
+            if choice == "flat":
+                if len(parameters) != 1:
+                    raise ValueError('Error: Wrong number of parameters\nThe flat kernel requires 1 parameter')
+                self.kernel = Algo.flatKernel(parameters[0])
+            elif choice == "exp":
+                if len(parameters) != 2:
+                    raise ValueError('Error: Wrong number of parameters\nThe exponential kernel requires 2 parameters')
+                self.kernel = Algo.exponentialKernel(parameters[0], parameters[1])
+            elif choice == "gaus":
+                if len(parameters) != 3:
+                    raise ValueError('Error: Wrong number of parameters\nThe gaussian kernel requires 3 parameters')
+                self.kernel = Algo.gaussianKernel(parameters[0], parameters[1], parameters[2])
+            elif choice == "custom":
+                if len(parameters) != 0:
+                    raise ValueError('Error: Wrong number of parameters\nCustom kernels requires 0 parameters')
+                self.kernel = Algo.customKernel(function)
+            else: 
+                raise ValueError('Error: Invalid kernel\nThe allowed choices for the kernels are: flat, exp, gaus and custom')
+        except ValueError as ve:
+            print(ve)
+            exit()
     
     def runCLUE(self, verbose=False):
         """
         Executes the CLUE clustering algorithm.
+
+        Parameters:
+        verbose (bool): The verbose option prints the execution time of runCLUE and the number of clusters found
 
         Output:
         self.clusterIds (list): Contains the clusterId corresponding to every point.
