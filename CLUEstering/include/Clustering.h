@@ -36,20 +36,15 @@ public:
 	int pointsPerTile_; // average number of points found in a tile
     
 	Points<Ndim> points_;
-  
-	bool setPoints(int n, std::vector<std::vector<float>> const& coordinates, std::vector<float> const& weight) {
-		//points_.clear();
-		// input variables
-		for(int i {}; i < n; ++i) {
-			for(int j {}; j != Ndim; ++j) {
-				points_.coordinates_.push_back({});
-				points_.coordinates_[j].push_back(coordinates[j][i]);
-			}
-			points_.weight.push_back(weight[i]);
-		}
 
-		points_.n = points_.coordinates_[0].size();
-		if(points_.n == 0)
+        bool setPoints(int n, std::vector<std::vector<float>> coordinates, std::vector<float> weight) {
+                //points_.clear();
+		// input variables
+                points_.coordinates_ = std::move(coordinates);
+                points_.weight = std::move(weight);
+
+                points_.n = n;
+                if(points_.n == 0)
 			return 1;
 
 		// result variables
@@ -60,9 +55,9 @@ public:
 		points_.clusterIndex.resize(points_.n,-1);
 		points_.isSeed.resize(points_.n,0);
 		return 0;
-	}
+        }
 
-	void clearPoints(){ points_.clear(); }
+        void clearPoints(){ points_.clear(); }
 
 	int calculateNTiles(int pointPerBin) {
 		int ntiles { points_.n/pointPerBin };
