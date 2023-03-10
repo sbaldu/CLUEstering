@@ -220,13 +220,13 @@ private:
 
       // loop over bins in the search box(binIter_f - binIter_i)
       std::vector<int> binVec(Ndim);
-      std::vector<int> dimMin{};
-      std::vector<int> dimMax{};
+      std::vector<int> dimMin(Ndim);
+      std::vector<int> dimMax(Ndim);
       for (int j{}; j != (int)(search_box.size()); ++j) {
         if (j % 2 == 0) {
-          dimMin.push_back(search_box[j]);
+          dimMin[j/2] = search_box[j];
         } else {
-          dimMax.push_back(search_box[j]);
+          dimMax[j/2] = search_box[j];
         }
       }
 
@@ -254,15 +254,16 @@ private:
 
       // loop over all bins in the search box
       std::vector<int> binVec(Ndim);
-      std::vector<int> dimMin{};
-      std::vector<int> dimMax{};
-      for (int j{}; j != search_box.size(); ++j) {
+      std::vector<int> dimMin(Ndim);
+      std::vector<int> dimMax(Ndim);
+      for (int j{}; j != (int)(search_box.size()); ++j) {
         if (j % 2 == 0) {
-          dimMin.push_back(search_box[j]);
+          dimMin[j/2] = search_box[j];
         } else {
-          dimMax.push_back(search_box[j]);
+          dimMax[j/2] = search_box[j];
         }
       }
+
       for_recursion_DistanceToHigher<Ndim>(binVec, dimMin, dimMax, tiles, rho_i, delta_i, nearestHigher_i, i);
 
       points_.delta[i] = delta_i;
