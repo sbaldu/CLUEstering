@@ -11,10 +11,19 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "Kernels.h"
 #include "Point.h"
 #include "Tiles.h"
+#include "deltaPhi.h"
+
+struct domain_t{
+  float min = 0;
+  float max = 0;
+
+  bool empty() const { return min == 0 && max == 0; }
+};
 
 ////////////////////////////
 //////  Clustering.h  //////
@@ -22,11 +31,12 @@
 template <uint8_t Ndim>
 class ClusteringAlgo {
 public:
-  ClusteringAlgo(float dc, float rhoc, float outlierDeltaFactor, int pPBin) {
+  ClusteringAlgo(float dc, float rhoc, float outlierDeltaFactor, int pPBin, std::vector<domain_t> domains) {
     dc_ = dc;
     rhoc_ = rhoc;
     outlierDeltaFactor_ = outlierDeltaFactor;
     pointsPerTile_ = pPBin;
+    domains_ = std::move(domains);
   }
 
   // public variables
@@ -34,6 +44,9 @@ public:
   float rhoc_;  // minimum density to promote a point as a seed or the maximum density to demote a point as an outlier
   float outlierDeltaFactor_;
   int pointsPerTile_;  // average number of points found in a tile
+
+  // Array containing the domain extremes of every coordinate
+  std::vector<domain_t> domains_;
 
   Points<Ndim> points_;
 
@@ -331,7 +344,13 @@ private:
   inline float distance(int i, int j) const {
     float qSum{};  // quadratic sum
     for (int k{}; k != Ndim; ++k) {
-      qSum += std::pow(points_.coordinates_[k][i] - points_.coordinates_[k][j], 2);
+      float delta_xk{};
+      if (domains_[k].empty()) {
+        delta_xk = points_.coordinates_[k][i] - points_.coordinates_[k][j];
+      } else {
+        delta_xk = deltaPhi(points_.coordinates_[k][i], points_.coordinates_[k][j], domains_[k].min, domains_[k].max);
+      }
+      qSum += std::pow(delta_xk, 2);
     }
 
     return std::sqrt(qSum);
