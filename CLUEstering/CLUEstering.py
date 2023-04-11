@@ -184,7 +184,17 @@ class clusterer:
                 self.weight = df['weight']
                 
                 # Save the original coordinates before any normalizations
-                self.original_coords = np.copy(self.coords)
+                self.original_coords = np.copy(self.coords) 
+
+                # Calculate mean and standard deviations in all the coordinates
+                means = np.zeros(shape=(self.Ndim, 1))
+                covariance_matrix = np.cov(self.coords)
+                for dim in range(self.Ndim):
+                    means[dim] = np.mean(self.coords[dim])
+                
+                # Normalize all the coordinates as x'_j = (x_j - mu_j) / sigma_j
+                for dim in range(self.Ndim):
+                    self.coords[dim] = (self.coords[dim] - means[dim]) / sqrt(covariance_matrix[dim][dim])
 
                 # 
                 empty_domain = Algo.domain_t()
@@ -292,11 +302,12 @@ class clusterer:
         """
 
         # Convert the used coordinates to cartesian coordiantes
+        cartesian_coords = [[] for i in range(self.Ndim)]
         for kwarg in kwargs:
-            self.original_coords[int(kwarg[1])] = kwargs[kwarg](self.original_coords)
+            cartesian_coords[int(kwarg[1])] = kwargs[kwarg](self.original_coords)
 
         if self.Ndim == 2:
-            plt.scatter(self.original_coords[0],self.original_coords[1], s=pt_size, color=pt_colour)
+            plt.scatter(cartesian_coords[0], cartesian_coords[1], s=pt_size, color=pt_colour)
             plt.title(plot_title)
             plt.xlabel('x', fontsize=label_size)
             plt.ylabel('y', fontsize=label_size)
@@ -304,7 +315,7 @@ class clusterer:
         if self.Ndim >= 3:
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
-            ax.scatter(self.original_coords[0],self.original_coords[1],self.original_coords[2], s=pt_size, color=pt_colour)
+            ax.scatter(cartesian_coords[0], cartesian_coords[1],self.original_coords[2], s=pt_size, color=pt_colour)
             ax.set_title(plot_title)
             ax.set_xlabel('x', fontsize=label_size)
             ax.set_ylabel('y', fontsize=label_size)
@@ -327,11 +338,12 @@ class clusterer:
         """
         
         # Convert the used coordinates to cartesian coordiantes
+        cartesian_coords = [[] for i in range(self.Ndim)]
         for kwarg in kwargs:
-            self.original_coords[int(kwarg[1])] = kwargs[kwarg](self.original_coords)
+            cartesian_coords[int(kwarg[1])] = kwargs[kwarg](self.original_coords)
 
         if self.Ndim == 2:
-            data = {'x0':self.original_coords[0], 'x1':self.original_coords[1], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
+            data = {'x0':cartesian_coords[0], 'x1':cartesian_coords[1], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
             df = pd.DataFrame(data)
 
             df_clindex = df["clusterIds"]
@@ -350,7 +362,7 @@ class clusterer:
             plt.ylabel('y', fontsize=label_size)
             plt.show()
         if self.Ndim == 3:
-            data = {'x0':self.original_coords[0], 'x1':self.original_coords[1], 'x2':self.original_coords[2], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
+            data = {'x0':cartesian_coords[0], 'x1':cartesian_coords[1], 'x2':self.original_coords[2], 'clusterIds':self.clusterIds, 'isSeed':self.isSeed}
             df = pd.DataFrame(data)
 
             df_clindex = df["clusterIds"]
@@ -408,12 +420,14 @@ if __name__ == "__main__":
 
     new_data = {}
     new_data['x0'] = np.sqrt(df['x0']**2 + df['x1']**2)
-    new_data['x1'] = np.arctan2(df['x1'],df['x0'])
+    new_data['x1'] = np.arctan2(df['x1'], df['x0'])
     new_data['weight'] = [1 for i in range(len(new_data['x0']))]
     new_df = pd.DataFrame(new_data)
 
-    c = clusterer(0.8,5,1)
+    c = clusterer(1,5,1.5)
     c.readData(new_df, x1=(-pi, pi))
-    print(c.domain_ranges)
+    c.inputPlotter(x0=lambda x: x[0]*np.cos(x[1]),
+                     x1=lambda x: x[0]*np.sin(x[1]))
     c.runCLUE()
-    c.clusterPlotter()
+    c.clusterPlotter(x0=lambda x: x[0]*np.cos(x[1]),
+                     x1=lambda x: x[0]*np.sin(x[1]))
