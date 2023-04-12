@@ -18,11 +18,9 @@
 #include "Tiles.h"
 #include "deltaPhi.h"
 
-struct domain_t{
-  float min = 0;
-  float max = 0;
-
-  bool empty() const { return min == 0 && max == 0; }
+struct domain_t {
+  float min = -std::numeric_limits<float>::max();
+  float max = std::numeric_limits<float>::max();
 };
 
 ////////////////////////////
@@ -107,25 +105,9 @@ public:
     Tiles.resizeTiles();
     Tiles.tilesSize = calculateTileSize(Tiles.nTiles, Tiles);
 
-    // start clustering
-    //auto start { std::chrono::high_resolution_clock::now() };
     prepareDataStructures(Tiles);
-    //auto finish { std::chrono::high_resolution_clock::now() };
-    //std::chrono::duration<double> elapsed { finish - start };
-    //std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
-
-    //start = std::chrono::high_resolution_clock::now();
     calculateLocalDensity(Tiles, ker);
-    //finish = std::chrono::high_resolution_clock::now();
-    //elapsed = finish - start;
-    //std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
-
-    //start = std::chrono::high_resolution_clock::now();
     calculateDistanceToHigher(Tiles);
-    //finish = std::chrono::high_resolution_clock::now();
-    //elapsed = finish - start;
-    //std::cout << "--- calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
-
     findAndAssignClusters();
 
     return {points_.clusterIndex, points_.isSeed};
@@ -237,9 +219,9 @@ private:
       std::vector<int> dimMax(Ndim);
       for (int j{}; j != (int)(search_box.size()); ++j) {
         if (j % 2 == 0) {
-          dimMin[j/2] = search_box[j];
+          dimMin[j / 2] = search_box[j];
         } else {
-          dimMax[j/2] = search_box[j];
+          dimMax[j / 2] = search_box[j];
         }
       }
 
@@ -271,9 +253,9 @@ private:
       std::vector<int> dimMax(Ndim);
       for (int j{}; j != (int)(search_box.size()); ++j) {
         if (j % 2 == 0) {
-          dimMin[j/2] = search_box[j];
+          dimMin[j / 2] = search_box[j];
         } else {
-          dimMax[j/2] = search_box[j];
+          dimMax[j / 2] = search_box[j];
         }
       }
 
@@ -285,8 +267,6 @@ private:
   }
 
   void findAndAssignClusters() {
-    //auto start { std::chrono::high_resolution_clock::now() };
-
     int nClusters{};
 
     // find cluster seeds and outlier
@@ -317,11 +297,6 @@ private:
       }
     }
 
-    //auto finish { std::chrono::high_resolution_clock::now() };
-    //std::chrono::duration<double> elapsed { finish - start };
-    //std::cout << "--- findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
-
-    //start = std::chrono::high_resolution_clock::now();
     // expend clusters from seeds
     while (!localStack.empty()) {
       int i{localStack.back()};
@@ -336,20 +311,13 @@ private:
         localStack.push_back(j);
       }
     }
-    //finish = std::chrono::high_resolution_clock::now();
-    //elapsed = finish - start;
-    //std::cout << "--- assignClusters:            " << elapsed.count() *1000 << " ms\n";
   }
 
   inline float distance(int i, int j) const {
     float qSum{};  // quadratic sum
     for (int k{}; k != Ndim; ++k) {
-      float delta_xk{};
-      if (domains_[k].empty()) {
-        delta_xk = points_.coordinates_[k][i] - points_.coordinates_[k][j];
-      } else {
-        delta_xk = deltaPhi(points_.coordinates_[k][i], points_.coordinates_[k][j], domains_[k].min, domains_[k].max);
-      }
+      float delta_xk{
+          deltaPhi(points_.coordinates_[k][i], points_.coordinates_[k][j], domains_[k].min, domains_[k].max)};
       qSum += std::pow(delta_xk, 2);
     }
 
