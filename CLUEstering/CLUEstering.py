@@ -14,6 +14,13 @@ def sign():
     else:
         return -1
 
+def normalizeData(data, mean, std):
+    data -= mean
+    if std != 0:
+        data /= std
+
+    return data
+
 def makeBlobs(nSamples, Ndim, nBlobs=4, mean=0, sigma=0.5, x_max=15, y_max=15):
     """
     Returns a test dataframe containing randomly generated 2-dimensional or 3-dimensional blobs. 
@@ -115,24 +122,23 @@ class clusterer:
                 # Save the original coordinates before any normalization
                 self.original_coords = np.copy(self.coords) 
 
-                # Calculate mean and standard deviations for all the coordinates
+                # Calculate mean and standard deviations in all the coordinates
                 means = np.zeros(shape=(self.Ndim, 1))
-                covariance_matrix = np.cov(self.coords)
+                st_deviations = np.zeros(shape=(self.Ndim, 1))
                 for dim in range(self.Ndim):
                     means[dim] = np.mean(self.coords[dim])
+                    st_deviations[dim] = np.std(self.coords[dim])
                 
                 # Normalize all the coordinates as x'_j = (x_j - mu_j) / sigma_j
                 for dim in range(self.Ndim):
-                    self.coords[dim] = (self.coords[dim] - means[dim])
-                    if sqrt(covariance_matrix[dim][dim]) != 0:
-                        self.coords[dim] /= sqrt(covariance_matrix[dim][dim])
+                    self.coords[dim] = normalizeData(self.coords[dim], means[dim], st_deviations[dim])
 
                 # Construct the domains of all the coordinates
                 empty_domain = Algo.domain_t()
                 self.domain_ranges = [empty_domain for i in range(self.Ndim)]
                 for kwarg in kwargs:
-                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(kwargs[kwarg][0], kwargs[kwarg][1])
-
+                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(normalizeData(kwargs[kwarg][0], means[int(kwarg[1])], st_deviations[int(kwarg[1])]), 
+                                                                      normalizeData(kwargs[kwarg][1], means[int(kwarg[1])], st_deviations[int(kwarg[1])]))
             except ValueError as ve:
                 print(ve)
                 exit()
@@ -154,22 +160,21 @@ class clusterer:
 
                 # Calculate mean and standard deviations in all the coordinates
                 means = np.zeros(shape=(self.Ndim, 1))
-                covariance_matrix = np.cov(self.coords)
+                st_deviations = np.zeros(shape=(self.Ndim, 1))
                 for dim in range(self.Ndim):
                     means[dim] = np.mean(self.coords[dim])
+                    st_deviations[dim] = np.std(self.coords[dim])
                 
                 # Normalize all the coordinates as x'_j = (x_j - mu_j) / sigma_j
                 for dim in range(self.Ndim):
-                    self.coords[dim] = (self.coords[dim] - means[dim])
-                    if sqrt(covariance_matrix[dim][dim]) != 0:
-                        self.coords[dim] /= sqrt(covariance_matrix[dim][dim])
+                    self.coords[dim] = normalizeData(self.coords[dim], means[dim], st_deviations[dim])
 
                 # Construct the domains of all the coordinates
                 empty_domain = Algo.domain_t()
                 self.domain_ranges = [empty_domain for i in range(self.Ndim)]
                 for kwarg in kwargs:
-                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(kwargs[kwarg][0], kwargs[kwarg][1])
-
+                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(normalizeData(kwargs[kwarg][0], means[int(kwarg[1])], st_deviations[int(kwarg[1])]), 
+                                                                      normalizeData(kwargs[kwarg][1], means[int(kwarg[1])], st_deviations[int(kwarg[1])]))
             except ValueError as ve:
                 print(ve)
                 exit()
@@ -224,21 +229,21 @@ class clusterer:
 
                 # Calculate mean and standard deviations in all the coordinates
                 means = np.zeros(shape=(self.Ndim, 1))
-                covariance_matrix = np.cov(self.coords)
+                st_deviations = np.zeros(shape=(self.Ndim, 1))
                 for dim in range(self.Ndim):
                     means[dim] = np.mean(self.coords[dim])
+                    st_deviations[dim] = np.std(self.coords[dim])
                 
                 # Normalize all the coordinates as x'_j = (x_j - mu_j) / sigma_j
                 for dim in range(self.Ndim):
-                    self.coords[dim] = (self.coords[dim] - means[dim])
-                    if sqrt(covariance_matrix[dim][dim]) != 0:
-                        self.coords[dim] /= sqrt(covariance_matrix[dim][dim])
+                    self.coords[dim] = normalizeData(self.coords[dim], means[dim], st_deviations[dim])
 
                 # Construct the domains of all the coordinates
                 empty_domain = Algo.domain_t()
                 self.domain_ranges = [empty_domain for i in range(self.Ndim)]
                 for kwarg in kwargs:
-                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(kwargs[kwarg][0], kwargs[kwarg][1])
+                    self.domain_ranges[int(kwarg[1])] = Algo.domain_t(normalizeData(kwargs[kwarg][0], means[int(kwarg[1])], st_deviations[int(kwarg[1])]), 
+                                                                      normalizeData(kwargs[kwarg][1], means[int(kwarg[1])], st_deviations[int(kwarg[1])]))
             except ValueError as ve:
                 print(ve)
                 exit()
@@ -455,7 +460,7 @@ if __name__ == "__main__":
     # Test points with angles distributed at opposite extremes of the domain
     # This test assures that the code works for data with periodic coordinates 
     b = clusterer(0.2, 1, 1.5)
-    b.readData('../opposite_angles.csv', x1=(-1.05, 1.05))
+    b.readData('../opposite_angles.csv', x1=(-pi, pi))
     b.inputPlotter()
     b.runCLUE()
     b.clusterPlotter(x0=lambda x: x[0]*np.cos(x[1]),
@@ -479,7 +484,7 @@ if __name__ == "__main__":
     new_df = pd.DataFrame(new_data)
 
     # Test circles dataset
-    c = clusterer(1 ,5 ,1.7)
+    c = clusterer(1, 5, 5)
     c.readData(new_df, x1=(-pi, pi))
     c.inputPlotter(x0=lambda x: x[0]*np.cos(x[1]),
                    x1=lambda x: x[0]*np.sin(x[1]))
