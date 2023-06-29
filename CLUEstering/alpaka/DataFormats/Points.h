@@ -12,7 +12,7 @@ template <uint8_t Ndim>
 struct Points {
   Points() = default;
 
-  std::vector<std::array<float, 3>> coordinates_;
+  std::vector<std::array<float, Ndim>> coordinates_;
   std::vector<float> weight;
   std::vector<float> rho;
   std::vector<float> delta;
