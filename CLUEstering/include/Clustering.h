@@ -29,6 +29,7 @@ struct domain_t {
 template <uint8_t Ndim>
 class ClusteringAlgo {
 public:
+  ClusteringAlgo() = default;
   ClusteringAlgo(float dc, float rhoc, float outlierDeltaFactor, int pPBin, std::vector<domain_t> domains) {
     dc_ = dc;
     rhoc_ = rhoc;

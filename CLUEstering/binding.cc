@@ -1,3 +1,4 @@
+
 #include <vector>
 
 #include "include/Clustering.h"
@@ -8,148 +9,62 @@
 #include <pybind11/functional.h>
 #include <stdint.h>
 
-/////////////////////
-//////  Run.h  //////
-/////////////////////
-std::vector<std::vector<int>> run1(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<1> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
+using run_t = std::function<std::vector<std::vector<int>>(float,
+                                                          float,
+                                                          float,
+                                                          int,
+                                                          const std::vector<domain_t> &,
+                                                          const kernel &,
+                                                          const std::vector<std::vector<float>> &,
+                                                          const std::vector<float> &)>;
 
-  return algo.makeClusters(ker);
+template <uint16_t n_dim>
+std::unordered_map<uint16_t, run_t> generate_run_map() {
+  std::unordered_map<uint16_t, run_t> run_map;
+  auto run_function = [](float dc,
+                         float rhoc,
+                         float odf,
+                         int ppbin,
+                         const std::vector<domain_t> &domains,
+                         const kernel &ker,
+                         const std::vector<std::vector<float>> &coords,
+                         const std::vector<float> &weight) {
+    ClusteringAlgo<n_dim> algo(dc, rhoc, odf, ppbin, domains);
+    algo.setPoints(coords[0].size(), coords, weight);
+
+    return algo.makeClusters(ker);
+  };
+  run_map[n_dim] = run_function;
+
+  return generate_run_map<n_dim - 1>(run_map);
 }
 
-std::vector<std::vector<int>> run2(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<2> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
+template <uint16_t n_dim>
+std::unordered_map<uint16_t, run_t> generate_run_map(
+    std::unordered_map<uint16_t, run_t> &run_map) {
+  if constexpr (n_dim == 0) {
+    return run_map;
+  } else {
+    auto run_function = [](float dc,
+                           float rhoc,
+                           float odf,
+                           int ppbin,
+                           const std::vector<domain_t> &domains,
+                           const kernel &ker,
+                           const std::vector<std::vector<float>> &coords,
+                           const std::vector<float> &weight) {
+      ClusteringAlgo<n_dim> algo(dc, rhoc, odf, ppbin, domains);
+      algo.setPoints(coords[0].size(), coords, weight);
 
-  return algo.makeClusters(ker);
+      return algo.makeClusters(ker);
+    };
+    run_map[n_dim] = run_function;
+
+    return generate_run_map<n_dim - 1>(run_map);
+  }
 }
 
-std::vector<std::vector<int>> run3(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<3> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run4(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<4> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run5(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<5> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run6(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<6> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run7(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<7> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run8(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<8> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run9(float dc,
-                                   float rhoc,
-                                   float outlier,
-                                   int pPBin,
-                                   std::vector<domain_t> domains,
-                                   kernel const &ker,
-                                   std::vector<std::vector<float>> const &coordinates,
-                                   std::vector<float> const &weight) {
-  ClusteringAlgo<9> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
-
-std::vector<std::vector<int>> run10(float dc,
-                                    float rhoc,
-                                    float outlier,
-                                    int pPBin,
-                                    std::vector<domain_t> domains,
-                                    kernel const &ker,
-                                    std::vector<std::vector<float>> const &coordinates,
-                                    std::vector<float> const &weight) {
-  ClusteringAlgo<10> algo(dc, rhoc, outlier, pPBin, domains);
-  algo.setPoints(coordinates[0].size(), coordinates, weight);
-
-  return algo.makeClusters(ker);
-}
+std::unordered_map<uint16_t, run_t> run_map = generate_run_map<20>();
 
 std::vector<std::vector<int>> mainRun(float dc,
                                       float rhoc,
@@ -161,42 +76,7 @@ std::vector<std::vector<int>> mainRun(float dc,
                                       std::vector<float> const &weight,
                                       int Ndim) {
   // Running the clustering algorithm //
-  switch (Ndim) {
-    [[unlikely]] case (1) :
-      return run1(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[likely]] case (2) :
-      return run2(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[likely]] case (3) :
-      return run3(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (4) :
-      return run4(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (5) :
-      return run5(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (6) :
-      return run6(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (7) :
-      return run7(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (8) :
-      return run8(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (9) :
-      return run9(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] case (10) :
-      return run10(dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
-      break;
-    [[unlikely]] default:
-      std::cout << "This library only works up to 10 dimensions\n";
-      return {};
-      break;
-  }
+  return run_map[2](dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
 }
 
 //////////////////////////////
@@ -205,13 +85,9 @@ std::vector<std::vector<int>> mainRun(float dc,
 PYBIND11_MODULE(CLUEsteringCPP, m) {
   m.doc() = "Binding for CLUE";
 
-  pybind11::class_<domain_t>(m, "domain_t")
-	  .def(pybind11::init<>())
-	  .def(pybind11::init<float,float>());
+  pybind11::class_<domain_t>(m, "domain_t").def(pybind11::init<>()).def(pybind11::init<float, float>());
 
-  pybind11::class_<kernel>(m, "kernel")
-	  .def(pybind11::init<>())
-	  .def("operator()", &kernel::operator());
+  pybind11::class_<kernel>(m, "kernel").def(pybind11::init<>()).def("operator()", &kernel::operator());
   pybind11::class_<flatKernel, kernel>(m, "flatKernel")
       .def(pybind11::init<float>())
       .def("operator()", &flatKernel::operator());
@@ -226,4 +102,8 @@ PYBIND11_MODULE(CLUEsteringCPP, m) {
       .def("operator()", &customKernel::operator());
 
   m.def("mainRun", &mainRun, "mainRun");
+}
+
+int main() {
+  auto obj = run_map[15];
 }

@@ -296,9 +296,9 @@ class clusterer:
                                      + " at least one coordinate and the energy.")
                 self.clust_data.coords = np.asarray(input_data[:-1])
                 self.clust_data.weight = np.asarray(input_data[-1])
-                if len(input_data[:-1]) > 10:
-                    raise ValueError("Error: inadequate data\nThe maximum number of"
-                                     + " dimensions supported is 10.")
+                # if len(input_data[:-1]) > 10:
+                #     raise ValueError("Error: inadequate data\nThe maximum number of"
+                #                      + " dimensions supported is 10.")
                 self.clust_data.n_dim = len(self.clust_data.coords)
                 self.clust_data.n_points = self.clust_data.weight.size
 
@@ -332,9 +332,9 @@ class clusterer:
                 if len(df_.columns) < 2:
                     raise ValueError("Error: inadequate data\nThe data must contain"
                                      + " at least one coordinate and the energy.")
-                if len(coordinate_columns) > 10:
-                    raise ValueError("Error: inadequate data\nThe maximum number of"
-                                     + " dimensions supported is 10.")
+                # if len(coordinate_columns) > 10:
+                #     raise ValueError("Error: inadequate data\nThe maximum number of"
+                #                      + " dimensions supported is 10.")
                 self.clust_data.n_dim = len(coordinate_columns)
                 self.clust_data.n_points = len(df_.index)
                 self.clust_data.coords = np.zeros(shape=(self.clust_data.n_dim,
@@ -787,6 +787,8 @@ class clusterer:
                 ax_.set_zticks(z_ticks)
 
             plt.show()
+        else:
+            print("You can't plot in more than 3 dimensions.\n")
 
     def to_csv(self, output_folder: str, file_name: str) -> None:
         """

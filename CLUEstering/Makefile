@@ -1,7 +1,7 @@
 
 # C++ compiler
 export CXX := g++
-CXXFLAGS = -std=c++17 -O3
+CXXFLAGS = -std=c++20 -O3
 
 # Binding flags
 PYTHON_VERS := $(shell python3 -V | awk -F '' '{print $$8$$9$$10$$11}' | sed 's/\.//g'  )
