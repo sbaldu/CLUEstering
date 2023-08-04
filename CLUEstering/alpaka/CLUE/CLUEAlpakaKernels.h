@@ -50,7 +50,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                         const VecArray<float, Ndim>& coords_i,
                                         float* rho_i,
                                         float dc,
-                                        int point_id) {
+                                        uint32_t point_id) {
     if constexpr (N_ == 0) {
       int binId{tiles->getGlobalBinByBin(acc, base_vec)};
       // get the size of this bin
@@ -91,7 +91,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   PointsView<Ndim>* dev_points,
                                   float dc,
                                   uint32_t n_points) const {
-      const float dc_squared{dc * dc};
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         float rho_i{0.f};
         VecArray<float, Ndim> coords_i{dev_points->coords[i]};
@@ -110,7 +109,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         VecArray<VecArray<uint32_t, 2>, Ndim> search_box;
         dev_tiles->searchBox(acc, searchbox_extremes, &search_box);
 
-        VecArray<uint32_t, Ndim> base_vec;
+        VecArray<uint32_t, Ndim> base_vec{};
         for_recursion<TAcc, Ndim, Ndim>(
             acc, base_vec, search_box, dev_tiles, dev_points, coords_i, &rho_i, dc, i);
       });
@@ -200,7 +199,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         VecArray<VecArray<uint32_t, 2>, Ndim> search_box;
         dev_tiles->searchBox(acc, searchbox_extremes, &search_box);
 
-        VecArray<uint32_t, Ndim> base_vec;
+        VecArray<uint32_t, Ndim> base_vec{};
         for_recursion_nearest_higher<TAcc, Ndim, Ndim>(acc,
                                                        base_vec,
                                                        search_box,
