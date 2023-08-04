@@ -19,6 +19,31 @@ using run_t = std::function<std::vector<std::vector<int>>(float,
                                                           const std::vector<float> &)>;
 
 template <uint16_t n_dim>
+std::unordered_map<uint16_t, run_t> generate_run_map(
+    std::unordered_map<uint16_t, run_t>& run_map) {
+  if constexpr (n_dim == 0) {
+    return run_map;
+  } else {
+    auto run_function = [](float dc,
+                           float rhoc,
+                           float odf,
+                           int ppbin,
+                           const std::vector<domain_t> &domains,
+                           const kernel& ker,
+                           const std::vector<std::vector<float>>& coords,
+                           const std::vector<float>& weight) {
+      ClusteringAlgo<n_dim> algo(dc, rhoc, odf, ppbin, domains);
+      algo.setPoints(coords[0].size(), coords, weight);
+
+      return algo.makeClusters(ker);
+    };
+    run_map[n_dim] = run_function;
+
+    return generate_run_map<n_dim - 1>(run_map);
+  }
+}
+
+template <uint16_t n_dim>
 std::unordered_map<uint16_t, run_t> generate_run_map() {
   std::unordered_map<uint16_t, run_t> run_map;
   auto run_function = [](float dc,
@@ -39,31 +64,6 @@ std::unordered_map<uint16_t, run_t> generate_run_map() {
   return generate_run_map<n_dim - 1>(run_map);
 }
 
-template <uint16_t n_dim>
-std::unordered_map<uint16_t, run_t> generate_run_map(
-    std::unordered_map<uint16_t, run_t> &run_map) {
-  if constexpr (n_dim == 0) {
-    return run_map;
-  } else {
-    auto run_function = [](float dc,
-                           float rhoc,
-                           float odf,
-                           int ppbin,
-                           const std::vector<domain_t> &domains,
-                           const kernel &ker,
-                           const std::vector<std::vector<float>> &coords,
-                           const std::vector<float> &weight) {
-      ClusteringAlgo<n_dim> algo(dc, rhoc, odf, ppbin, domains);
-      algo.setPoints(coords[0].size(), coords, weight);
-
-      return algo.makeClusters(ker);
-    };
-    run_map[n_dim] = run_function;
-
-    return generate_run_map<n_dim - 1>(run_map);
-  }
-}
-
 std::unordered_map<uint16_t, run_t> run_map = generate_run_map<20>();
 
 std::vector<std::vector<int>> mainRun(float dc,
@@ -71,13 +71,14 @@ std::vector<std::vector<int>> mainRun(float dc,
                                       float outlier,
                                       int pPBin,
                                       std::vector<domain_t> domains,
-                                      kernel const &ker,
-                                      std::vector<std::vector<float>> const &coords,
-                                      std::vector<float> const &weight,
+                                      const kernel& ker,
+                                      const std::vector<std::vector<float>>& coords,
+                                      const std::vector<float>& weight,
                                       int Ndim) {
   // Running the clustering algorithm //
-  return run_map[2](dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
+  return run_map[Ndim](dc, rhoc, outlier, pPBin, domains, ker, coords, weight);
 }
+
 
 //////////////////////////////
 //////  Binding module  //////
@@ -102,8 +103,4 @@ PYBIND11_MODULE(CLUEsteringCPP, m) {
       .def("operator()", &customKernel::operator());
 
   m.def("mainRun", &mainRun, "mainRun");
-}
-
-int main() {
-  auto obj = run_map[15];
 }
