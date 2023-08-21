@@ -60,6 +60,14 @@ namespace cms::alpakatools {
 	std::cout << "from inside the size is " << cms::alpakatools::devices<alpaka::Pltf<TDevice>>.size() << std::endl;
 	std::cout << "from inside the index is " << index << std::endl;
 	std::cout << "ther other size is " << cms::alpakatools::devices<alpaka::DevCudaRt>.size() << std::endl;
+
+	std::vector<TDevice> devs = alpaka::getDevs<alpaka::Pltf<TDevice>>();
+	std::cout << devs.size() << std::endl;
+
+	for (const auto& device : devs) {
+	  std::cout << alpaka::getName(device) << std::endl;
+	}
+
     assert(index < cms::alpakatools::devices<alpaka::Pltf<TDevice>>.size());
 
     // the public interface is thread safe
