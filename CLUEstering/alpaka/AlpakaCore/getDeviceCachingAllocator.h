@@ -20,7 +20,6 @@ namespace cms::alpakatools {
       using Allocator = CachingAllocator<TDevice, TQueue>;
       auto const& devices = cms::alpakatools::enumerate<alpaka::Pltf<TDevice>>();
       auto const size = devices.size();
-	  std::cout << "size inside allocator " << size << std::endl;
 
       // allocate the storage for the objects
       auto ptr = std::allocator<Allocator>().allocate(size);
@@ -58,10 +57,6 @@ namespace cms::alpakatools {
     size_t const index = getDeviceIndex(device);
 
 	std::vector<TDevice> devs = alpaka::getDevs<alpaka::Pltf<TDevice>>();
-
-	for (const auto& device : devs) {
-	  std::cout << alpaka::getName(device) << std::endl;
-	}
 
     assert(index < cms::alpakatools::enumerate<alpaka::Pltf<TDevice>>().size());
 
