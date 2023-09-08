@@ -39,6 +39,7 @@ CUDA_BINDING_FLAGS := -shared --compiler-options '-fPIC' -I$(PYTHON_PATH) -I$(PY
 
 # Backend module names
 KERNELS_MODULE_NAME := CLUE_Convolutional_Kernels.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
+DOMAINS_MODULE_NAME := CLUE_Domains.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
 SERIAL_MODULE_NAME := CLUE_CPU_Serial.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
 TBB_MODULE_NAME := CLUE_CPU_TBB.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
 CUDA_MODULE_NAME := CLUE_GPU_CUDA.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
@@ -46,6 +47,7 @@ CUDA_MODULE_NAME := CLUE_GPU_CUDA.cpython-$(PYTHON_VERS)-x86_64-linux-gnu.so
 all:
 	$(CXX) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_SERIAL_FLAGS) $(BINDING_FLAGS) binding_cpu.cc -o $(SERIAL_MODULE_NAME)
 	$(CXX) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_SERIAL_FLAGS) $(BINDING_FLAGS) binding_kernels.cc -o $(KERNELS_MODULE_NAME)
+	$(CXX) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_SERIAL_FLAGS) $(BINDING_FLAGS) binding_domains.cc -o $(DOMAINS_MODULE_NAME)
 	$(CXX) $(CXX_FLAGS) $(TBB_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_TBB_FLAGS) $(BINDING_FLAGS) binding_cpu_tbb.cc -o $(TBB_MODULE_NAME)
 	$(CUDA) $(CUDA_FLAGS) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_CUDA_FLAGS) $(CUDA_BINDING_FLAGS) binding_gpu_cuda.cc -o $(CUDA_MODULE_NAME)
 
@@ -60,3 +62,6 @@ cuda:
 
 kernel:
 	$(CXX) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_SERIAL_FLAGS) $(BINDING_FLAGS) binding_kernels.cc -o $(KERNELS_MODULE_NAME)
+
+domain:
+	$(CXX) $(CXX_FLAGS) -I$(BOOST_PATH) -I$(ALPAKA_PATH) $(ALPAKA_SERIAL_FLAGS) $(BINDING_FLAGS) binding_domains.cc -o $(DOMAINS_MODULE_NAME)
