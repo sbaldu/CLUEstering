@@ -31,8 +31,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                      std::vector<std::vector<float>> const &coordinates,
                                      std::vector<float> const &weight,
 									 const FlatKernel& kernel,
+									 const std::vector<domain_t>& domains,
 									 Queue queue_) {
-    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, queue_);
+    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, domains, queue_);
 
 	// Create the host and device points
 	Points<2> h_points(coordinates, weight);
@@ -48,8 +49,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                      std::vector<std::vector<float>> const &coordinates,
                                      std::vector<float> const &weight,
 									 const ExponentialKernel& kernel,
+									 const std::vector<domain_t>& domains,
 									 Queue queue_) {
-    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, queue_);
+    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, domains, queue_);
 
 	// Create the host and device points
 	Points<2> h_points(coordinates, weight);
@@ -65,8 +67,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                      std::vector<std::vector<float>> const &coordinates,
                                      std::vector<float> const &weight,
 									 const GaussianKernel& kernel,
+									 const std::vector<domain_t>& domains,
 									 Queue queue_) {
-    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, queue_);
+    CLUEAlgoAlpaka<Acc1D, 2> algo(dc, rhoc, outlier, pPBin, domains, queue_);
 
 	// Create the host and device points
 	Points<2> h_points(coordinates, weight);

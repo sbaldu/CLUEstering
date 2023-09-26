@@ -20,6 +20,7 @@ namespace alpaka_serial_sync {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const FlatKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
@@ -41,7 +42,7 @@ namespace alpaka_serial_sync {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
@@ -81,6 +82,7 @@ namespace alpaka_serial_sync {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const ExponentialKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
@@ -102,7 +104,7 @@ namespace alpaka_serial_sync {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
@@ -142,6 +144,7 @@ namespace alpaka_serial_sync {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const GaussianKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
@@ -163,7 +166,7 @@ namespace alpaka_serial_sync {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_); */
@@ -207,6 +210,7 @@ namespace alpaka_serial_sync {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const FlatKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
     m.def("mainRun",
@@ -217,6 +221,7 @@ namespace alpaka_serial_sync {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const ExponentialKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
     m.def("mainRun",
@@ -227,6 +232,7 @@ namespace alpaka_serial_sync {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const GaussianKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
   }

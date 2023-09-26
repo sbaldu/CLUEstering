@@ -22,12 +22,13 @@ namespace alpaka_cuda_async {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const FlatKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
-	std::vector<Device> devices = alpaka::getDevs<Platform>();
+    std::vector<Device> devices = alpaka::getDevs<Platform>();
 
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
-	/* initialise<Platform>(); */
+    /* initialise<Platform>(); */
 
     // Create the queue
     Queue queue_(dev_acc);
@@ -47,7 +48,7 @@ namespace alpaka_cuda_async {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
@@ -87,6 +88,7 @@ namespace alpaka_cuda_async {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const ExponentialKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
@@ -108,7 +110,7 @@ namespace alpaka_cuda_async {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
@@ -148,6 +150,7 @@ namespace alpaka_cuda_async {
                                         const std::vector<std::vector<float>>& coords,
                                         const std::vector<float>& weights,
                                         const GaussianKernel& kernel,
+                                        const std::vector<domain_t>& domains,
                                         int Ndim) {
     auto const dev_acc = alpaka::getDevByIdx<Acc1D>(0u);
 
@@ -169,7 +172,7 @@ namespace alpaka_cuda_async {
         /* return run1(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
         break;
       [[likely]] case (2) :
-        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, queue_);
+        return run2(dc, rhoc, outlier, pPBin, coords, weights, kernel, domains, queue_);
         break;
       [[likely]] case (3) :
         /* return run3(dc, rhoc, outlier, pPBin, coords, weights, queue_); */
@@ -213,6 +216,7 @@ namespace alpaka_cuda_async {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const FlatKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
     m.def("mainRun",
@@ -223,6 +227,7 @@ namespace alpaka_cuda_async {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const ExponentialKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
     m.def("mainRun",
@@ -233,7 +238,8 @@ namespace alpaka_cuda_async {
                                   const std::vector<std::vector<float>>&,
                                   const std::vector<float>&,
                                   const GaussianKernel&,
+                                  const std::vector<domain_t>&,
                                   int>(&mainRun),
           "mainRun");
   }
-};  // namespace alpaka_tbb_async
+};  // namespace alpaka_cuda_async
