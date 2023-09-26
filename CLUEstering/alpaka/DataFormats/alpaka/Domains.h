@@ -29,9 +29,16 @@ private:
   VecArray<domain_t, Ndim> domains_;
 
 public:
+  domain_ranges() = delete;
   domain_ranges(const std::array<domain_t, Ndim>& domains) {
     for (int dim{}; dim < Ndim; ++dim) {
-      domain_t temp(domains[dim][0], domains[dim][1]);
+      domain_t temp(domains[dim].min(), domains[dim].max());
+      domains_.push_back_unsafe(temp);
+    }
+  }
+  domain_ranges(const std::vector<domain_t>& domains) {
+    for (size_t dim{}; dim < domains.size(); ++dim) {
+      domain_t temp(domains[dim].min(), domains[dim].max());
       domains_.push_back_unsafe(temp);
     }
   }
