@@ -21,6 +21,19 @@ public:
   domain_t(float min, float max) : m_min{min}, m_max{max} {}
   float min() const { return m_min; }
   float max() const { return m_max; }
+
+  bool is_bounded() const {
+    return m_min != -std::numeric_limits<float>::max() && m_max != std::numeric_limits<float>::max();
+  }
+  bool has_lower_bound() const {
+    return m_min != -std::numeric_limits<float>::max();
+  }
+  bool has_upper_bound() const {
+    return m_max != std::numeric_limits<float>::max();
+  }
+  bool is_unbounded() const {
+    return m_min == -std::numeric_limits<float>::max() && m_max == std::numeric_limits<float>::max();
+  }
 };
 
 template <uint8_t Ndim>
