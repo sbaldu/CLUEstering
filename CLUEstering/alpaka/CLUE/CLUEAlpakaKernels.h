@@ -8,6 +8,7 @@
 #include "../DataFormats/alpaka/PointsAlpaka.h"
 #include "../DataFormats/alpaka/TilesAlpaka.h"
 #include "../DataFormats/alpaka/AlpakaVecArray.h"
+#include "../DataFormats/alpaka/Domains.h"
 #include "ConvolutionalKernel.h"
 
 using cms::alpakatools::VecArray;
@@ -49,7 +50,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                         TilesAlpaka<Ndim>* tiles,
                                         PointsView<Ndim>* dev_points,
                                         const KernelType& kernel,
-                                        /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
+                                        const VecArray<VecArray<uint32_t, 2>, Ndim>& domain_bin_extremes,
                                         const VecArray<float, Ndim>& coords_i,
                                         float* rho_i,
                                         float dc,
@@ -81,43 +82,76 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       for (unsigned int i{search_box[search_box.capacity() - N_][0]};
            i <= search_box[search_box.capacity() - N_][1];
            ++i) {
+        if (i == domain_bin_extremes[0][1]) {
+		  i = domain_bin_extremes[0][0];
+        }
         base_vec[base_vec.capacity() - N_] = i;
-        for_recursion<TAcc, Ndim, N_ - 1>(
-            acc, base_vec, search_box, tiles, dev_points, kernel, coords_i, rho_i, dc, point_id);
+        for_recursion<TAcc, Ndim, N_ - 1>(acc,
+                                          base_vec,
+                                          search_box,
+                                          tiles,
+                                          dev_points,
+                                          kernel,
+                                          domain_bin_extremes,
+                                          coords_i,
+                                          rho_i,
+                                          dc,
+                                          point_id);
       }
     }
   }
 
+  template <uint8_t Ndim>
   struct KernelCalculateLocalDensity {
-    template <typename TAcc, uint8_t Ndim, typename KernelType>
+    template <typename TAcc, typename KernelType>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   TilesAlpaka<Ndim>* dev_tiles,
                                   PointsView<Ndim>* dev_points,
                                   const KernelType& kernel,
-                                  /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
+                                  const VecArray<domain_t, Ndim>& domains,
                                   float dc,
                                   uint32_t n_points) const {
+	  printf("the left ext of dim %i is %.3f\n", 0, domains[0].min());
+	  printf("the right ext of dim %i is %.3f\n", 0, domains[0].max());
+	  printf("the left ext of dim %i is %.3f\n", 1, domains[1].min());
+	  printf("the right ext of dim %i is %.3f\n", 1, domains[1].max());
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         float rho_i{0.f};
         VecArray<float, Ndim> coords_i{dev_points->coords[i]};
 
         // Get the extremes of the search box
         VecArray<VecArray<float, 2>, Ndim> searchbox_extremes;
+        VecArray<VecArray<uint32_t, 2>, Ndim> domain_bin_extremes;
         for (int dim{}; dim != Ndim; ++dim) {
           VecArray<float, 2> dim_extremes;
           dim_extremes.push_back_unsafe(coords_i[dim] - dc);
           dim_extremes.push_back_unsafe(coords_i[dim] + dc);
 
+		  // If the coordinates are periodic and the extremes overflow the domains, we
+		  // shift them to the opposite side
+		  if (domains[dim].has_lower_bound() && coords_i[dim] - dc < domains[dim].min()) {
+			dim_extremes[0] = domains[dim].max() - dc;
+		  }
+		  if (domains[dim].has_upper_bound() && coords_i[dim] + dc > domains[dim].max()) {
+			dim_extremes[1] = domains[dim].min() + dc;
+		  }
+
           searchbox_extremes.push_back_unsafe(dim_extremes);
+
+		  domain_bin_extremes[dim][0] = dev_tiles->getBin(acc, domains[dim].min(), dim);
+		  domain_bin_extremes[dim][1] = dev_tiles->getBin(acc, domains[dim].max(), dim);
+		  /* printf("the left bin of dim %i is %i\n", dim, domain_bin_extremes[dim][0]); */
+		  /* printf("the right bin of dim %i is %i\n", dim, domain_bin_extremes[dim][1]); */
         }
 
         // Calculate the search box
         VecArray<VecArray<uint32_t, 2>, Ndim> search_box;
         dev_tiles->searchBox(acc, searchbox_extremes, &search_box);
 
+
         VecArray<uint32_t, Ndim> base_vec;
-        for_recursion<TAcc, Ndim, Ndim>(
-            acc, base_vec, search_box, dev_tiles, dev_points, kernel, coords_i, &rho_i, dc, i);
+        /* for_recursion<TAcc, Ndim, Ndim>( */
+        /*     acc, base_vec, search_box, dev_tiles, dev_points, kernel, domain_bin_extremes, coords_i, &rho_i, dc, i); */
 
         dev_points->rho[i] = rho_i;
       });
@@ -125,19 +159,18 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   };
 
   template <typename TAcc, uint8_t Ndim, uint8_t N_>
-  ALPAKA_FN_HOST_ACC void for_recursion_nearest_higher(
-      const TAcc& acc,
-      VecArray<uint32_t, Ndim>& base_vec,
-      const VecArray<VecArray<uint32_t, 2>, Ndim>& s_box,
-      TilesAlpaka<Ndim>* tiles,
-      PointsView<Ndim>* dev_points,
-      /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
-      const VecArray<float, Ndim>& coords_i,
-      float rho_i,
-      float* delta_i,
-      int* nh_i,
-      float dm_sq,
-      uint32_t point_id) {
+  ALPAKA_FN_HOST_ACC void for_recursion_nearest_higher(const TAcc& acc,
+                                                       VecArray<uint32_t, Ndim>& base_vec,
+                                                       const VecArray<VecArray<uint32_t, 2>, Ndim>& s_box,
+                                                       TilesAlpaka<Ndim>* tiles,
+                                                       PointsView<Ndim>* dev_points,
+                                                       const VecArray<domain_t, Ndim>& domains,
+                                                       const VecArray<float, Ndim>& coords_i,
+                                                       float rho_i,
+                                                       float* delta_i,
+                                                       int* nh_i,
+                                                       float dm_sq,
+                                                       uint32_t point_id) {
     if constexpr (N_ == 0) {
       int binId{tiles->getGlobalBinByBin(acc, base_vec)};
       // get the size of this bin
@@ -173,18 +206,29 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     } else {
       for (unsigned int i{s_box[s_box.capacity() - N_][0]}; i <= s_box[s_box.capacity() - N_][1]; ++i) {
         base_vec[base_vec.capacity() - N_] = i;
-        for_recursion_nearest_higher<TAcc, Ndim, N_ - 1>(
-            acc, base_vec, s_box, tiles, dev_points, coords_i, rho_i, delta_i, nh_i, dm_sq, point_id);
+        for_recursion_nearest_higher<TAcc, Ndim, N_ - 1>(acc,
+                                                         base_vec,
+                                                         s_box,
+                                                         tiles,
+                                                         dev_points,
+                                                         domains,
+                                                         coords_i,
+                                                         rho_i,
+                                                         delta_i,
+                                                         nh_i,
+                                                         dm_sq,
+                                                         point_id);
       }
     }
   }
 
+  template <uint8_t Ndim>
   struct KernelCalculateNearestHigher {
-    template <typename TAcc, uint8_t Ndim>
+    template <typename TAcc>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   TilesAlpaka<Ndim>* dev_tiles,
                                   PointsView<Ndim>* dev_points,
-                                  /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
+                                  const VecArray<domain_t, Ndim>& domains,
                                   float outlier_delta_factor,
                                   float dc,
                                   uint32_t n_points) const {
@@ -216,6 +260,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                        search_box,
                                                        dev_tiles,
                                                        dev_points,
+                                                       domains,
                                                        coords_i,
                                                        rho_i,
                                                        &delta_i,
