@@ -1,3 +1,5 @@
+#!/usr/bin/python3.11
+
 """
 Density based clustering algorithm developed at CERN.
 """
@@ -15,7 +17,7 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 import CLUE_Convolutional_Kernels as clue_kernels
 import CLUE_CPU_Serial as cpu_serial
-# import CLUE_CPU_TBB as cpu_tbb
+import CLUE_CPU_TBB as cpu_tbb
 import CLUE_GPU_CUDA as gpu_cuda
 
 def test_blobs(n_samples: int, n_dim: int , n_blobs: int = 4, mean: float = 0,
@@ -153,32 +155,6 @@ class cluster_properties:
 
         return True
 
-# def _flat(alpha: float) -> types.FunctionType:
-#     def _operator(dist: float, i: int, j: int):
-#         if i == j:
-#             return 1.
-#         else:
-#             return alpha
-
-#     return _operator
-
-# def _exp(avg: float, amplitude: float) -> types.FunctionType:
-#     def _operator(dist: float, i: int, j: int) -> float:
-#         if i == j:
-#             return 1.
-#         else:
-#             return amplitude * np.exp(-avg * dist)
-
-#     return _operator
-
-# def _gaus(avg: float, std: float, amplitude: float) -> types.FunctionType:
-#     def _operator(dist: float, i: int, j: int) -> float:
-#         if i == j:
-#             return 1.
-#         else:
-#             return amplitude * np.exp(-(dist - avg)**2 / (2 * std**2))
-
-#     return _operator
 
 class clusterer:
     """
@@ -205,7 +181,7 @@ class clusterer:
         to find potential seeds the size of the search box is given by dm = dc_ * outlier.
     ppbin : int
         Average number of points to be found in each tile.
-    kernel : Algo.kernel
+    kernel : clue_kernels.kernel
         Convolution kernel used to calculate the local density of the points.
     clust_data : clustering_data
         Container of the data used by the clustering algorithm.
@@ -365,7 +341,8 @@ class clusterer:
             self.scaler.fit_transform(self.clust_data.coords.T[dim].reshape(-1, 1)).reshape(1, -1)[0]
 
     def read_data(self,
-                  input_data: Union[pd.DataFrame,str,dict,list,np.ndarray]) -> None:
+                  input_data: Union[pd.DataFrame,str,dict,list,np.ndarray],
+                  **kwargs: tuple) -> None:
         """
         Reads the data in input and fills the class members containing the coordinates
         of the points, the energy weight, the number of dimensions and the number of points.
@@ -394,7 +371,7 @@ class clusterer:
             Point coordinates in the original coordinate system used by the user.
         weight : ndarray
             Weights of all the points.
-        domain_ranges : list of Algo.domain_t
+        domain_ranges : list of clue_domains.domain_t
             List of the domains for each coordinate.
         n_dim : int
             The number of dimensions in which we are calculating the clusters.
@@ -474,7 +451,7 @@ class clusterer:
 
         Modified attributes
         -------------------
-        kernel : Algo.kernel
+        kernel : clue_kernels.kernel
 
         Return
         ------
@@ -485,21 +462,17 @@ class clusterer:
             if len(parameters) != 1:
                 raise ValueError("Wrong number of parameters. The flat kernel"
                                  + " requires 1 parameter.")
-            self.kernel = CLUE_Convolutional_Kernels.FlatKernel(parameters[0])
+            self.kernel = clue_kernels.FlatKernel(parameters[0])
         elif choice == "exp":
             if len(parameters) != 2:
                 raise ValueError("Wrong number of parameters. The exponential"
                                  + " kernel requires 2 parameters.")
-            self.kernel = CLUE_Convolutional_Kernels.ExponentialKernel(parameters[0], parameters[1])
+            self.kernel = clue_kernels.ExponentialKernel(parameters[0], parameters[1])
         elif choice == "gaus":
             if len(parameters) != 3:
                 raise ValueError("Wrong number of parameters. The gaussian" +
                                  " kernel requires 3 parameters.")
-            self.kernel = CLUE_Convolutional_Kernels.GaussinKernel(parameters[0], parameters[1], parameters[2])
-        elif choice == "custom":
-            if len(parameters) != 0:
-                raise ValueError("Wrong number of parameters. Custom kernels"
-                                 + " requires 0 parameters.")
+            self.kernel = clue_kernels.GaussianKernel(parameters[0], parameters[1], parameters[2])
         else:
             raise ValueError("Invalid kernel. The allowed choices for the"
                              + " kernels are: flat, exp, gaus and custom.")
@@ -539,16 +512,13 @@ class clusterer:
                                                     self.clust_data.coords, self.clust_data.weight,
                                                     self.kernel, self.clust_data.n_dim)
         elif backend == "cpu tbb":
-            cluster_id_is_seed = cpu_serial.mainRun(self.dc_, self.rhoc, self.outlier, self.ppbin,
+            cluster_id_is_seed = cpu_tbb.mainRun(self.dc_, self.rhoc, self.outlier, self.ppbin,
                                                     self.clust_data.coords, self.clust_data.weight,
                                                     self.kernel, self.clust_data.n_dim)
         elif backend == "gpu cuda":
             cluster_id_is_seed = gpu_cuda.mainRun(self.dc_, float(self.rhoc), self.outlier, self.ppbin,
                                                   self.clust_data.coords, self.clust_data.weight,
                                                   self.kernel, self.clust_data.n_dim)
-            # cluster_id_is_seed = cpu_tbb.mainRun(self.dc_, self.rhoc, self.outlier, self.ppbin,
-            #                                      self.clust_data.coords, self.clust_data.weight,
-            #                                      self.kernel, self.clust_data.n_dim)
         finish = time.time_ns()
         cluster_ids = np.array(cluster_id_is_seed[0])
         is_seed = np.array(cluster_id_is_seed[1])
@@ -860,8 +830,22 @@ class clusterer:
 if __name__ == "__main__":
     c = clusterer(0.4,5,1.)
     c.read_data('./sissa.csv')
-    # c.run_clue(backend="cpu serial", verbose=True)
-    c.run_clue(backend="cpu tbb", verbose=True)
-    c.run_clue(backend="gpu cuda", verbose=True)
+    c.run_clue(backend="cpu serial", verbose=True)
     c.cluster_plotter()
-    c.to_csv('./','sissa_output_tbb.csv')
+    c.to_csv('./','sissa_output_serial.csv')
+
+    d = clusterer(0.4,5,1.)
+    d.read_data('./sissa.csv')
+    d.run_clue(backend="cpu tbb", verbose=True)
+    d.cluster_plotter()
+    d.to_csv('./','sissa_output_tbb.csv')
+
+    e = clusterer(0.4,5,1.)
+    e.read_data('./sissa.csv')
+    e.run_clue(backend="gpu cuda", verbose=True)
+    e.cluster_plotter()
+    e.to_csv('./','sissa_output_cuda.csv')
+    # c.cluster_plotter()
+    # c.run_clue(backend="cpu tbb", verbose=True)
+    # c.cluster_plotter()
+    # c.run_clue(backend="gpu cuda", verbose=True)
