@@ -18,6 +18,7 @@
 #include "../DataFormats/Points.h"
 #include "../DataFormats/alpaka/PointsAlpaka.h"
 #include "../DataFormats/alpaka/TilesAlpaka.h"
+#include "../DataFormats/alpaka/Domains.h"
 #include "../DataFormats/Math/DeltaPhi.h"
 #include "ConvolutionalKernel.h"
 
@@ -25,37 +26,21 @@ using cms::alpakatools::VecArray;
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
-  /* template <uint8_t Ndim> */
-  /* class domain_t { */
-  /* private: */
-  /* VecArray<VecArray<float, 2>, Ndim> domains_; */
-
-  /* public: */
-  /* domain_t(const std::array<std::pair<float, float>, Ndim>& domains) { */
-  /* for (int dim{}; dim < Ndim; ++dim) { */
-  /* VecArray<float, 2> temp; */
-  /* temp.push_back_unsafe(domains[dim][0]); */
-  /* temp.push_back_unsafe(domains[dim][1]); */
-
-  /* domains_.push_back_unsafe(temp); */
-  /* } */
-  /* } */
-
-  /* // Getters */
-  /* VecArray<VecArray<float, 2>, Ndim> data() { */
-  /* return domains_; */
-  /* } */
-  /* VecArray<VecArray<float, 2>, Ndim>* get() { */
-  /* return domains_[0].begin(); */
-  /* } */
-  /* }; */
-
   template <typename TAcc, uint8_t Ndim>
   class CLUEAlgoAlpaka {
   public:
     CLUEAlgoAlpaka() = delete;
-    explicit CLUEAlgoAlpaka(float dc, float rhoc, float outlierDeltaFactor, int pPBin, Queue queue_)
-        : dc_{dc}, rhoc_{rhoc}, outlierDeltaFactor_{outlierDeltaFactor}, pointsPerTile_{pPBin} {
+    explicit CLUEAlgoAlpaka(float dc,
+                            float rhoc,
+                            float outlierDeltaFactor,
+                            int pPBin,
+                            const std::vector<domain_t>& domains,
+                            Queue queue_)
+        : dc_{dc},
+          rhoc_{rhoc},
+          outlierDeltaFactor_{outlierDeltaFactor},
+          pointsPerTile_{pPBin},
+          m_domains(domains) {
       init_device(queue_);
     }
 
@@ -76,7 +61,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     // average number of points found in a tile
     int pointsPerTile_;
 
-    /* domain_t<Ndim> m_domains; */
+    domain_ranges<Ndim> m_domains;
 
     // Buffers
     std::optional<cms::alpakatools::device_buffer<Device, TilesAlpaka<Ndim>>> d_tiles;
@@ -170,19 +155,19 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     alpaka::enqueue(queue_,
                     alpaka::createTaskKernel<Acc1D>(working_div,
-                                                    KernelCalculateLocalDensity(),
+                                                    KernelCalculateLocalDensity<Ndim>(),
                                                     m_tiles,
                                                     d_points.view(),
                                                     kernel,
-                                                    /* m_domains.data(), */
+                                                    m_domains.data(),
                                                     dc_,
                                                     h_points.n));
     alpaka::enqueue(queue_,
                     alpaka::createTaskKernel<Acc1D>(working_div,
-                                                    KernelCalculateNearestHigher(),
+                                                    KernelCalculateNearestHigher<Ndim>(),
                                                     m_tiles,
                                                     d_points.view(),
-                                                    /* m_domains.data(), */
+                                                    m_domains.data(),
                                                     outlierDeltaFactor_,
                                                     dc_,
                                                     h_points.n));
