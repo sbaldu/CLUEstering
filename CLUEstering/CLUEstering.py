@@ -15,6 +15,40 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 import CLUEsteringCPP as Algo
 
+def generate_dataset(generator: types.FunctionType,
+                     n_samples: int,
+                     n_clusters: int,
+                     n_dim: int,
+                     dim_ranges: tuple) -> pd.DataFrame:
+    """
+    Generates a dataset using the generator passed as argument.
+
+    Parameters
+    ----------
+    generator : function object
+        Function that generates the dataset.
+    n_samples : int
+        Number of points in the dataset.
+    n_clusters : int
+        Number of clusters in the dataset.
+    n_dim : int
+        Number of dimensions of the dataset.
+    dim_ranges : tuple
+        Tuple containing the ranges of the domains for every coordinate.
+    """
+
+    data = {'x'+str(dim): np.array([]) for dim in range(n_dim)}
+    data['weight'] = np.array([1 for _ in range(n_samples * n_clusters)])
+
+    for _ in range(n_clusters):
+        for dim in range(n_dim):
+            center_i = np.random.uniform(-dim_ranges[dim], dim_ranges[dim])
+            data['x'+str(dim)] = np.concatenate((data['x'+str(dim)],
+                                                 np.array([generator(center_i) for _ in range(n_samples)])),
+                                                axis=None)
+
+    return pd.DataFrame(data)
+     
 
 def test_blobs(n_samples: int, n_dim: int, n_blobs: int = 4, mean: float = 0,
                sigma: float = 0.5, x_max: float = 30, y_max: float = 30) -> pd.DataFrame:
