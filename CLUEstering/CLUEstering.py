@@ -15,7 +15,7 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 import CLUEsteringCPP as Algo
 
-def generate_dataset(generator: types.FunctionType,
+def generate_dataset(generator: Union[types.FunctionType, tuple],
                      n_samples: int,
                      n_clusters: int,
                      n_dim: int,
@@ -43,9 +43,14 @@ def generate_dataset(generator: types.FunctionType,
     for _ in range(n_clusters):
         for dim in range(n_dim):
             center_i = np.random.uniform(-dim_ranges[dim], dim_ranges[dim])
-            data['x'+str(dim)] = np.concatenate((data['x'+str(dim)],
-                                                 np.array([generator(center_i) for _ in range(n_samples)])),
-                                                axis=None)
+            if isinstance(generator, types.FunctionType):
+                data['x'+str(dim)] = np.concatenate((data['x'+str(dim)],
+                                                     np.array([generator(center_i) for _ in range(n_samples)])),
+                                                    axis=None)
+            elif isinstance(generator, tuple):
+                data['x'+str(dim)] = np.concatenate((data['x'+str(dim)],
+                                                     np.array([generator[dim](center_i) for _ in range(n_samples)])),
+                                                    axis=None)
 
     return pd.DataFrame(data)
      
