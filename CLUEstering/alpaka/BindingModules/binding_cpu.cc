@@ -6,6 +6,7 @@
 #include "../CLUE/Run.h"
 #include "../DataFormats/Points.h"
 #include "../DataFormats/alpaka/PointsAlpaka.h"
+#include "../CLUE/Scaler.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -159,6 +160,7 @@ namespace alpaka_serial_sync {
   PYBIND11_MODULE(CLUE_CPU_Serial, m) {
     m.doc() = "Binding of the CLUE algorithm running serially on CPU";
 
+	m.def("rescale", &rescale<float>, "Rescale the data");
     m.def("listDevices", &listDevices, "List the available devices for the CPU serial backend");
     m.def("mainRun",
           pybind11::overload_cast<float,
