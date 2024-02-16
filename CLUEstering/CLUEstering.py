@@ -436,6 +436,20 @@ class clusterer:
                     self.clust_data.coords[int(coord[1])].reshape(-1, 1)
                 ).reshape(1, -1)[0]
 
+    def partition_data(self, range: tuple) -> None:
+        new_partition = {'x0': np.array([]), 'x1': np.array([]), 'weight': np.array([])}
+        new_partition |= {'weight': np.array([])}
+
+        for i in range(self.clust_data.n_points):
+            for dim in range(self.clust_data.n_dim):
+                if self.clust_data.coords[dim][i] >= range[dim][0] and self.clust_data.coords[dim][i] <= range[dim][1]:
+                    new_partition['x' + str(dim)] = np.append(new_partition['x' + str(dim)], self.clust_data.coords[dim][i])
+                    # drop the point from the original dataset
+                    self.clust_data.coords.drop(i, axis=0)
+                new_partition['weight'] = np.append(new_partition['weight'], self.clust_data.weight[i])
+
+        return new_partition
+
     def choose_kernel(self,
                       choice: str,
                       parameters: Union[list,None] = None,
