@@ -417,7 +417,7 @@ class clusterer:
             self._handle_dataframe(df)
 
         # Rescale the coordinates with a standard scaler
-        self._rescale()
+        # self._rescale()
 
     def change_coordinates(self, **kwargs: types.FunctionType) -> None:
         """
@@ -752,7 +752,7 @@ class clusterer:
             plt.scatter(cartesian_coords[0],
                         cartesian_coords[1],
                         s=pt_size,
-                        color=pt_colour)
+                        c=self.clust_data.weight)
 
             # Customization of the plot title
             plt.title(plot_title, fontsize=title_size)

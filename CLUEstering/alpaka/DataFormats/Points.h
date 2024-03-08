@@ -27,6 +27,18 @@ struct Points {
       m_coords.push_back(temp_vecarray);
     }
 
+	std::vector<float> x(n);
+	std::vector<float> y(n);
+	std::vector<float> z(n);
+	for (size_t j{}; j != n; ++j) {
+	  x.push_back(m_coords[j][0]);
+	  y.push_back(m_coords[j][1]);
+	  z.push_back(m_coords[j][2]);
+	}
+	m_temp_coords.push_back(x);
+	m_temp_coords.push_back(y);
+	m_temp_coords.push_back(z);
+
     m_rho.resize(n);
     m_delta.resize(n);
     m_nearestHigher.resize(n);
@@ -34,6 +46,7 @@ struct Points {
     m_isSeed.resize(n);
   }
 
+  std::vector<std::vector<float>> m_temp_coords;
   std::vector<VecArray<float, Ndim>> m_coords;
   std::vector<float> m_weight;
   std::vector<float> m_rho;

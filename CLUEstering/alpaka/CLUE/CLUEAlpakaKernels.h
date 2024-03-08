@@ -71,7 +71,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         }
 
         if (dist_ij_sq <= dc * dc) {
-          *rho_i += kernel(acc, alpaka::math::sqrt(acc, dist_ij_sq), point_id, j);
+          *rho_i += kernel(acc, alpaka::math::sqrt(acc, dist_ij_sq), point_id, j) * dev_points->weight[j];
         }
 
       }  // end of interate inside this bin
@@ -150,7 +150,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         float rho_j{dev_points->rho[j]};
         bool found_higher{(rho_j > rho_i)};
         // in the rare case where rho is the same, use detid
-        found_higher = found_higher || ((rho_j == rho_i) && (j > point_id));
+        found_higher = found_higher || ((rho_j == rho_i) && (rho_j > 0) && (j > point_id));
 
         // Calculate the distance between the two points
         VecArray<float, Ndim> coords_j{dev_points->coords[j]};
@@ -200,8 +200,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         VecArray<VecArray<float, 2>, Ndim> searchbox_extremes;
         for (int dim{}; dim != Ndim; ++dim) {
           VecArray<float, 2> dim_extremes;
-          dim_extremes.push_back_unsafe(coords_i[dim] - dc);
-          dim_extremes.push_back_unsafe(coords_i[dim] + dc);
+          dim_extremes.push_back_unsafe(coords_i[dim] - dm);
+          dim_extremes.push_back_unsafe(coords_i[dim] + dm);
 
           searchbox_extremes.push_back_unsafe(dim_extremes);
         }
