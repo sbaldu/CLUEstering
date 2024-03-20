@@ -845,6 +845,41 @@ class clusterer:
         '''
         return self.clust_prop.output_df
 
+    def _plot_1d(self):
+        plt.scatter(cartesian_coords[0],
+                    np.zeros(self.clust_data.n_points),
+                    s=pt_size,
+                    color=pt_colour)
+
+        # Customization of the plot title
+        plt.title(plot_title, fontsize=title_size)
+
+        # Customization of axis labels
+        plt.xlabel(x_label, fontsize=label_size)
+        plt.ylabel(y_label, fontsize=label_size)
+
+        # Customization of the grid
+        if self.plot_options.grid:
+            plt.grid(linestyle=self.plot_options.grid_style,
+                     linewidth=self.plot_options.grid_size)
+
+        # Customization of axis ticks
+        if x_ticks is not None:
+            plt.xticks(x_ticks)
+        if y_ticks is not None:
+            plt.yticks(y_ticks)
+
+        plt.show()
+
+    def _plot_2d(self):
+
+    def _plot_3d(self):
+
+    def set_axis_labels(self, x_label: str, y_label: str, z_label: str) -> None:
+
+    def set_axis_ticks(self, x_ticks: list, y_ticks: list, z_ticks: list) -> None:
+
+    def set_plot_grid(self, grid: bool, grid_style: str, grid_size: float) -> None:
 
     def input_plotter(self, plot_title: str = '', title_size: float = 16,
                       x_label: str = 'x', y_label: str = 'y', z_label: str = 'z',
