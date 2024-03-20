@@ -170,6 +170,87 @@ class cluster_properties:
         return True
 
 
+@dataclass()
+class plot_title:
+    plot_title: str
+    title_size: float
+
+
+@dataclass()
+class plot_axis_labels:
+    x_label: str
+    y_label: str
+    z_label: str
+    label_size: float
+
+
+@dataclass()
+class plot_grid:
+    grid: bool
+    grid_style: str
+    grid_size: float
+
+
+@dataclass()
+class plot_points_options:
+    pt_size: float
+    pt_colour: str
+
+
+@dataclass()
+class axis_ticks:
+    x_ticks: list
+    y_ticks: list
+    z_ticks: list
+
+
+@dataclass()
+class plot_options:
+
+    title: plot_title
+    axis_labels: plot_axis_labels
+    grid: plot_grid
+    ticks: axis_ticks
+    pt_size: float
+    pt_colour: str
+
+    @property
+    def title(self) -> plot_title:
+        return self.title
+
+    @property
+    def axis_labels(self) -> plot_axis_labels:
+        return self.axis_labels
+
+    @property
+    def grid(self) -> plot_grid:
+        return self.grid
+
+    @property
+    def ticks(self) -> axis_ticks:
+        return self.ticks
+
+    @property
+    def pt_size(self) -> float:
+        return self.pt_size
+
+    @property
+    def pt_colour(self) -> str:
+        return self.pt_colour
+
+    @property
+    def x_ticks(self) -> list:
+        return self.ticks.x_ticks
+
+    @property
+    def y_ticks(self) -> list:
+        return self.ticks.y_ticks
+
+    @property
+    def z_ticks(self) -> list:
+        return self.ticks.z_ticks
+
+
 class clusterer:
     """
     Class representing a wrapper for the methods using in the process of clustering using
@@ -212,16 +293,19 @@ class clusterer:
         self.ppbin = ppbin
 
         # Initialize attributes
-        ## Data containers
+        # # Data containers
         self.clust_data = None
         self.scaler = StandardScaler()
 
-        ## Kernel for calculation of local density
+        # # Kernel for calculation of local density
         self.kernel = clue_kernels.FlatKernel(0.5)
 
-        ## Output attributes
+        # # Output attributes
         self.clust_prop = None
         self.elapsed_time = 0.
+
+        # # Plotting options
+        self.plot_options = None
 
     def set_params(self, dc: float, rhoc: float,
                    outlier: float, ppbin: int = 10) -> None:
