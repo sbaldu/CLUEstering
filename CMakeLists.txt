@@ -62,7 +62,8 @@ endforeach()
 
 # CPU Serial compile cpu serial module
 pybind11_add_module(CLUE_CPU_Serial SHARED
-                    ./CLUEstering/alpaka/BindingModules/binding_cpu.cc)
+                    ./CLUEstering/alpaka/BindingModules/binding_cpu.cc
+					./CLUEstering/alpaka/CLUE/Run.cc)
 # link boost
 target_link_libraries(CLUE_CPU_Serial PRIVATE ${Boost_LIBRARIES})
 target_include_directories(CLUE_CPU_Serial PRIVATE ${Boost_PATH})
@@ -88,7 +89,8 @@ find_package(TBB)
 if(TBB_FOUND)
   # compile cpu tbb module
   pybind11_add_module(CLUE_CPU_TBB SHARED
-                      ./CLUEstering/alpaka/BindingModules/binding_cpu_tbb.cc)
+                      ./CLUEstering/alpaka/BindingModules/binding_cpu_tbb.cc
+					  ./CLUEstering/alpaka/CLUE/Run.cc)
   target_link_libraries(CLUE_CPU_TBB PRIVATE ${Boost_LIBRARIES})
   target_include_directories(CLUE_CPU_TBB PRIVATE ${Boost_PATH})
   target_compile_options(
@@ -131,7 +133,8 @@ if(CMAKE_CUDA_COMPILER)
                                                                        CUDA)
   # compile gpu cuda module
   pybind11_add_module(CLUE_GPU_CUDA SHARED
-                      ./CLUEstering/alpaka/BindingModules/binding_gpu_cuda.cc)
+                      ./CLUEstering/alpaka/BindingModules/binding_gpu_cuda.cc
+					  ./CLUEstering/alpaka/CLUE/Run.cc)
   # link boost
   target_link_libraries(CLUE_Convolutional_Kernels PRIVATE ${Boost_LIBRARIES})
   target_include_directories(CLUE_Convolutional_Kernels PRIVATE ${Boost_PATH})
@@ -173,7 +176,8 @@ if(CMAKE_HIP_COMPILER)
   set(CMAKE_CXX_COMPILER "${hip_BASE}/bin/hipcc")
   # compile gpu hip module
   pybind11_add_module(CLUE_GPU_HIP SHARED
-                      ./CLUEstering/alpaka/BindingModules/binding_gpu_hip.cc)
+                      ./CLUEstering/alpaka/BindingModules/binding_gpu_hip.cc
+					  ./CLUEstering/alpaka/CLUE/Run.cc)
   # link boost
   target_link_libraries(CLUE_Convolutional_Kernels PRIVATE ${Boost_LIBRARIES})
   target_include_directories(CLUE_Convolutional_Kernels PRIVATE ${Boost_PATH})
