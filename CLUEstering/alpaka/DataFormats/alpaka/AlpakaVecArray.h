@@ -1,6 +1,8 @@
 #ifndef AlpakaVecArray_h
 #define AlpakaVecArray_h
 
+#include <alpaka/alpaka.hpp>
+
 //
 // Author: Felice Pantaleo, CERN
 //
