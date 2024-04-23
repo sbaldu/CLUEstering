@@ -21,25 +21,27 @@
 using cms::alpakatools::VecArray;
 
 constexpr uint32_t max_tile_depth{1 << 10};
-constexpr uint32_t max_n_tiles{1 << 10};
+constexpr uint32_t max_nTiles{1 << 15};
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   template <uint8_t Ndim>
   class TilesAlpaka {
   public:
-    TilesAlpaka()
-        : n_tiles{1000}, n_tiles_per_dim{static_cast<int>(std::pow(1000, 1. / Ndim))} {};
+    TilesAlpaka() = default;
 
-    // Public member
     VecArray<VecArray<float, 2>, Ndim> min_max;
     VecArray<float, Ndim> tile_size;
 
-    // Public methods
-    void resizeTiles() { m_tiles.resize(n_tiles); }
+	template <typename TAcc>
+    ALPAKA_FN_HOST_ACC void resizeTiles(const TAcc& acc, uint32_t nTiles, uint32_t nTilesPerDim) { 
+	  this->nTiles = nTiles;
+	  this->nTilesPerDim = nTilesPerDim;
 
-    // getter
-    int nPerDim() const { return n_tiles_per_dim; }
+	  this->m_tiles.resize(nTiles);
+	}
+
+    /* int nPerDim() const { return nTilesPerDim; } */
 
     template <typename TAcc>
     ALPAKA_FN_HOST_ACC inline constexpr int getBin(const TAcc& acc,
@@ -48,7 +50,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       int coord_Bin{(int)((coord_ - min_max[dim_][0]) / tile_size[dim_])};
 
       // Address the cases of underflow and overflow and underflow
-      coord_Bin = alpaka::math::min(acc, coord_Bin, n_tiles_per_dim - 1);
+      coord_Bin = alpaka::math::min(acc, coord_Bin, nTilesPerDim - 1);
       coord_Bin = alpaka::math::max(acc, coord_Bin, 0);
 
       return coord_Bin;
@@ -59,7 +61,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         const TAcc& acc, const VecArray<float, Ndim>& coords) const {
       int globalBin{getBin(acc, coords[0], 0)};
       for (int i{1}; i != Ndim; ++i) {
-        globalBin += n_tiles_per_dim * getBin(acc, coords[i], i);
+        globalBin += nTilesPerDim * getBin(acc, coords[i], i);
       }
       return globalBin;
     }
@@ -69,7 +71,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         const TAcc& acc, const VecArray<uint32_t, Ndim>& Bins) const {
       uint32_t globalBin{Bins[0]};
       for (int i{1}; i != Ndim; ++i) {
-        globalBin += n_tiles_per_dim * Bins[i];
+        globalBin += nTilesPerDim * Bins[i];
       }
       return globalBin;
     }
@@ -95,13 +97,17 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       }
     }
 
-    ALPAKA_FN_HOST_ACC inline constexpr auto size() { return n_tiles; }
+    ALPAKA_FN_HOST_ACC inline constexpr auto size() { return nTiles; }
 
     ALPAKA_FN_HOST_ACC inline constexpr void clear() {
-      for (int i{}; i < n_tiles; ++i) {
+      for (int i{}; i < nTiles; ++i) {
         m_tiles[i].reset();
       }
     }
+
+	ALPAKA_FN_HOST_ACC inline constexpr void clear(std::size_t i) {
+	  m_tiles[i].reset();
+	}
 
     ALPAKA_FN_HOST_ACC inline constexpr VecArray<uint32_t, max_tile_depth>& operator[](
         int globalBinId) {
@@ -109,9 +115,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     }
 
   private:
-    size_t n_tiles;
-    int n_tiles_per_dim;
-    VecArray<VecArray<uint32_t, max_tile_depth>, max_n_tiles> m_tiles;
+    size_t nTiles;
+    int nTilesPerDim;
+    VecArray<VecArray<uint32_t, max_tile_depth>, max_nTiles> m_tiles;
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 

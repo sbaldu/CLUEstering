@@ -21,6 +21,27 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   template <uint8_t Ndim>
   using PointsView = typename PointsAlpaka<Ndim>::PointsAlpakaView;
 
+  struct KernelResetTiles {
+    template <typename TAcc, uint8_t Ndim>
+    ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                  TilesAlpaka<Ndim>* tiles,
+                                  uint32_t nTiles,
+                                  uint32_t nPerDim) const {
+      if (cms::alpakatools::once_per_grid(acc)) {
+        tiles->resizeTiles(acc, nTiles, nPerDim);
+		printf("nTiles: %d, nPerDim: %d\n", nTiles, nPerDim);
+		printf("min_max 0: %f, %f\n", (*tiles).min_max[0][0], (*tiles).min_max[0][1]);
+		printf("min_max 1: %f, %f\n", (*tiles).min_max[1][0], (*tiles).min_max[1][1]);
+		printf("min_max 2: %f, %f\n", (*tiles).min_max[2][0], (*tiles).min_max[2][1]);
+		printf("tile_size 0: %f\n", (*tiles).tile_size[0]);
+		printf("tile_size 1: %f\n", (*tiles).tile_size[1]);
+		printf("tile_size 2: %f\n", (*tiles).tile_size[2]);
+      }
+      cms::alpakatools::for_each_element_in_grid(
+          acc, nTiles, [&](uint32_t i) -> void { tiles->clear(i); });
+    }
+  };
+
   struct KernelResetFollowers {
     template <typename TAcc>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
