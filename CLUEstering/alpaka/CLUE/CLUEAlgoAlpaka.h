@@ -131,7 +131,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                          Queue queue_,
                                          size_t block_size) {
     const auto nTiles{1000};
-    const auto nPerDim{static_cast<int>(std::pow(nTiles, 1. / Ndim))};
+    const auto nPerDim{std::ceil(std::pow(nTiles, 1. / Ndim))};
 
     VecArray<VecArray<float, 2>, Ndim> min_max;
     VecArray<float, Ndim> tile_size;
@@ -186,7 +186,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const KernelType& kernel,
       Queue queue_,
       size_t block_size) {
-    block_size = 1;
     setup(h_points, d_points, queue_, block_size);
 
     const Idx grid_size = cms::alpakatools::divide_up_by(h_points.n, block_size);
