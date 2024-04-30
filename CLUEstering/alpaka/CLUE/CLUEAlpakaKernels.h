@@ -30,9 +30,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       if (cms::alpakatools::once_per_grid(acc)) {
         tiles->resizeTiles(acc, nTiles, nPerDim);
 		printf("nTiles: %d, nPerDim: %d\n", nTiles, nPerDim);
-		printf("min_max 0: %f, %f\n", (*tiles).min_max[0][0], (*tiles).min_max[0][1]);
-		printf("min_max 1: %f, %f\n", (*tiles).min_max[1][0], (*tiles).min_max[1][1]);
-		printf("min_max 2: %f, %f\n", (*tiles).min_max[2][0], (*tiles).min_max[2][1]);
+		printf("min_max 0: %f, %f\n", (*tiles).min_max.min(0), (*tiles).min_max.max(0));
+		printf("min_max 1: %f, %f\n", (*tiles).min_max.min(1), (*tiles).min_max.max(1));
+		printf("min_max 2: %f, %f\n", (*tiles).min_max.min(2), (*tiles).min_max.max(2));
 		printf("tile_size 0: %f\n", (*tiles).tile_size[0]);
 		printf("tile_size 1: %f\n", (*tiles).tile_size[1]);
 		printf("tile_size 2: %f\n", (*tiles).tile_size[2]);

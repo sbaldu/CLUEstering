@@ -23,6 +23,29 @@ using cms::alpakatools::VecArray;
 constexpr uint32_t max_tile_depth{1 << 10};
 constexpr uint32_t max_nTiles{1 << 15};
 
+template <uint8_t Ndim>
+class MinMax {
+private:
+  float m_data[2 * Ndim];
+
+public:
+  MinMax() = default;
+  MinMax(const VecArray<VecArray<float, 2>, Ndim>& min_max) {
+    for (int i{}; i != Ndim; ++i) {
+      m_data[2 * i] = min_max[i][0];
+      m_data[2 * i + 1] = min_max[i][1];
+    }
+  }
+
+  float* data() { return m_data; }
+  const float* data() const { return m_data; }
+
+  float min(int i) const { return m_data[2 * i]; }
+  float& min(int i) { return m_data[2 * i]; }
+  float max(int i) const { return m_data[2 * i + 1]; }
+  float& max(int i) { return m_data[2 * i + 1]; }
+};
+
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
   template <uint8_t Ndim>
@@ -30,16 +53,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   public:
     TilesAlpaka() = default;
 
-    VecArray<VecArray<float, 2>, Ndim> min_max;
-    VecArray<float, Ndim> tile_size;
+    /* VecArray<VecArray<float, 2>, Ndim> min_max; */
+    /* VecArray<float, Ndim> tile_size; */
+    MinMax<Ndim> min_max;
+    float tile_size[Ndim];
 
-	template <typename TAcc>
-    ALPAKA_FN_HOST_ACC void resizeTiles(const TAcc& acc, uint32_t nTiles, uint32_t nTilesPerDim) { 
-	  this->nTiles = nTiles;
-	  this->nTilesPerDim = nTilesPerDim;
+    template <typename TAcc>
+    ALPAKA_FN_HOST_ACC void resizeTiles(const TAcc& acc,
+                                        uint32_t nTiles,
+                                        uint32_t nTilesPerDim) {
+      this->nTiles = nTiles;
+      this->nTilesPerDim = nTilesPerDim;
 
-	  this->m_tiles.resize(nTiles);
-	}
+      this->m_tiles.resize(nTiles);
+    }
 
     /* int nPerDim() const { return nTilesPerDim; } */
 
@@ -47,7 +74,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     ALPAKA_FN_HOST_ACC inline constexpr int getBin(const TAcc& acc,
                                                    float coord_,
                                                    int dim_) const {
-      int coord_Bin{(int)((coord_ - min_max[dim_][0]) / tile_size[dim_])};
+      int coord_Bin{(int)((coord_ - min_max.min(dim_)) / tile_size[dim_])};
 
       // Address the cases of underflow and overflow and underflow
       coord_Bin = alpaka::math::min(acc, coord_Bin, nTilesPerDim - 1);
@@ -105,9 +132,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       }
     }
 
-	ALPAKA_FN_HOST_ACC inline constexpr void clear(std::size_t i) {
-	  m_tiles[i].reset();
-	}
+    ALPAKA_FN_HOST_ACC inline constexpr void clear(std::size_t i) { m_tiles[i].reset(); }
 
     ALPAKA_FN_HOST_ACC inline constexpr VecArray<uint32_t, max_tile_depth>& operator[](
         int globalBinId) {
