@@ -395,6 +395,19 @@ namespace cms::alpakatools {
            Vec<alpaka::Dim<TAcc>>::zeros();
   }
 
+  /* once_per_block
+   *
+   * `once_per_block(acc)` returns true for a single thread within the block.
+   *
+   * Usually the condition is true for thread 0, but this index should not be relied upon.
+   */
+
+  template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
+  ALPAKA_FN_ACC inline constexpr bool once_per_block(TAcc const& acc) {
+    return alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc) ==
+           Vec<alpaka::Dim<TAcc>>::zeros();
+  }
+
   /*
    * Overload for elementIdxShift = 0
    */
