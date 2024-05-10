@@ -4,7 +4,7 @@
 #include <alpaka/alpaka.hpp>
 
 #include "CMSUnrollLoop.h"
-#include "alpakaconfig.h"
+#include "alpakaConfig.h"
 #include "alpakaWorkDiv.h"
 
 namespace cms::alpakatools {
