@@ -413,9 +413,131 @@ namespace cms::alpakatools {
            Vec<alpaka::Dim<TAcc>>::zeros();
   }
 
+  namespace detail {
+
+    /* IndependentGroupElementsAlong
+   *
+   * `independent_group_elements_along<Dim>(acc, ...)` is a shorthand for
+   * `IndependentGroupElementsAlong<TAcc, Dim>(acc, ...)` that can infer the accelerator type from the argument.
+   */
+    template <typename TAcc,
+              std::size_t Dim,
+              typename = std::enable_if_t<alpaka::isAccelerator<TAcc> and
+                                          alpaka::Dim<TAcc>::value >= Dim>>
+    class IndependentGroupElementsAlong {
+    public:
+      ALPAKA_FN_ACC inline IndependentGroupElementsAlong(TAcc const& acc)
+          : elements_{alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[Dim]},
+            thread_{alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[Dim] * elements_},
+            stride_{alpaka::getWorkDiv<alpaka::Block, alpaka::Threads>(acc)[Dim] *
+                    elements_},
+            extent_{stride_} {}
+
+      ALPAKA_FN_ACC inline IndependentGroupElementsAlong(TAcc const& acc, Idx extent)
+          : elements_{alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[Dim]},
+            thread_{alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[Dim] * elements_},
+            stride_{alpaka::getWorkDiv<alpaka::Block, alpaka::Threads>(acc)[Dim] *
+                    elements_},
+            extent_{extent} {}
+
+      ALPAKA_FN_ACC inline IndependentGroupElementsAlong(TAcc const& acc,
+                                                         Idx first,
+                                                         Idx extent)
+          : elements_{alpaka::getWorkDiv<alpaka::Thread, alpaka::Elems>(acc)[Dim]},
+            thread_{alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[Dim] * elements_ +
+                    first},
+            stride_{alpaka::getWorkDiv<alpaka::Block, alpaka::Threads>(acc)[Dim] *
+                    elements_},
+            extent_{extent} {}
+
+      class const_iterator;
+      using iterator = const_iterator;
+
+      ALPAKA_FN_ACC inline const_iterator begin() const {
+        return const_iterator(elements_, stride_, extent_, thread_);
+      }
+
+      ALPAKA_FN_ACC inline const_iterator end() const {
+        return const_iterator(elements_, stride_, extent_, extent_);
+      }
+
+      class const_iterator {
+        friend class IndependentGroupElementsAlong;
+
+        ALPAKA_FN_ACC inline const_iterator(Idx elements,
+                                            Idx stride,
+                                            Idx extent,
+                                            Idx first)
+            : elements_{elements},
+              stride_{stride},
+              extent_{extent},
+              first_{std::min(first, extent)},
+              index_{first_},
+              range_{std::min(first + elements, extent)} {}
+
+      public:
+        ALPAKA_FN_ACC inline Idx operator*() const { return index_; }
+
+        // pre-increment the iterator
+        ALPAKA_FN_ACC inline const_iterator& operator++() {
+          if constexpr (requires_single_thread_per_block_v<TAcc>) {
+            // increment the index along the elements processed by the current thread
+            ++index_;
+            if (index_ < range_)
+              return *this;
+          }
+
+          // increment the thread index with the block stride
+          first_ += stride_;
+          index_ = first_;
+          range_ = std::min(first_ + elements_, extent_);
+          if (index_ < extent_)
+            return *this;
+
+          // the iterator has reached or passed the end of the extent, clamp it to the extent
+          first_ = extent_;
+          index_ = extent_;
+          range_ = extent_;
+          return *this;
+        }
+
+        // post-increment the iterator
+        ALPAKA_FN_ACC inline const_iterator operator++(int) {
+          const_iterator old = *this;
+          ++(*this);
+          return old;
+        }
+
+        ALPAKA_FN_ACC inline bool operator==(const_iterator const& other) const {
+          return (index_ == other.index_) and (first_ == other.first_);
+        }
+
+        ALPAKA_FN_ACC inline bool operator!=(const_iterator const& other) const {
+          return not(*this == other);
+        }
+
+      private:
+        // non-const to support iterator copy and assignment
+        Idx elements_;
+        Idx stride_;
+        Idx extent_;
+        // modified by the pre/post-increment operator
+        Idx first_;
+        Idx index_;
+        Idx range_;
+      };
+
+    private:
+      const Idx elements_;
+      const Idx thread_;
+      const Idx stride_;
+      const Idx extent_;
+    };
+
+  }  // namespace detail
+
   /* independent_group_elements
    */
-
   template <typename TAcc,
             typename... TArgs,
             typename = std::enable_if_t<alpaka::isAccelerator<TAcc> and
