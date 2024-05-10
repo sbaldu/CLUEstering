@@ -8,9 +8,9 @@
 
 #include <alpaka/alpaka.hpp>
 
-#include "HeterogeneousCore/AlpakaInterface/interface/AtomicPairCounter.h"
+#include "AtomicPairCounter.h"
 #include "FlexiStorage.h"
-#include "HeterogeneousCore/AlpakaInterface/interface/prefixScan.h"
+#include "prefixScan.h"
 #include "alpakaWorkDiv.h"
 
 namespace cms::alpakatools {
