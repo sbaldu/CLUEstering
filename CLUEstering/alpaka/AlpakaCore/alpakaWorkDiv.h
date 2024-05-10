@@ -54,7 +54,8 @@ namespace cms::alpakatools {
 
   // Whether or not the accelerator expects the threads-per-block and elements-per-thread to be swapped
   template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
-  inline constexpr bool requires_single_thread_per_block_v = requires_single_thread_per_block<TAcc>::value;
+  inline constexpr bool requires_single_thread_per_block_v =
+      requires_single_thread_per_block<TAcc>::value;
 
   /*
    * Creates the accelerator-dependent workdiv for 1-dimensional operations.
@@ -410,6 +411,17 @@ namespace cms::alpakatools {
   ALPAKA_FN_ACC inline constexpr bool once_per_block(TAcc const& acc) {
     return alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc) ==
            Vec<alpaka::Dim<TAcc>>::zeros();
+  }
+
+  /* independent_group_elements
+   */
+
+  template <typename TAcc,
+            typename... TArgs,
+            typename = std::enable_if_t<alpaka::isAccelerator<TAcc> and
+                                        alpaka::Dim<TAcc>::value == 1>>
+  ALPAKA_FN_ACC inline auto independent_group_elements(TAcc const& acc, TArgs... args) {
+    return detail::IndependentGroupElementsAlong<TAcc, 0>(acc, static_cast<Idx>(args)...);
   }
 
   /*
