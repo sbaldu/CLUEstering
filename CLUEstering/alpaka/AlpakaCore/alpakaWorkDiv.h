@@ -52,6 +52,10 @@ namespace cms::alpakatools {
       : public std::false_type {};
 #endif  // ALPAKA_ACC_CPU_B_SEQ_T_THREADS_ENABLED
 
+  // Whether or not the accelerator expects the threads-per-block and elements-per-thread to be swapped
+  template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
+  inline constexpr bool requires_single_thread_per_block_v = requires_single_thread_per_block<TAcc>::value;
+
   /*
    * Creates the accelerator-dependent workdiv for 1-dimensional operations.
    */
