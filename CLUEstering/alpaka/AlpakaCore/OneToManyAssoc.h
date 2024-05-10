@@ -9,9 +9,9 @@
 #include <alpaka/alpaka.hpp>
 
 #include "HeterogeneousCore/AlpakaInterface/interface/AtomicPairCounter.h"
-#include "HeterogeneousCore/AlpakaInterface/interface/FlexiStorage.h"
+#include "FlexiStorage.h"
 #include "HeterogeneousCore/AlpakaInterface/interface/prefixScan.h"
-#include "HeterogeneousCore/AlpakaInterface/interface/workdivision.h"
+#include "alpakaWorkDiv.h"
 
 namespace cms::alpakatools {
 
@@ -282,4 +282,4 @@ namespace cms::alpakatools {
 
 }  // namespace cms::alpakatools
 
-#endif  // HeterogeneousCore_CUDAUtilities_interface_HistoContainer_h
+#endif
