@@ -4,4 +4,4 @@
 	branch = master
 [submodule "extern/alpaka"]
 	path = extern/alpaka
-	url = https://github.com/cms-patatrack/alpaka.git
+	url = https://github.com/alpaka-group/alpaka.git
