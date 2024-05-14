@@ -2,31 +2,34 @@
 
 #include <alpaka/alpaka.hpp>
 
-#include "../alpakaConfig.h"
-#include "../alpakaDevices.h"
-#include "../initialise.h"
-#include "../demangle.h"
+#include "AlpakaCore/config.h"
+#include "AlpakaCore/alpaka/devices.h"
+#include "AlpakaCore/initialise.h"
+#include "Framework/demangle.h"
 
-namespace cms::alpakatools {
+namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
-  template <typename TPlatform>
-  void initialise() {
+  void initialise(bool verbose) {
     constexpr const char* suffix[] = {"devices.", "device:", "devices:"};
+    static bool done = false;
 
-    if (devices<TPlatform>.empty()) {
-      devices<TPlatform> = enumerate<TPlatform>();
-      auto size = devices<TPlatform>.size();
-      //std::cout << edm::demangle<TPlatform> << " platform succesfully initialised." << std::endl;
+    if (not done) {
+      auto size = cms::alpakatools::devices<Platform>().size();
       std::cout << "Found " << size << " " << suffix[size < 2 ? size : 2] << std::endl;
-      for (auto const& device : devices<TPlatform>) {
+      for (auto const& device : cms::alpakatools::devices<Platform>()) {
         std::cout << "  - " << alpaka::getName(device) << std::endl;
       }
+      if (verbose) {
+        std::cout << edm::demangle<Platform> << " platform succesfully initialised." << std::endl;
+      }
+      std::cout << std::endl;
+      done = true;
     } else {
-      //std::cout << edm::demangle<TPlatform> << " platform already initialised." << std::endl;
+      if (verbose) {
+        std::cout << edm::demangle<Platform> << " platform already initialised." << std::endl;
+        std::cout << std::endl;
+      }
     }
   }
 
-  // explicit template instantiation definition
-  template void initialise<ALPAKA_ACCELERATOR_NAMESPACE::Platform>();
-
-}  // namespace cms::alpakatools
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE

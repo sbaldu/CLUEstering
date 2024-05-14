@@ -3,32 +3,25 @@
 
 #include <alpaka/alpaka.hpp>
 
-#include "getDeviceCachingAllocator.h"
-#include "getHostCachingAllocator.h"
+#include "AlpakaCore/getDeviceCachingAllocator.h"
+#include "AlpakaCore/getHostCachingAllocator.h"
+/* #include "Framework/demangle.h" */
 
 namespace cms::alpakatools {
 
   namespace traits {
 
     //! The caching memory allocator trait.
-    template <typename TElem,
-              typename TDim,
-              typename TIdx,
-              typename TDev,
-              typename TQueue,
-              typename TSfinae = void>
+    template <typename TElem, typename TDim, typename TIdx, typename TDev, typename TQueue, typename TSfinae = void>
     struct CachedBufAlloc {
-      static_assert(alpaka::meta::DependentFalseType<TDev>::value,
-                    "This device does not support a caching allocator");
+      static_assert(alpaka::meta::DependentFalseType<TDev>::value, "This device does not support a caching allocator");
     };
 
     //! The caching memory allocator implementation for the CPU device
     template <typename TElem, typename TDim, typename TIdx, typename TQueue>
     struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpu, TQueue, void> {
       template <typename TExtent>
-      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpu const& dev,
-                                                TQueue queue,
-                                                TExtent const& extent)
+      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpu const& dev, TQueue queue, TExtent const& extent)
           -> alpaka::BufCpu<TElem, TDim, TIdx> {
         // non-cached host-only memory
         return alpaka::allocAsyncBuf<TElem, TIdx>(queue, extent);
@@ -39,17 +32,11 @@ namespace cms::alpakatools {
 
     //! The caching memory allocator implementation for the pinned host memory
     template <typename TElem, typename TDim, typename TIdx>
-    struct CachedBufAlloc<TElem,
-                          TDim,
-                          TIdx,
-                          alpaka::DevCpu,
-                          alpaka::QueueCudaRtNonBlocking,
-                          void> {
+    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpu, alpaka::QueueCudaRtNonBlocking, void> {
       template <typename TExtent>
       ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpu const& dev,
                                                 alpaka::QueueCudaRtNonBlocking queue,
-                                                TExtent const& extent)
-          -> alpaka::BufCpu<TElem, TDim, TIdx> {
+                                                TExtent const& extent) -> alpaka::BufCpu<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
         auto& allocator = getHostCachingAllocator<alpaka::QueueCudaRtNonBlocking>();
@@ -62,8 +49,7 @@ namespace cms::alpakatools {
         // use a custom deleter to return the buffer to the CachingAllocator
         auto deleter = [alloc = &allocator](TElem* ptr) { alloc->free(ptr); };
 
-        return alpaka::BufCpu<TElem, TDim, TIdx>(
-            dev, reinterpret_cast<TElem*>(memPtr), std::move(deleter), extent);
+        return alpaka::BufCpu<TElem, TDim, TIdx>(dev, reinterpret_cast<TElem*>(memPtr), std::move(deleter), extent);
       }
     };
 
@@ -71,9 +57,7 @@ namespace cms::alpakatools {
     template <typename TElem, typename TDim, typename TIdx, typename TQueue>
     struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCudaRt, TQueue, void> {
       template <typename TExtent>
-      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCudaRt const& dev,
-                                                TQueue queue,
-                                                TExtent const& extent)
+      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCudaRt const& dev, TQueue queue, TExtent const& extent)
           -> alpaka::BufCudaRt<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
@@ -101,17 +85,11 @@ namespace cms::alpakatools {
 
     //! The caching memory allocator implementation for the pinned host memory
     template <typename TElem, typename TDim, typename TIdx>
-    struct CachedBufAlloc<TElem,
-                          TDim,
-                          TIdx,
-                          alpaka::DevCpu,
-                          alpaka::QueueHipRtNonBlocking,
-                          void> {
+    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpu, alpaka::QueueHipRtNonBlocking, void> {
       template <typename TExtent>
       ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpu const& dev,
                                                 alpaka::QueueHipRtNonBlocking queue,
-                                                TExtent const& extent)
-          -> alpaka::BufCpu<TElem, TDim, TIdx> {
+                                                TExtent const& extent) -> alpaka::BufCpu<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
         auto& allocator = getHostCachingAllocator<alpaka::QueueHipRtNonBlocking>();
@@ -124,8 +102,7 @@ namespace cms::alpakatools {
         // use a custom deleter to return the buffer to the CachingAllocator
         auto deleter = [alloc = &allocator](TElem* ptr) { alloc->free(ptr); };
 
-        return alpaka::BufCpu<TElem, TDim, TIdx>(
-            dev, reinterpret_cast<TElem*>(memPtr), std::move(deleter), extent);
+        return alpaka::BufCpu<TElem, TDim, TIdx>(dev, reinterpret_cast<TElem*>(memPtr), std::move(deleter), extent);
       }
     };
 
@@ -133,9 +110,7 @@ namespace cms::alpakatools {
     template <typename TElem, typename TDim, typename TIdx, typename TQueue>
     struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevHipRt, TQueue, void> {
       template <typename TExtent>
-      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevHipRt const& dev,
-                                                TQueue queue,
-                                                TExtent const& extent)
+      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevHipRt const& dev, TQueue queue, TExtent const& extent)
           -> alpaka::BufHipRt<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
@@ -162,11 +137,8 @@ namespace cms::alpakatools {
   }  // namespace traits
 
   template <typename TElem, typename TIdx, typename TExtent, typename TQueue, typename TDev>
-  ALPAKA_FN_HOST auto allocCachedBuf(TDev const& dev,
-                                     TQueue queue,
-                                     TExtent const& extent = TExtent()) {
-    return traits::CachedBufAlloc<TElem, alpaka::Dim<TExtent>, TIdx, TDev, TQueue>::
-        allocCachedBuf(dev, queue, extent);
+  ALPAKA_FN_HOST auto allocCachedBuf(TDev const& dev, TQueue queue, TExtent const& extent = TExtent()) {
+    return traits::CachedBufAlloc<TElem, alpaka::Dim<TExtent>, TIdx, TDev, TQueue>::allocCachedBuf(dev, queue, extent);
   }
 
 }  // namespace cms::alpakatools

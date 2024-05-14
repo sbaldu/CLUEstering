@@ -4,8 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "alpakaConfig.h"
-#include "getDeviceIndex.h"
+#include "AlpakaCore/alpaka/devices.h"
 #include "Framework/ReusableObjectHolder.h"
 
 namespace cms::alpakatools {
@@ -13,19 +12,18 @@ namespace cms::alpakatools {
   template <typename Queue>
   class StreamCache {
     using Device = alpaka::Dev<Queue>;
-    using Platform = alpaka::Pltf<Device>;
+    using Platform = alpaka::Platform<Device>;
 
   public:
     // StreamCache should be constructed by the first call to
-    // getStreamCache() only if we have CUDA devices present
-    StreamCache() : cache_(alpaka::getDevCount<Platform>()) {}
+    // getStreamCache() only if we have devices present
+    StreamCache() : cache_(alpaka::getDevCount(platform<Platform>())) {}
 
-    // Gets a (cached) CUDA stream for the current device. The stream
+    // Gets a (cached) queue for the given device. The queue
     // will be returned to the cache by the shared_ptr destructor.
     // This function is thread safe
     ALPAKA_FN_HOST std::shared_ptr<Queue> get(Device const& dev) {
-      return cache_[cms::alpakatools::getDeviceIndex(dev)].makeOrGet(
-          [dev]() { return std::make_unique<Queue>(dev); });
+      return cache_[cms::alpakatools::getDeviceIndex(dev)].makeOrGet([dev]() { return std::make_unique<Queue>(dev); });
     }
 
   private:
@@ -37,7 +35,7 @@ namespace cms::alpakatools {
       // StreamCache lives through multiple tests (and go through
       // multiple shutdowns of the framework).
       cache_.clear();
-      cache_.resize(alpaka::getDevCount<Platform>());
+      cache_.resize(alpaka::getDevCount(*cms::alpakatools::platform<Platform>));
     }
 
     std::vector<edm::ReusableObjectHolder<Queue>> cache_;

@@ -14,8 +14,8 @@
 #include <stdint.h>
 #include <type_traits>
 
-#include "../../AlpakaCore/alpakaConfig.h"
-#include "../../AlpakaCore/alpakaMemory.h"
+#include "AlpakaCore/config.h"
+#include "AlpakaCore/memory.h"
 #include "AlpakaVecArray.h"
 
 using cms::alpakatools::VecArray;

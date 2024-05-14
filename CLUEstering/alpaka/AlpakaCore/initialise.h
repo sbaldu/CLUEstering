@@ -1,27 +1,33 @@
 #ifndef AlpakaCore_initialise_h
 #define AlpakaCore_initialise_h
 
-#include "alpakaConfig.h"
+#include <alpaka/alpaka.hpp>
 
-namespace cms::alpakatools {
+// Initialise the platform and devices for each backend.
+// Note: these functions are not thread-safe
 
-  template <typename TPlatform>
-  void initialise();
-
-  // explicit template instantiation declaration
 #ifdef ALPAKA_ACC_CPU_B_SEQ_T_SEQ_PRESENT
-  extern template void initialise<alpaka_serial_sync::Platform>();
-#endif
-#ifdef ALPAKA_ACC_CPU_B_TBB_T_SEQ_PRESENT
-  extern template void initialise<alpaka_tbb_async::Platform>();
-#endif
-#ifdef ALPAKA_ACC_GPU_CUDA_PRESENT
-  extern template void initialise<alpaka_cuda_async::Platform>();
-#endif
-#ifdef ALPAKA_ACC_GPU_HIP_PRESENT
-  extern template void initialise<alpaka_rocm_async::Platform>();
+namespace alpaka_serial_sync {
+  void initialise(bool verbose = false);
+}
 #endif
 
-}  // namespace cms::alpakatools
+#ifdef ALPAKA_ACC_CPU_B_TBB_T_SEQ_PRESENT
+namespace alpaka_tbb_async {
+  void initialise(bool verbose = false);
+}
+#endif
+
+#ifdef ALPAKA_ACC_GPU_CUDA_PRESENT
+namespace alpaka_cuda_async {
+  void initialise(bool verbose = false);
+}
+#endif
+
+#ifdef ALPAKA_ACC_GPU_HIP_PRESENT
+namespace alpaka_rocm_async {
+  void initialise(bool verbose = false);
+}
+#endif
 
 #endif  // AlpakaCore_initialise_h

@@ -4,8 +4,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "../../AlpakaCore/alpakaConfig.h"
-#include "../../AlpakaCore/alpakaMemory.h"
+#include "AlpakaCore/config.h"
+#include "AlpakaCore/memory.h"
 #include "AlpakaVecArray.h"
 #include "../Points.h"
 

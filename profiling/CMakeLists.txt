@@ -17,6 +17,7 @@ endif()
 
 # include alpaka extern subfolder
 include_directories(../extern/alpaka/include)
+include_directories(../CLUEstering/alpaka)
 
 # look for boost
 find_package(Boost 1.75.0)

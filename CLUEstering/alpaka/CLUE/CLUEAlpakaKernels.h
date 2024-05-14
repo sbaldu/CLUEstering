@@ -4,7 +4,7 @@
 #include <alpaka/core/Common.hpp>
 #include <cstdint>
 
-#include "../AlpakaCore/alpakaWorkDiv.h"
+#include "AlpakaCore/workdivision.h"
 #include "../DataFormats/alpaka/PointsAlpaka.h"
 #include "../DataFormats/alpaka/TilesAlpaka.h"
 #include "../DataFormats/alpaka/AlpakaVecArray.h"
