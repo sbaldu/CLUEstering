@@ -75,12 +75,8 @@ namespace alpaka {
 
 #endif  // ALPAKA_HOST_ONLY
 
-#ifdef ALPAKA_ACCELERATOR_NAMESPACE
-#define ALPAKA_DUPLICATE_NAMESPACE
-#else
 #define ALPAKA_ACCELERATOR_NAMESPACE alpaka_cuda_async
 #define ALPAKA_TYPE_SUFFIX CudaAsync
-#endif
 
 #endif  // ALPAKA_ACC_GPU_CUDA_ENABLED
 
@@ -120,12 +116,8 @@ namespace alpaka {
 
 #endif  // ALPAKA_HOST_ONLY
 
-#ifdef ALPAKA_ACCELERATOR_NAMESPACE
-#define ALPAKA_DUPLICATE_NAMESPACE
-#else
 #define ALPAKA_ACCELERATOR_NAMESPACE alpaka_rocm_async
 #define ALPAKA_TYPE_SUFFIX ROCmAsync
-#endif
 
 #endif  // ALPAKA_ACC_GPU_HIP_ENABLED
 
@@ -146,12 +138,8 @@ namespace alpaka_serial_sync {
 
 }  // namespace alpaka_serial_sync
 
-#ifdef ALPAKA_ACCELERATOR_NAMESPACE
-#define ALPAKA_DUPLICATE_NAMESPACE
-#else
 #define ALPAKA_ACCELERATOR_NAMESPACE alpaka_serial_sync
 #define ALPAKA_TYPE_SUFFIX SerialSync
-#endif
 
 #endif  // ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
 
@@ -172,12 +160,8 @@ namespace alpaka_tbb_async {
 
 }  // namespace alpaka_tbb_async
 
-#ifdef ALPAKA_ACCELERATOR_NAMESPACE
-#define ALPAKA_DUPLICATE_NAMESPACE
-#else
 #define ALPAKA_ACCELERATOR_NAMESPACE alpaka_tbb_async
 #define ALPAKA_TYPE_SUFFIX TbbAsync
-#endif
 
 #endif  // ALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED
 
