@@ -4,7 +4,8 @@
 #include <alpaka/core/Common.hpp>
 #include <cstdint>
 
-#include "AlpakaCore/workdivision.h"
+/* #include "AlpakaCore/workdivision.h" */
+#include "AlpakaInterface/interface/workdivision.h"
 #include "../DataFormats/alpaka/PointsAlpaka.h"
 #include "../DataFormats/alpaka/TilesAlpaka.h"
 #include "../DataFormats/alpaka/AlpakaVecArray.h"
@@ -26,8 +27,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   VecArray<int, max_followers>* d_followers,
                                   uint32_t n_points) const {
-      cms::alpakatools::for_each_element_in_grid(
-          acc, n_points, [&](uint32_t i) { d_followers[i].reset(); });
+      for (auto i : cms::alpakatools::uniform_elements(acc, n_points)) {
+		d_followers[i].reset();
+	  }
     }
   };
 
@@ -37,8 +39,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   PointsView<Ndim>* points,
                                   TilesAlpaka<Ndim>* tiles,
                                   uint32_t n_points) const {
-      cms::alpakatools::for_each_element_in_grid(
-          acc, n_points, [&](uint32_t i) { tiles->fill(acc, points->coords[i], i); });
+      for (auto i : cms::alpakatools::uniform_elements(acc, n_points)) {
+		tiles->fill(acc, points->coords[i], i);
+	  }
     }
   };
 
@@ -107,7 +110,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
                                   float dc,
                                   uint32_t n_points) const {
-      cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
+	  for (auto i : cms::alpakatools::uniform_elements(acc, n_points)) {
         float rho_i{0.f};
         VecArray<float, Ndim> coords_i{dev_points->coords[i]};
 
@@ -138,7 +141,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                         i);
 
         dev_points->rho[i] = rho_i;
-      });
+      }
     }
   };
 
@@ -220,7 +223,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   uint32_t n_points) const {
       float dm{outlier_delta_factor * dc};
       float dm_squared{dm * dm};
-      cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
+
+	  for (auto i : cms::alpakatools::uniform_elements(acc, n_points)) {
         float delta_i{std::numeric_limits<float>::max()};
         int nh_i{-1};
         VecArray<float, Ndim> coords_i{dev_points->coords[i]};
@@ -255,7 +259,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
         dev_points->delta[i] = alpaka::math::sqrt(acc, delta_i);
         dev_points->nearest_higher[i] = nh_i;
-      });
+      }
     }
   };
 
@@ -270,7 +274,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   float d_c,
                                   float rho_c,
                                   uint32_t n_points) const {
-      cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
+	  for (auto i : cms::alpakatools::uniform_elements(acc, n_points)) {
         // initialize cluster_index
         dev_points->cluster_index[i] = -1;
 
@@ -290,7 +294,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
           }
           dev_points->is_seed[i] = 0;
         }
-      });
+      }
     }
   };
 
@@ -303,7 +307,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   PointsView<Ndim>* dev_points) const {
       const auto& seeds_0{seeds[0]};
       const auto n_seeds{seeds_0.size()};
-      cms::alpakatools::for_each_element_in_grid(acc, n_seeds, [&](uint32_t idx_cls) {
+	  for (auto idx_cls : cms::alpakatools::uniform_elements(acc, n_seeds)) {
         int local_stack[256] = {-1};
         int local_stack_size{};
 
@@ -332,7 +336,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             ++local_stack_size;
           }
         }
-      });
+      }
     }
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE

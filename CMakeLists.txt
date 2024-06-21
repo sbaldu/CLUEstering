@@ -15,6 +15,9 @@ elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
   set(CMAKE_CXX_FLAGS "-O2")
 endif()
 
+include_directories(./CLUEstering/alpaka/HeterogeneousCore)
+include_directories(./CLUEstering/alpaka/FWCore)
+
 # include alpaka extern subfolder
 include_directories(extern/alpaka/include)
 # include pybind11 extern subfolder

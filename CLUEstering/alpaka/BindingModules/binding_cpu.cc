@@ -15,7 +15,9 @@
 namespace alpaka_serial_sync {
   void listDevices(const std::string& backend) {
     const char tab = '\t';
-    const std::vector<Device> devices = alpaka::getDevs<Platform>();
+
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const std::vector<Device> devices = alpaka::getDevs(platform);
     if (devices.empty()) {
       std::cout << "No devices found for the " << backend << " backend." << std::endl;
       return;
@@ -37,10 +39,11 @@ namespace alpaka_serial_sync {
                                         int Ndim,
                                         size_t block_size,
                                         size_t device_id) {
-    auto const dev_acc = alpaka::getDevByIdx<Acc1D>(device_id);
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const auto device = alpaka::getDevByIdx(platform, device_id);
 
     // Create the queue
-    Queue queue_(dev_acc);
+    Queue queue_(device);
 
     // Running the clustering algorithm //
     switch (Ndim) {
@@ -90,10 +93,11 @@ namespace alpaka_serial_sync {
                                         int Ndim,
                                         size_t block_size,
                                         size_t device_id) {
-    auto const dev_acc = alpaka::getDevByIdx<Acc1D>(device_id);
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const auto device = alpaka::getDevByIdx(platform, device_id);
 
     // Create the queue
-    Queue queue_(dev_acc);
+    Queue queue_(device);
 
     // Running the clustering algorithm //
     switch (Ndim) {
@@ -143,10 +147,11 @@ namespace alpaka_serial_sync {
                                         int Ndim,
                                         size_t block_size,
                                         size_t device_id) {
-    auto const dev_acc = alpaka::getDevByIdx<Acc1D>(device_id);
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const auto device = alpaka::getDevByIdx(platform, device_id);
 
     // Create the queue
-    Queue queue_(dev_acc);
+    Queue queue_(device);
 
     // Running the clustering algorithm //
     switch (Ndim) {
