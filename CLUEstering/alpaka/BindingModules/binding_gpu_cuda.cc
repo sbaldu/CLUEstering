@@ -7,12 +7,12 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 
-using cms::alpakatools::initialise;
-
 namespace alpaka_cuda_async {
   void listDevices(const std::string& backend) {
     const char tab = '\t';
-    const std::vector<Device> devices = alpaka::getDevs<Platform>();
+
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const auto devices = alpaka::getDevs(platform);
     if (devices.empty()) {
       std::cout << "No devices found for the " << backend << " backend." << std::endl;
       return;
@@ -35,10 +35,11 @@ namespace alpaka_cuda_async {
                                         int Ndim,
                                         size_t block_size,
                                         size_t device_id) {
-    const auto dev_acc = alpaka::getDevByIdx<Acc1D>(device_id);
+	const auto platform = alpaka::Platform<Acc1D>{};
+    const auto device = alpaka::getDevByIdx(platform, device_id);
 
     // Create the queue
-    Queue queue_(dev_acc);
+    Queue queue_(device);
 
     // Running the clustering algorithm //
     switch (Ndim) {
