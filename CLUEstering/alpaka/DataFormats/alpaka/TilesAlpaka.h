@@ -7,8 +7,8 @@
 #include <cstdint>
 #include <stdint.h>
 
-#include "AlpakaCore/config.h"
-#include "AlpakaCore/memory.h"
+#include "AlpakaInterface/interface/config.h"
+#include "AlpakaInterface/interface/memory.h"
 #include "AlpakaVecArray.h"
 
 using cms::alpakatools::VecArray;

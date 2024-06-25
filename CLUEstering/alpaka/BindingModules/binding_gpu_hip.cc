@@ -10,6 +10,7 @@
 namespace alpaka_rocm_async {
   void listDevices(const std::string& backend) {
     const char tab = '\t';
+
     const std::vector<Device> devices = alpaka::getDevs<Platform>();
     if (devices.empty()) {
       std::cout << "No devices found for the " << backend << " backend." << std::endl;
