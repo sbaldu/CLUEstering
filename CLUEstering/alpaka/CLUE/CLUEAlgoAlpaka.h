@@ -28,8 +28,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
   class CLUEAlgoAlpaka {
   public:
     CLUEAlgoAlpaka() = delete;
-    explicit CLUEAlgoAlpaka(float dc, float rhoc, float dm, int pPBin, Queue queue_)
-        : dc_{dc}, rhoc_{rhoc}, dm_{dm}, pointsPerTile_{pPBin} {
+    explicit CLUEAlgoAlpaka(const std::vector<float>& dc,
+                            const std::vector<float>& dm,
+                            float rhoc,
+                            int pPBin,
+                            Queue queue_)
+        : m_dc{cms::alpakatools::make_device_buffer<float[]>(queue_, Ndim)},
+          m_dm{cms::alpakatools::make_device_buffer<float[]>(queue_, Ndim)},
+		  m_rhoc{rhoc},
+          pointsPerTile_{pPBin} {
+      alpaka::memcpy(queue_,
+                     m_dc,
+                     cms::alpakatools::make_host_view(dc.data(), Ndim));
+      alpaka::memcpy(queue_,
+                     m_dm,
+                     cms::alpakatools::make_host_view(dm.data(), Ndim));
       init_device(queue_);
     }
 
@@ -45,9 +58,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                 std::size_t block_size);
 
   private:
-    float dc_;
-    float rhoc_;
-    float dm_;
+    cms::alpakatools::device_buffer<Device, float[]> m_dc;
+    cms::alpakatools::device_buffer<Device, float[]> m_dm;
+    float m_rhoc;
     // average number of points found in a tile
     int pointsPerTile_;
 
@@ -193,8 +206,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                     m_tiles,
                                                     d_points.view(),
                                                     kernel,
-                                                    /* m_domains.data(), */
-                                                    dc_,
+                                                    m_dc.data(),
                                                     h_points.n));
 
     alpaka::enqueue(queue_,
@@ -202,9 +214,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                     KernelCalculateNearestHigher{},
                                                     m_tiles,
                                                     d_points.view(),
-                                                    /* m_domains.data(), */
-                                                    dm_,
-                                                    dc_,
+                                                    m_dm.data(),
                                                     h_points.n));
 
     alpaka::enqueue(queue_,
@@ -213,9 +223,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                     m_seeds,
                                                     m_followers,
                                                     d_points.view(),
-                                                    dm_,
-                                                    dc_,
-                                                    rhoc_,
+													m_dm.data(),
+													m_dc.data(),
+                                                    m_rhoc,
                                                     h_points.n));
 
     // We change the working division when assigning the clusters
