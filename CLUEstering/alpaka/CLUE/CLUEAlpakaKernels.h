@@ -65,10 +65,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       TilesAlpaka<Ndim>* tiles,
       PointsView<Ndim>* dev_points,
       const KernelType& kernel,
-      /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
       const VecArray<float, Ndim>& coords_i,
       float* rho_i,
-      float dc,
+      float* dc,
       uint32_t point_id) {
     if constexpr (N_ == 0) {
       int binId{tiles->getGlobalBinByBin(acc, base_vec)};
@@ -78,20 +77,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       // iterate inside this bin
       for (int binIter{}; binIter < binSize; ++binIter) {
         uint32_t j{(*tiles)[binId][binIter]};
-        // query N_{dc_}(i)
-
         VecArray<float, Ndim> coords_j{dev_points->coords[j]};
 
-        float dist_ij_sq{0.f};
-        for (int dim{}; dim != Ndim; ++dim) {
-          dist_ij_sq += (coords_j[dim] - coords_i[dim]) * (coords_j[dim] - coords_i[dim]);
+		float radial_distance = 0.f;
+        float normalized_distance = 0.f;
+        for (size_t dim = 0; dim != Ndim; ++dim) {
+          float dist = coords_j[dim] - coords_i[dim];
+		  radial_distance += dist * dist;
+          normalized_distance += dist * dist / (dc[dim] * dc[dim]);
         }
 
-        if (dist_ij_sq <= dc * dc) {
-          *rho_i += kernel(acc, alpaka::math::sqrt(acc, dist_ij_sq), point_id, j) *
+        if (normalized_distance <= 1) {
+          *rho_i += kernel(acc, alpaka::math::sqrt(acc, radial_distance), point_id, j) *
                     dev_points->weight[j];
         }
-
       }  // end of interate inside this bin
 
       return;
@@ -120,8 +119,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   TilesAlpaka<Ndim>* dev_tiles,
                                   PointsView<Ndim>* dev_points,
                                   const KernelType& kernel,
-                                  /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
-                                  float dc,
+                                  float* dc,
                                   uint32_t n_points) const {
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         float rho_i{0.f};
@@ -131,8 +129,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         VecArray<VecArray<float, 2>, Ndim> searchbox_extremes;
         for (int dim{}; dim != Ndim; ++dim) {
           VecArray<float, 2> dim_extremes;
-          dim_extremes.push_back_unsafe(coords_i[dim] - dc);
-          dim_extremes.push_back_unsafe(coords_i[dim] + dc);
+          dim_extremes.push_back_unsafe(coords_i[dim] - dc[dim]);
+          dim_extremes.push_back_unsafe(coords_i[dim] + dc[dim]);
 
           searchbox_extremes.push_back_unsafe(dim_extremes);
         }
@@ -165,12 +163,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       const VecArray<VecArray<uint32_t, 2>, Ndim>& s_box,
       TilesAlpaka<Ndim>* tiles,
       PointsView<Ndim>* dev_points,
-      /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
       const VecArray<float, Ndim>& coords_i,
       float rho_i,
       float* delta_i,
       int* nh_i,
-      float dm_sq,
+      float* dm,
       uint32_t point_id) {
     if constexpr (N_ == 0) {
       int binId{tiles->getGlobalBinByBin(acc, base_vec)};
@@ -178,35 +175,34 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       int binSize{(*tiles)[binId].size()};
 
       // iterate inside this bin
-      for (int binIter{}; binIter < binSize; ++binIter) {
+      for (auto binIter = 0; binIter < binSize; ++binIter) {
         unsigned int j{(*tiles)[binId][binIter]};
-        // query N'_{dm}(i)
         float rho_j{dev_points->rho[j]};
         bool found_higher{(rho_j > rho_i)};
         // in the rare case where rho is the same, use detid
         found_higher =
             found_higher || ((rho_j == rho_i) && (rho_j > 0.f) && (j > point_id));
 
-        // Calculate the distance between the two points
         VecArray<float, Ndim> coords_j{dev_points->coords[j]};
-        float dist_ij_sq{0.f};
-        for (int dim{}; dim != Ndim; ++dim) {
-          dist_ij_sq += (coords_j[dim] - coords_i[dim]) * (coords_j[dim] - coords_i[dim]);
+		float radial_distance = 0.f;
+        float normalized_distance = 0.f;
+        for (size_t dim = 0; dim != Ndim; ++dim) {
+		  float dist = coords_j[dim] - coords_i[dim];
+		  radial_distance += dist * dist;
+          normalized_distance += dist * dist / (dm[dim] * dm[dim]);
         }
 
-        if (found_higher && dist_ij_sq <= dm_sq) {
-          // find the nearest point within N'_{dm}(i)
-          if (dist_ij_sq < *delta_i) {
-            // update delta_i and nearestHigher_i
-            *delta_i = dist_ij_sq;
+        if (found_higher && normalized_distance <= 1) {
+          if (radial_distance < *delta_i) {
+            *delta_i = radial_distance;
             *nh_i = j;
           }
         }
-      }  // end of interate inside this bin
+      }  // end of iterate inside this bin
 
       return;
     } else {
-      for (unsigned int i{s_box[s_box.capacity() - N_][0]};
+      for (uint32_t i{s_box[s_box.capacity() - N_][0]};
            i <= s_box[s_box.capacity() - N_][1];
            ++i) {
         base_vec[base_vec.capacity() - N_] = i;
@@ -219,7 +215,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                          rho_i,
                                                          delta_i,
                                                          nh_i,
-                                                         dm_sq,
+                                                         dm,
                                                          point_id);
       }
     }
@@ -230,11 +226,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   TilesAlpaka<Ndim>* dev_tiles,
                                   PointsView<Ndim>* dev_points,
-                                  /* const VecArray<VecArray<float, 2>, Ndim>& domains, */
-                                  float dm,
-                                  float dc,
+                                  float* dm,
                                   uint32_t n_points) const {
-      float dm_squared{dm * dm};
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         float delta_i{std::numeric_limits<float>::max()};
         int nh_i{-1};
@@ -245,8 +238,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         VecArray<VecArray<float, 2>, Ndim> searchbox_extremes;
         for (int dim{}; dim != Ndim; ++dim) {
           VecArray<float, 2> dim_extremes;
-          dim_extremes.push_back_unsafe(coords_i[dim] - dm);
-          dim_extremes.push_back_unsafe(coords_i[dim] + dm);
+          dim_extremes.push_back_unsafe(coords_i[dim] - dm[dim]);
+          dim_extremes.push_back_unsafe(coords_i[dim] + dm[dim]);
 
           searchbox_extremes.push_back_unsafe(dim_extremes);
         }
@@ -265,7 +258,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                                        rho_i,
                                                        &delta_i,
                                                        &nh_i,
-                                                       dm_squared,
+                                                       dm,
                                                        i);
 
         dev_points->delta[i] = alpaka::math::sqrt(acc, delta_i);
@@ -281,10 +274,21 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   VecArray<int32_t, max_seeds>* seeds,
                                   VecArray<int32_t, max_followers>* followers,
                                   PointsView<Ndim>* dev_points,
-                                  float dm,
-                                  float d_c,
+								  const float* dm,
+								  const float* dc,
                                   float rho_c,
                                   uint32_t n_points) const {
+	  float equivalent_dc = 1.f;
+	  float equivalent_dm = 1.f;
+	  if (cms::alpakatools::once_per_grid(acc)) {
+		for (size_t dim = 0; dim != Ndim; ++dim) {
+		  equivalent_dc *= dc[dim];
+		  equivalent_dm *= dm[dim];
+		}
+		equivalent_dc = alpaka::math::sqrt(acc, equivalent_dc);
+		equivalent_dm = alpaka::math::sqrt(acc, equivalent_dm);
+	  }
+
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         // initialize cluster_index
         dev_points->cluster_index[i] = -1;
@@ -293,8 +297,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         float rho_i{dev_points->rho[i]};
 
         // Determine whether the point is a seed or an outlier
-        bool is_seed{(delta_i > d_c) && (rho_i >= rho_c)};
-        bool is_outlier{(delta_i > dm) && (rho_i < rho_c)};
+        bool is_seed{(delta_i > equivalent_dc) && (rho_i >= rho_c)};
+        bool is_outlier{(delta_i > equivalent_dm) && (rho_i < rho_c)};
 
         if (is_seed) {
           dev_points->is_seed[i] = 1;
