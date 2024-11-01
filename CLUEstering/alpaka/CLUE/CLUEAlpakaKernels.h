@@ -79,11 +79,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
         uint32_t j{(*tiles)[binId][binIter]};
         VecArray<float, Ndim> coords_j{dev_points->coords[j]};
 
-		float radial_distance = 0.f;
+        float radial_distance = 0.f;
         float normalized_distance = 0.f;
         for (size_t dim = 0; dim != Ndim; ++dim) {
           float dist = coords_j[dim] - coords_i[dim];
-		  radial_distance += dist * dist;
+          radial_distance += dist * dist;
           normalized_distance += dist * dist / (dc[dim] * dc[dim]);
         }
 
@@ -184,11 +184,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
             found_higher || ((rho_j == rho_i) && (rho_j > 0.f) && (j > point_id));
 
         VecArray<float, Ndim> coords_j{dev_points->coords[j]};
-		float radial_distance = 0.f;
+        float radial_distance = 0.f;
         float normalized_distance = 0.f;
         for (size_t dim = 0; dim != Ndim; ++dim) {
-		  float dist = coords_j[dim] - coords_i[dim];
-		  radial_distance += dist * dist;
+          float dist = coords_j[dim] - coords_i[dim];
+          radial_distance += dist * dist;
           normalized_distance += dist * dist / (dm[dim] * dm[dim]);
         }
 
@@ -274,20 +274,20 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                                   VecArray<int32_t, max_seeds>* seeds,
                                   VecArray<int32_t, max_followers>* followers,
                                   PointsView<Ndim>* dev_points,
-								  const float* dm,
-								  const float* dc,
+                                  const float* dm,
+                                  const float* dc,
                                   float rho_c,
                                   uint32_t n_points) const {
-	  float equivalent_dc = 1.f;
-	  float equivalent_dm = 1.f;
-	  if (cms::alpakatools::once_per_grid(acc)) {
-		for (size_t dim = 0; dim != Ndim; ++dim) {
-		  equivalent_dc *= dc[dim];
-		  equivalent_dm *= dm[dim];
-		}
-		equivalent_dc = alpaka::math::sqrt(acc, equivalent_dc);
-		equivalent_dm = alpaka::math::sqrt(acc, equivalent_dm);
-	  }
+      float equivalent_dc = 1.f;
+      float equivalent_dm = 1.f;
+      if (cms::alpakatools::once_per_grid(acc)) {
+        for (size_t dim = 0; dim != Ndim; ++dim) {
+          equivalent_dc *= dc[dim];
+          equivalent_dm *= dm[dim];
+        }
+        equivalent_dc = alpaka::math::sqrt(acc, equivalent_dc);
+        equivalent_dm = alpaka::math::sqrt(acc, equivalent_dm);
+      }
 
       cms::alpakatools::for_each_element_in_grid(acc, n_points, [&](uint32_t i) {
         // initialize cluster_index
