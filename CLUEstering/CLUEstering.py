@@ -1197,8 +1197,10 @@ class clusterer:
         df_.to_csv(out_path,index=False)
 
 if __name__ == "__main__":
-    c = clusterer(20., 10., 20.)
-    c.read_data('./sissa.csv')
+    # c = clusterer(20., 10., 20.)
+    # c.read_data('./sissa.csv')
+    c = clusterer(1.5, 10., 1.5)
+    c.read_data('./data_65536.csv')
     # c.input_plotter()
     c.run_clue(backend="cpu serial", verbose=True)
     c.run_clue(backend="cpu tbb", verbose=True)
