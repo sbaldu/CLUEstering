@@ -697,19 +697,19 @@ class clusterer:
 
         elif backend == "gpu cuda":
             if cuda_found:
-                cluster_id_is_seed = gpu_cuda.mainRun(self.dc_, self.rhoc, self.dm,
-                                                      self.ppbin, data, self.clust_data.weight,
-                                                      self.kernel, self.clust_data.n_dim, block_size,
-                                                      device_id)
+                cluster_id_is_seed = gpu_cuda.mainRun(self.dc_, self.rhoc, self.dm, self.ppbin,
+                                                      self.clust_data.coords, self.clust_data.results,
+                                                      self.kernel, self.clust_data.n_dim,
+                                                      self.clust_data.n_points, block_size, device_id)
             else:
                 print("CUDA module not found. Please re-compile the library and try again.")
 
         elif backend == "gpu hip":
             if hip_found:
-                cluster_id_is_seed = gpu_hip.mainRun(self.dc_, self.rhoc, self.dm,
-                                                     self.ppbin, data, self.clust_data.weight,
-                                                     self.kernel, self.clust_data.n_dim, block_size,
-                                                     device_id)
+                cluster_id_is_seed = gpu_hip.mainRun(self.dc_, self.rhoc, self.dm, self.ppbin,
+                                                     self.clust_data.coords, self.clust_data.results,
+                                                     self.kernel, self.clust_data.n_dim,
+                                                     self.clust_data.n_points, block_size, device_id)
             else:
                 print("HIP module not found. Please re-compile the library and try again.")
 
