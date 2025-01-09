@@ -8,7 +8,7 @@
 #include "../../AlpakaCore/alpakaMemory.hpp"
 #include "../Points.hpp"
 
-namespace ALPAKA_ACCELERATOR_NAMESPACE {
+namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
   template <uint8_t Ndim>
   class PointsAlpaka {
@@ -16,10 +16,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
     PointsAlpaka() = delete;
     explicit PointsAlpaka(Queue stream, int n_points)
-        : buffer{cms::alpakatools::make_device_buffer<float[]>(stream,
+        : buffer{clue::make_device_buffer<float[]>(stream,
                                                                (Ndim + 6) * n_points)},
-          view_dev{cms::alpakatools::make_device_buffer<PointsAlpakaView>(stream)} {
-      auto view_host = cms::alpakatools::make_host_buffer<PointsAlpakaView>(stream);
+          view_dev{clue::make_device_buffer<PointsAlpakaView>(stream)} {
+      auto view_host = clue::make_host_buffer<PointsAlpakaView>(stream);
       view_host->coords = buffer.data();
       view_host->weight = buffer.data() + Ndim * n_points;
       view_host->rho = buffer.data() + (Ndim + 1) * n_points;
@@ -40,7 +40,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     PointsAlpaka& operator=(PointsAlpaka&&) = default;
     ~PointsAlpaka() = default;
 
-    cms::alpakatools::device_buffer<Device, float[]> buffer;
+    clue::device_buffer<Device, float[]> buffer;
 
     class PointsAlpakaView {
     public:
@@ -57,7 +57,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     PointsAlpakaView* view() { return view_dev.data(); }
 
   private:
-    cms::alpakatools::device_buffer<Device, PointsAlpakaView> view_dev;
+    clue::device_buffer<Device, PointsAlpakaView> view_dev;
   };
 }  // namespace ALPAKA_ACCELERATOR_NAMESPACE
 

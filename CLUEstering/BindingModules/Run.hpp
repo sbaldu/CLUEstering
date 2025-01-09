@@ -16,7 +16,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
            const Kernel& kernel,
            Queue queue_,
            size_t block_size) {
-    CLUEAlgoAlpaka<Acc1D, Ndim> algo(dc, rhoc, dm, pPBin, queue_);
+    CLUEAlgoAlpaka<Ndim> algo(dc, rhoc, dm, pPBin, queue_);
 
     // Create the host and device points
     PointsSoA<Ndim> h_points(std::get<0>(pData), std::get<1>(pData), shape);

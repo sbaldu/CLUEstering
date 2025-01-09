@@ -69,8 +69,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
                              uint32_t nPerDim);
   };
 
-  template <typename TAcc, uint8_t Ndim>
-  void CLUEAlgoAlpaka<TAcc, Ndim>::calculate_tile_size(CoordinateExtremes<Ndim>& min_max,
+  template <uint8_t Ndim>
+  void CLUEAlgoAlpaka<Ndim>::calculate_tile_size(CoordinateExtremes<Ndim>& min_max,
                                                        float* tile_sizes,
                                                        const PointsSoA<Ndim>& h_points,
                                                        uint32_t nPerDim) {
@@ -103,8 +103,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     m_followers = (*d_followers).data();
   }
 
-  template <typename TAcc, uint8_t Ndim>
-  void CLUEAlgoAlpaka<TAcc, Ndim>::setup(const PointsSoA<Ndim>& h_points,
+  template <uint8_t Ndim>
+  void CLUEAlgoAlpaka<Ndim>::setup(const PointsSoA<Ndim>& h_points,
                                          PointsAlpaka<Ndim>& d_points,
                                          Queue queue_,
                                          std::size_t block_size) {
@@ -134,13 +134,13 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     const auto copyExtent = (Ndim + 1) * h_points.nPoints();
     alpaka::memcpy(queue_,
                    d_points.buffer,
-                   cms::alpakatools::make_host_view(h_points.coords(), copyExtent),
+                   clue::make_host_view(h_points.coords(), copyExtent),
                    copyExtent);
     alpaka::memset(queue_, *d_seeds, 0x00);
 
     // Define the working division
-    const Idx grid_size = cms::alpakatools::divide_up_by(h_points.nPoints(), block_size);
-    const auto working_div = cms::alpakatools::make_workdiv<Acc1D>(grid_size, block_size);
+    const Idx grid_size = clue::divide_up_by(h_points.nPoints(), block_size);
+    const auto working_div = clue::make_workdiv<Acc1D>(grid_size, block_size);
     alpaka::enqueue(
         queue_,
         alpaka::createTaskKernel<Acc1D>(
@@ -150,7 +150,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   // Public methods
   template <uint8_t Ndim>
   template <typename KernelType>
-  void CLUEAlgoAlpaka<TAcc, Ndim>::make_clusters(PointsSoA<Ndim>& h_points,
+  void CLUEAlgoAlpaka<Ndim>::make_clusters(PointsSoA<Ndim>& h_points,
                                                  PointsAlpaka<Ndim>& d_points,
                                                  const KernelType& kernel,
                                                  Queue queue_,
@@ -159,8 +159,8 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
     const auto nPoints = h_points.nPoints();
 
-    const Idx grid_size = cms::alpakatools::divide_up_by(nPoints, block_size);
-    auto working_div = cms::alpakatools::make_workdiv<Acc1D>(grid_size, block_size);
+    const Idx grid_size = clue::divide_up_by(nPoints, block_size);
+    auto working_div = clue::make_workdiv<Acc1D>(grid_size, block_size);
     alpaka::enqueue(
         queue_,
         alpaka::createTaskKernel<Acc1D>(
@@ -213,23 +213,23 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 #ifdef DEBUG
     alpaka::memcpy(
         queue_,
-        cms::alpakatools::make_host_view(h_points.debugInfo().rho.data(), nPoints),
-        cms::alpakatools::make_device_view(device, d_points.view()->rho, nPoints));
+        clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
+        clue::make_device_view(device, d_points.view()->rho, nPoints));
     alpaka::memcpy(
         queue_,
-        cms::alpakatools::make_host_view(h_points.debugInfo().rho.data(), nPoints),
-        cms::alpakatools::make_device_view(device, d_points.view()->delta, nPoints));
+        clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
+        clue::make_device_view(device, d_points.view()->delta, nPoints));
     alpaka::memcpy(queue_,
-                   cms::alpakatools::make_host_view(
+                   clue::make_host_view(
                        h_points.debugInfo().nearestHigher.data(), nPoints),
-                   cms::alpakatools::make_device_view(
+                   clue::make_device_view(
                        device, d_points.view()->nearest_higher, nPoints));
 #endif
 
     alpaka::memcpy(
         queue_,
-        cms::alpakatools::make_host_view(h_points.clusterIndexes(), 2 * nPoints),
-        cms::alpakatools::make_device_view(
+        clue::make_host_view(h_points.clusterIndexes(), 2 * nPoints),
+        clue::make_device_view(
             device, d_points.view()->cluster_index, 2 * nPoints),
         2 * nPoints);
 
