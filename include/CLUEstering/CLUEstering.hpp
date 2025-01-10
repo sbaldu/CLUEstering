@@ -71,9 +71,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
   template <uint8_t Ndim>
   void CLUEAlgoAlpaka<Ndim>::calculate_tile_size(CoordinateExtremes<Ndim>& min_max,
-                                                       float* tile_sizes,
-                                                       const PointsSoA<Ndim>& h_points,
-                                                       uint32_t nPerDim) {
+                                                 float* tile_sizes,
+                                                 const PointsSoA<Ndim>& h_points,
+                                                 uint32_t nPerDim) {
     auto n = h_points.nPoints();
     for (size_t dim{}; dim != Ndim; ++dim) {
       const auto offset = dim * n;
@@ -105,9 +105,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
   template <uint8_t Ndim>
   void CLUEAlgoAlpaka<Ndim>::setup(const PointsSoA<Ndim>& h_points,
-                                         PointsAlpaka<Ndim>& d_points,
-                                         Queue queue_,
-                                         std::size_t block_size) {
+                                   PointsAlpaka<Ndim>& d_points,
+                                   Queue queue_,
+                                   std::size_t block_size) {
     // calculate the number of tiles and their size
     const auto nTiles{std::ceil(h_points.nPoints() / static_cast<float>(pointsPerTile_))};
     const auto nPerDim{std::ceil(std::pow(nTiles, 1. / Ndim))};
@@ -151,10 +151,10 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   template <uint8_t Ndim>
   template <typename KernelType>
   void CLUEAlgoAlpaka<Ndim>::make_clusters(PointsSoA<Ndim>& h_points,
-                                                 PointsAlpaka<Ndim>& d_points,
-                                                 const KernelType& kernel,
-                                                 Queue queue_,
-                                                 std::size_t block_size) {
+                                           PointsAlpaka<Ndim>& d_points,
+                                           const KernelType& kernel,
+                                           Queue queue_,
+                                           std::size_t block_size) {
     setup(h_points, d_points, queue_, block_size);
 
     const auto nPoints = h_points.nPoints();
@@ -211,26 +211,22 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
     const auto device = alpaka::getDev(queue_);
 #ifdef DEBUG
-    alpaka::memcpy(
-        queue_,
-        clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
-        clue::make_device_view(device, d_points.view()->rho, nPoints));
-    alpaka::memcpy(
-        queue_,
-        clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
-        clue::make_device_view(device, d_points.view()->delta, nPoints));
     alpaka::memcpy(queue_,
-                   clue::make_host_view(
-                       h_points.debugInfo().nearestHigher.data(), nPoints),
-                   clue::make_device_view(
-                       device, d_points.view()->nearest_higher, nPoints));
+                   clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
+                   clue::make_device_view(device, d_points.view()->rho, nPoints));
+    alpaka::memcpy(queue_,
+                   clue::make_host_view(h_points.debugInfo().rho.data(), nPoints),
+                   clue::make_device_view(device, d_points.view()->delta, nPoints));
+    alpaka::memcpy(
+        queue_,
+        clue::make_host_view(h_points.debugInfo().nearestHigher.data(), nPoints),
+        clue::make_device_view(device, d_points.view()->nearest_higher, nPoints));
 #endif
 
     alpaka::memcpy(
         queue_,
         clue::make_host_view(h_points.clusterIndexes(), 2 * nPoints),
-        clue::make_device_view(
-            device, d_points.view()->cluster_index, 2 * nPoints),
+        clue::make_device_view(device, d_points.view()->cluster_index, 2 * nPoints),
         2 * nPoints);
 
     // Wait for all the operations in the queue to finish

@@ -308,7 +308,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
         // Determine whether the point is a seed or an outlier
         bool is_seed{(delta_i > d_c) && (rho_i >= rho_c)};
-		bool is_outlier{(delta_i > dm) && (rho_i < rho_c)};
+        bool is_outlier{(delta_i > dm) && (rho_i < rho_c)};
 
         if (is_seed) {
           dev_points->is_seed[i] = 1;

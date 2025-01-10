@@ -13,11 +13,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   template <uint8_t Ndim>
   class PointsAlpaka {
   public:
-
     PointsAlpaka() = delete;
     explicit PointsAlpaka(Queue stream, int n_points)
-        : buffer{clue::make_device_buffer<float[]>(stream,
-                                                               (Ndim + 6) * n_points)},
+        : buffer{clue::make_device_buffer<float[]>(stream, (Ndim + 6) * n_points)},
           view_dev{clue::make_device_buffer<PointsAlpakaView>(stream)} {
       auto view_host = clue::make_host_buffer<PointsAlpakaView>(stream);
       view_host->coords = buffer.data();
@@ -29,7 +27,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
       view_host->cluster_index =
           reinterpret_cast<int*>(buffer.data() + (Ndim + 4) * n_points);
       view_host->is_seed = reinterpret_cast<int*>(buffer.data() + (Ndim + 5) * n_points);
-	  view_host->n = n_points;
+      view_host->n = n_points;
 
       alpaka::memcpy(stream, view_dev, view_host);
     }
@@ -51,7 +49,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
       int* nearest_higher;
       int* cluster_index;
       int* is_seed;
-	  int n;
+      int n;
     };
 
     PointsAlpakaView* view() { return view_dev.data(); }
@@ -59,6 +57,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   private:
     clue::device_buffer<Device, PointsAlpakaView> view_dev;
   };
-}  // namespace ALPAKA_ACCELERATOR_NAMESPACE
+}  // namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE
 
 #endif
