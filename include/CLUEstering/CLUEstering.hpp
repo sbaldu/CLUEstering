@@ -226,7 +226,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     alpaka::memcpy(
         queue_,
         clue::make_host_view(h_points.clusterIndexes(), 2 * nPoints),
-        clue::make_device_view(device, d_points.view()->cluster_index, 2 * nPoints),
+        clue::make_device_view(device, d_points.buffer.data() + nPoints, 2 * nPoints),
         2 * nPoints);
 
     // Wait for all the operations in the queue to finish
