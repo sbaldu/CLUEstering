@@ -76,7 +76,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
         const TAcc& acc, const VecArray<float, Ndim>& coords) const {
       int globalBin{getBin(acc, coords[0], 0)};
       for (int i{1}; i != Ndim; ++i) {
-        globalBin += n_tiles_per_dim * getBin(acc, coords[i], i);
+        globalBin += i * n_tiles_per_dim * getBin(acc, coords[i], i);
       }
       return globalBin;
     }
@@ -86,7 +86,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
         const TAcc&, const VecArray<uint32_t, Ndim>& Bins) const {
       uint32_t globalBin{Bins[0]};
       for (int i{1}; i != Ndim; ++i) {
-        globalBin += n_tiles_per_dim * Bins[i];
+        globalBin += i * n_tiles_per_dim * Bins[i];
       }
       return globalBin;
     }
