@@ -18,22 +18,20 @@ endif()
 include(FetchContent)
 
 find_package(alpaka)
-if (NOT alpaka_FOUND)
-	FetchContent_Declare(
-		alpaka
-		GIT_REPOSITORY https://github.com/alpaka-group/alpaka.git
-		GIT_TAG develop
-	)
+if(NOT alpaka_FOUND)
+  FetchContent_Declare(
+    alpaka
+    GIT_REPOSITORY https://github.com/alpaka-group/alpaka.git
+    GIT_TAG develop)
 
-	FetchContent_GetProperties(alpaka)
-	if(NOT alpaka_POPULATED)
-		FetchContent_Populate(alpaka)
-	endif()
-	set(alpaka_PATH ./build/_deps/alpaka-src/include)
+  FetchContent_GetProperties(alpaka)
+  if(NOT alpaka_POPULATED)
+    FetchContent_Populate(alpaka)
+  endif()
+  set(alpaka_PATH ./build/_deps/alpaka-src/include)
 else()
-	set(alpaka_PATH ${alpaka_INCLUDE_DIRS})
+  set(alpaka_PATH ${alpaka_INCLUDE_DIRS})
 endif()
-
 
 # look for boost
 find_package(Boost 1.75.0)
@@ -70,11 +68,8 @@ target_include_directories(serial.out PRIVATE ${alpaka_PATH})
 target_link_libraries(serial.out PRIVATE ${Boost_LIBRARIES})
 target_include_directories(serial.out PRIVATE ${Boost_PATH})
 # alpaka build flags
-target_compile_options(
-  serial.out
-  PRIVATE -DALPAKA_HOST_ONLY -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_PRESENT
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND)
+target_compile_options(serial.out PRIVATE -DALPAKA_HOST_ONLY
+                                          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
 if(NOT "${ANNOTATE}" STREQUAL "")
   target_compile_options(serial.out PRIVATE -DANNOTATE)
 endif()
@@ -88,14 +83,11 @@ if(NOT ${SERIAL_ONLY})
   if(TBB_FOUND)
     # compile cpu tbb module
     add_executable(tbb.out main.cpp)
-	target_include_directories(tbb.out PRIVATE ${alpaka_PATH})
+    target_include_directories(tbb.out PRIVATE ${alpaka_PATH})
     target_link_libraries(tbb.out PRIVATE ${Boost_LIBRARIES})
     target_include_directories(tbb.out PRIVATE ${Boost_PATH})
-    target_compile_options(
-      tbb.out
-      PRIVATE -ltbb -DALPAKA_ACC_CPU_B_TBB_T_SEQ_PRESENT
-              -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED
-              -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ASYNC_BACKEND)
+    target_compile_options(tbb.out PRIVATE -ltbb
+                                           -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED)
     target_link_libraries(tbb.out PRIVATE TBB::tbb)
     if(NOT "${ANNOTATE}" STREQUAL "")
       target_compile_options(tbb.out PRIVATE -DANNOTATE)
@@ -128,7 +120,7 @@ if((NOT ${CPU_ONLY}) AND (NOT ${SERIAL_ONLY}))
     set_source_files_properties(main.cpp PROPERTIES LANGUAGE CUDA)
     # compile gpu cuda module
     add_executable(cuda.out main.cpp)
-	target_include_directories(cuda.out PRIVATE ${alpaka_PATH})
+    target_include_directories(cuda.out PRIVATE ${alpaka_PATH})
     # link boost
     target_link_libraries(cuda.out PRIVATE ${Boost_LIBRARIES})
     target_include_directories(cuda.out PRIVATE ${Boost_PATH})
@@ -136,10 +128,7 @@ if((NOT ${CPU_ONLY}) AND (NOT ${SERIAL_ONLY}))
     set_target_properties(cuda.out PROPERTIES CUDA_ARCHITECTURES
                                               "50;60;61;62;70")
     # alpaka build flags
-    target_compile_options(
-      cuda.out
-      PRIVATE -DALPAKA_ACC_GPU_CUDA_PRESENT -DALPAKA_ACC_GPU_CUDA_ENABLED
-              -DALPAKA_ACC_GPU_CUDA_ASYNC_BACKEND)
+    target_compile_options(cuda.out PRIVATE -DALPAKA_ACC_GPU_CUDA_ENABLED)
     # nvcc compilation flags
     target_compile_options(
       cuda.out PRIVATE --expt-relaxed-constexpr -gencode

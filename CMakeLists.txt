@@ -53,10 +53,9 @@ target_include_directories(
                                      ${Boost_INCLUDE_DIR})
 # alpaka build flags
 target_compile_options(
-  CLUE_Convolutional_Kernels
-  PRIVATE -DALPAKA_HOST_ONLY -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_PRESENT
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND)
+  CLUE_Convolutional_Kernels PRIVATE -DALPAKA_HOST_ONLY
+                                     -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
+
 # set output directory
 set_target_properties(
   CLUE_Convolutional_Kernels PROPERTIES LIBRARY_OUTPUT_DIRECTORY
@@ -76,10 +75,8 @@ target_include_directories(CLUE_CPU_Serial PRIVATE ${alpaka_SOURCE_DIR}/include
                                                    ${Boost_INCLUDE_DIR})
 # alpaka build flags
 target_compile_options(
-  CLUE_CPU_Serial
-  PRIVATE -DALPAKA_HOST_ONLY -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_PRESENT
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
-          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND)
+  CLUE_CPU_Serial PRIVATE -DALPAKA_HOST_ONLY
+                          -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED)
 # set output directory
 set_target_properties(CLUE_CPU_Serial PROPERTIES LIBRARY_OUTPUT_DIRECTORY
                                                  ./lib/CLUEstering/lib/)
@@ -100,11 +97,8 @@ if(NOT ${SERIAL_ONLY})
                         CLUEstering/BindingModules/binding_cpu_tbb.cpp)
     target_include_directories(CLUE_CPU_TBB PRIVATE ${alpaka_SOURCE_DIR}/include
                                                     ${Boost_SOURCE_DIR})
-    target_compile_options(
-      CLUE_CPU_TBB
-      PRIVATE -ltbb -DALPAKA_ACC_CPU_B_TBB_T_SEQ_PRESENT
-              -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED
-              -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ASYNC_BACKEND)
+    target_compile_options(CLUE_CPU_TBB
+                           PRIVATE -ltbb -DALPAKA_ACC_CPU_B_TBB_T_SEQ_ENABLED)
     target_link_libraries(CLUE_CPU_TBB PRIVATE TBB::tbb)
     set_target_properties(CLUE_CPU_TBB PROPERTIES LIBRARY_OUTPUT_DIRECTORY
                                                   ./lib/CLUEstering/lib/)
@@ -147,10 +141,8 @@ if((NOT ${CPU_ONLY}) AND (NOT ${SERIAL_ONLY}))
     set_target_properties(CLUE_GPU_CUDA PROPERTIES CUDA_ARCHITECTURES
                                                    "50;60;61;62;70")
     # alpaka build flags
-    target_compile_options(
-      CLUE_GPU_CUDA
-      PRIVATE -DALPAKA_ACC_GPU_CUDA_PRESENT -DALPAKA_ACC_GPU_CUDA_ENABLED
-              -DALPAKA_ACC_GPU_CUDA_ASYNC_BACKEND)
+    target_compile_options(CLUE_GPU_CUDA PRIVATE -DALPAKA_ACC_GPU_CUDA_ENABLED)
+
     # nvcc compilation flags
     target_compile_options(
       CLUE_GPU_CUDA PRIVATE --expt-relaxed-constexpr -gencode
@@ -185,10 +177,8 @@ if((NOT ${CPU_ONLY}) AND (NOT ${SERIAL_ONLY}))
     target_include_directories(CLUE_GPU_HIP PRIVATE ${alpaka_SOURCE_DIR}/include
                                                     ${Boost_INCLUDE_DIR})
     # alpaka build flags
-    target_compile_options(
-      CLUE_GPU_HIP
-      PRIVATE -DALPAKA_ACC_GPU_HIP_PRESENT -DALPAKA_ACC_GPU_HIP_ENABLED
-              -DALPAKA_ACC_GPU_HIP_ASYNC_BACKEND)
+    target_compile_options(CLUE_GPU_HIP PRIVATE -DALPAKA_ACC_GPU_HIP_ENABLED)
+
     # link hip-rand libraries
     target_include_directories(CLUE_GPU_HIP PRIVATE ${hip_INCLUDE_DIRS})
     target_include_directories(CLUE_GPU_HIP PRIVATE ${hip_BASE}/hiprand/include)
