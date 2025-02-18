@@ -4,7 +4,7 @@
 #include "alpakaConfig.hpp"
 #include "alpakaDevices.hpp"
 
-namespace clue {
+namespace alpaka_tools {
 
   template <typename TPlatform>
   alpaka::Dev<TPlatform> const& chooseDevice(edm::StreamID id) {
@@ -18,4 +18,4 @@ namespace clue {
     return devices[id % devices.size()];
   }
 
-}  // namespace clue
+}  // namespace alpaka_tools

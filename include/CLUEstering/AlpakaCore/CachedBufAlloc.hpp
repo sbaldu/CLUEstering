@@ -6,7 +6,7 @@
 #include "getDeviceCachingAllocator.hpp"
 #include "getHostCachingAllocator.hpp"
 
-namespace clue {
+namespace alpaka_tools {
 
   namespace traits {
 

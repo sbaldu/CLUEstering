@@ -3,7 +3,7 @@
 
 #include <limits>
 
-namespace clue {
+namespace alpaka_tools {
 
   namespace config {
 
@@ -26,4 +26,4 @@ namespace clue {
 
   }  // namespace config
 
-}  // namespace clue
+}  // namespace alpaka_tools

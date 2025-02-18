@@ -3,7 +3,7 @@
 
 #include <alpaka/alpaka.hpp>
 
-namespace clue {
+namespace alpaka_tools {
 
   // Which memory allocator to use
   //   - Synchronous:   (device and host) cudaMalloc/hipMalloc and cudaMallocHost/hipMallocHost
@@ -47,4 +47,4 @@ namespace clue {
 #endif
 #endif  // ALPAKA_ACC_GPU_HIP_ENABLED
 
-}  // namespace clue
+}  // namespace alpaka_tools

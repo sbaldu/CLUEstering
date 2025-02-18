@@ -11,7 +11,7 @@
 #include "alpakaFwd.hpp"
 #include "getDeviceIndex.hpp"
 
-namespace clue {
+namespace alpaka_tools {
 
   namespace detail {
 
@@ -65,4 +65,4 @@ namespace clue {
     return allocators[index];
   }
 
-}  // namespace clue
+}  // namespace alpaka_tools

@@ -35,6 +35,11 @@ namespace alpaka_common {
 
 }  // namespace alpaka_common
 
+#ifdef ALPAKA_ACCELERATOR_NAMESPACE
+// If the accelerator namespace is defined outside, use it
+#define ALPAKA_ACCELERATOR_NAMESPACE_CLUE ALPAKA_ACCELERATOR_NAMESPACE
+// if no accelerator namespace defined externally, we use our own
+#else
 #ifdef ALPAKA_ACC_GPU_CUDA_ENABLED
 namespace alpaka_cuda_async {
   using namespace alpaka_common;
@@ -134,3 +139,4 @@ namespace alpaka_omp2_async {
 }  // namespace alpaka_omp2_async
 
 #endif  // ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLED
+#endif

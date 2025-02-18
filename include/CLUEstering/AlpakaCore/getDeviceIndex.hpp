@@ -3,7 +3,7 @@
 
 #include <alpaka/alpaka.hpp>
 
-namespace clue {
+namespace alpaka_tools {
 
   // generic interface, for DevOacc and DevOmp5
   template <typename Device>
@@ -28,4 +28,4 @@ namespace clue {
   }
 #endif  // ALPAKA_ACC_GPU_HIP_ENABLED
 
-}  // namespace clue
+}  // namespace alpaka_tools

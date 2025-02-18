@@ -33,7 +33,7 @@ namespace cms {
 #include "alpakaConfig.hpp"
 #include "alpakaDevices.hpp"
 
-namespace clue {
+namespace alpaka_tools {
 
   // for Extent, Dim1D, Idx
   using namespace alpaka_common;
@@ -267,4 +267,4 @@ namespace clue {
         data, device, Vec1D{std::extent_v<T>});
   }
 
-}  // namespace clue
+}  // namespace alpaka_tools

@@ -9,7 +9,7 @@
 #include "alpakaConfig.hpp"
 #include "getDeviceIndex.hpp"
 
-namespace clue {
+namespace alpaka_tools {
   // returns the alpaka accelerator platform
   template <typename TPlatform, typename = std::enable_if_t<alpaka::isPlatform<TPlatform>>>
   inline TPlatform const& platform() {
@@ -51,4 +51,4 @@ namespace clue {
     return devices;
   }
 
-}  // namespace clue
+}  // namespace alpaka_tools

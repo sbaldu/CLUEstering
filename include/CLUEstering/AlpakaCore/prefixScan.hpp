@@ -6,7 +6,7 @@
 #include "alpakaConfig.hpp"
 #include "alpakaWorkDiv.hpp"
 
-namespace clue {
+namespace alpaka_tools {
   template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
   constexpr bool isPowerOf2(T v) {
     // returns true iif v has only one bit set.
@@ -229,7 +229,7 @@ namespace clue {
       }
     }
   };
-}  // namespace clue
+}  // namespace alpaka_tools
 
 // declare the amount of block shared memory used by the multiBlockPrefixScan kernel
 namespace alpaka::trait {

@@ -10,7 +10,7 @@
 
 using namespace alpaka_common;
 
-namespace clue {
+namespace alpaka_tools {
 
   // Trait describing whether or not the accelerator expects the threads-per-block and elements-per-thread to be swapped
   template <typename TAcc, typename = std::enable_if_t<alpaka::isAccelerator<TAcc>>>
@@ -236,4 +236,4 @@ namespace clue {
         acc, maxNumberOfElements, elementIdxShift, dimIndex);
   }
 
-}  // namespace clue
+}  // namespace alpaka_tools
