@@ -13,7 +13,9 @@ jobs:
     strategy:
       matrix:
         path:
-          - 'CLUEstering/alpaka'
+          - 'include/CLUEstering'
+          - 'benchmark'
+          - 'CLUEstering/BindingModules'
     steps:
     - uses: actions/checkout@v3
     - name: Run clang-format style check
@@ -21,4 +23,3 @@ jobs:
       with:
         clang-format-version: '17'
         check-path: ${{ matrix.path }}
-        exclude-regex: 'CLUEstering/include/test/doctest.h'
