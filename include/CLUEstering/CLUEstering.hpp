@@ -53,6 +53,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
                        const KernelType& kernel,
                        Queue queue_,
                        std::size_t block_size);
+    template <typename KernelType>
+    void make_clusters(PointsAlpaka<Ndim>& d_points,
+                       const KernelType& kernel,
+                       Queue queue_,
+                       std::size_t block_size);
 
     std::vector<std::vector<int>> getClusters(const PointsSoA<Ndim>& h_points);
 
@@ -74,6 +79,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     void init_device(Queue queue_, TilesAlpaka<Ndim>* tile_buffer);
 
     void setupTiles(Queue queue, const PointsSoA<Ndim>& h_points);
+    void setupTiles(Queue queue, const PointsAlpaka<Ndim>& d_points);
+
+    void setupPoints(const PointsSoA<Ndim>& h_points,
+                     PointsSoA<Ndim>& dev_points,
+                     Queue queue,
+                     std::size_t block_size);
     void setupPoints(const PointsSoA<Ndim>& h_points,
                      PointsAlpaka<Ndim>& dev_points,
                      Queue queue,
@@ -83,6 +94,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
                              float* tile_sizes,
                              const PointsSoA<Ndim>& h_points,
                              uint32_t nPerDim);
+    void calculate_tile_size(const PointsAlpaka<Ndim>& h_points, uint32_t nPerDim);
   };
 
   template <uint8_t Ndim>
@@ -150,6 +162,45 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
       d_tiles->initialize(h_points.nPoints(), nTiles, nPerDim, queue);
     } else {
       d_tiles->reset(h_points.nPoints(), nTiles, nPerDim, queue);
+    }
+
+    auto min_max = clue::make_host_buffer<CoordinateExtremes<Ndim>>(queue);
+    auto tile_sizes = clue::make_host_buffer<float[Ndim]>(queue);
+    calculate_tile_size(min_max.data(), tile_sizes.data(), h_points, nPerDim);
+
+    const auto device = alpaka::getDev(queue);
+    alpaka::memcpy(queue, d_tiles->minMax(), min_max);
+    alpaka::memcpy(queue, d_tiles->tileSize(), tile_sizes);
+    alpaka::memcpy(
+        queue, d_tiles->wrapped(), clue::make_host_view(h_points.wrapped().data(), Ndim));
+    alpaka::wait(queue);
+  }
+
+  template <uint8_t Ndim>
+  void CLUEAlgoAlpaka<Ndim>::setupTiles(Queue queue, const PointsAlpaka<Ndim>& d_points) {
+    uint32_t npoints = 0u;
+    const auto device = alpaka::getDevByIdx(alpaka::Platform<Acc1D>{}, 0u);
+    alpaka::memcpy(queue,
+                   clue::make_host_view<uint32_t>(npoints),
+                   clue::make_device_view<uint32_t>(device, d_points.view()->n));
+    // TODO: reconsider the way that we compute the number of tiles
+    auto nTiles =
+        static_cast<int32_t>(std::ceil(npoints / static_cast<float>(pointsPerTile_)));
+    const auto nPerDim = static_cast<int32_t>(std::ceil(std::pow(nTiles, 1. / Ndim)));
+    nTiles = static_cast<int32_t>(std::pow(nPerDim, Ndim));
+
+    if (!d_tiles.has_value()) {
+      d_tiles = std::make_optional<TilesAlpaka<Ndim>>(queue, npoints, nTiles);
+      m_tiles = d_tiles->view();
+    }
+    // check if tiles are large enough for current data
+    if (!(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
+              d_tiles->indexes())[0u] >= npoints) or
+        !(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
+              d_tiles->offsets())[0u] >= nTiles)) {
+      d_tiles->initialize(npoints, nTiles, nPerDim, queue);
+    } else {
+      d_tiles->reset(npoints, nTiles, nPerDim, queue);
     }
 
     auto min_max = clue::make_host_buffer<CoordinateExtremes<Ndim>>(queue);
