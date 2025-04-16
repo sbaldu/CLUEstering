@@ -51,8 +51,8 @@ namespace clue {
                        int pPBin = 128)
         : m_dc{dc},
           m_seed_dc{seed_dc},
-          m_rhoc{rhoc},
           m_dm{dm},
+		  m_rhoc{rhoc},
           m_pointsPerTile{pPBin},
           m_wrappedCoordinates{} {
       if (seed_dc < 0.f) {
@@ -69,8 +69,8 @@ namespace clue {
                        int pPBin = 128)
         : m_dc{dc},
           m_seed_dc{seed_dc},
-          m_rhoc{rhoc},
           m_dm{dm},
+          m_rhoc{rhoc},
           m_pointsPerTile{pPBin},
           m_wrappedCoordinates{} {
       if (seed_dc < 0.f) {
@@ -109,11 +109,11 @@ namespace clue {
     std::vector<std::vector<int>> getClusters(const PointsHost& h_points);
 
   private:
-    float m_dc;
-    float m_seed_dc;
+    ParameterFunction m_dc;
+	ParameterFunction m_seed_dc;
+    ParameterFunction m_dm;
     float m_rhoc;
-    float m_dm;
-    int m_pointsPerTile;  // average number of points found in a tile
+    int m_pointsPerTile; // average number of points found in a tile
     std::array<uint8_t, Ndim> m_wrappedCoordinates;
 
     // internal buffers
