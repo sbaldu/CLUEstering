@@ -15,13 +15,14 @@
 #include "DataFormats/alpaka/TilesAlpaka.hpp"
 #include "CLUE/CLUEAlpakaKernels.hpp"
 #include "CLUE/ConvolutionalKernel.hpp"
+#include "CLUE/Parameters.hpp"
 #include "utility/validation.hpp"
 
 using clue::VecArray;
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
 
-  template <uint8_t Ndim>
+  template <uint8_t Ndim, typename ParameterFunction = DefaultParameter>
   class CLUEAlgoAlpaka {
   public:
     explicit CLUEAlgoAlpaka(float dc, float rhoc, float dm, int pPBin, Queue queue)
@@ -57,9 +58,9 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     std::vector<std::vector<int>> getClusters(const PointsSoA<Ndim>& h_points);
 
   private:
-    float dc_;
+    ParameterFunction dc_;
     float rhoc_;
-    float dm_;
+    ParameterFunction dm_;
     // average number of points found in a tile
     int pointsPerTile_;
 
