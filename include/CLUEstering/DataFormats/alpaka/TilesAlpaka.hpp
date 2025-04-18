@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdint.h>
+#include <span>
 
 #include "../../AlpakaCore/alpakaWorkDiv.hpp"
 #include "../../AlpakaCore/alpakaConfig.hpp"
@@ -115,11 +116,11 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
       }
     }
 
-    ALPAKA_FN_ACC inline constexpr clue::Span<uint32_t> operator[](uint32_t globalBinId) {
+    ALPAKA_FN_ACC inline constexpr std::span<uint32_t> operator[](uint32_t globalBinId) {
       const auto size = offsets[globalBinId + 1] - offsets[globalBinId];
       const auto offset = offsets[globalBinId];
       uint32_t* buf_ptr = indexes + offset;
-      return clue::Span<uint32_t>{buf_ptr, size};
+      return std::span<uint32_t>{buf_ptr, size};
     }
 
     ALPAKA_FN_HOST_ACC inline constexpr float normalizeCoordinate(float coord,

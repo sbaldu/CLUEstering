@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <iostream>
 #include <cassert>
+#include <span>
 
 #include <limits>
 
@@ -17,7 +18,6 @@
 #include "../../AlpakaCore/alpakaMemory.hpp"
 #include "../../AlpakaCore/alpakaWorkDiv.hpp"
 #include "../../AlpakaCore/prefixScan.hpp"
-#include "Span.hpp"
 
 namespace clue {
 
@@ -68,16 +68,16 @@ namespace clue {
     uint32_t m_nelements;
     uint32_t m_nbins;
 
-    ALPAKA_FN_ACC Span<uint32_t> indexes(size_t bin_id) {
+    ALPAKA_FN_ACC std::span<uint32_t> indexes(size_t bin_id) {
       auto size = m_offsets[bin_id + 1] - m_offsets[bin_id];
       auto* buf_ptr = m_indexes + m_offsets[bin_id];
-      return Span<uint32_t>{buf_ptr, size};
+      return std::span<uint32_t>{buf_ptr, size};
     }
     ALPAKA_FN_ACC uint32_t offsets(size_t bin_id) { return m_offsets[bin_id]; }
-    ALPAKA_FN_ACC Span<uint32_t> operator[](size_t bin_id) {
+    ALPAKA_FN_ACC std::span<uint32_t> operator[](size_t bin_id) {
       auto size = m_offsets[bin_id + 1] - m_offsets[bin_id];
       auto* buf_ptr = m_indexes + m_offsets[bin_id];
-      return Span<uint32_t>{buf_ptr, size};
+      return std::span<uint32_t>{buf_ptr, size};
     }
   };
 
@@ -163,20 +163,20 @@ namespace clue {
     }
     ALPAKA_FN_HOST device_buffer<TDev, uint32_t[]>& indexes() { return m_indexes; }
 
-    ALPAKA_FN_ACC Span<uint32_t> indexes(size_t bin_id) {
+    ALPAKA_FN_ACC std::span<uint32_t> indexes(size_t bin_id) {
       const auto size = m_offsets[bin_id + 1] - m_offsets[bin_id];
       auto* buf_ptr = m_indexes.data() + m_offsets[bin_id];
-      return Span<uint32_t>{buf_ptr, size};
+      return std::span<uint32_t>{buf_ptr, size};
     }
     ALPAKA_FN_HOST device_view<TDev, uint32_t[]> indexes(const TDev& dev, size_t bin_id) {
       const auto size = m_offsets[bin_id + 1] - m_offsets[bin_id];
       auto* buf_ptr = m_indexes.data() + m_offsets[bin_id];
       return make_device_view<uint32_t[], TDev>(dev, buf_ptr, size);
     }
-    ALPAKA_FN_ACC Span<uint32_t> operator[](size_t bin_id) {
+    ALPAKA_FN_ACC std::span<uint32_t> operator[](size_t bin_id) {
       const auto size = m_offsets[bin_id + 1] - m_offsets[bin_id];
       auto* buf_ptr = m_indexes.data() + m_offsets[bin_id];
-      return Span<uint32_t>{buf_ptr, size};
+      return std::span<uint32_t>{buf_ptr, size};
     }
 
     ALPAKA_FN_HOST const device_buffer<TDev, uint32_t[]>& offsets() const {
