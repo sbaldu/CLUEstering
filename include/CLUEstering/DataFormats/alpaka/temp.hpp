@@ -1,32 +1,39 @@
 
 #pragma once
 
+#include "TilesAlpaka.hpp"
+
+#include <array>
+#include <cmath>
+#include <cstdint>
+#include <ranges>
+
 namespace clue {
 
-  template <uint8_t Ndim>
-  template <typename TQueue>
-  void buildTiles(TQueue& queue, uint32_t n_points, int32_t n_tiles) {
-	TilesAlpaka<Ndim> tiles(queue, n_points, ntiles);
+  template <typename TQueue, uint8_t Ndim>
+  TilesAlpaka<Ndim> buildTiles(
+      TQueue& queue,
+      uint32_t n_points,
+      int32_t n_tiles,
+      const std::array<std::array<float, 2>, Ndim>& coordinate_extremes) {
+    const auto nPerDim = static_cast<int32_t>(std::ceil(std::pow(n_tiles, 1. / Ndim)));
+    n_tiles = static_cast<int32_t>(std::pow(nPerDim, Ndim));
+    TilesAlpaka<Ndim> tiles(queue, n_points, n_tiles);
 
-    // check if tiles are large enough for current data
-    if (!(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
-              d_tiles->indexes())[0u] >= npoints) or
-        !(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
-              d_tiles->offsets())[0u] >= static_cast<uint32_t>(nTiles))) {
-      d_tiles->initialize(npoints, nTiles, nPerDim, queue);
-    } else {
-      d_tiles->reset(npoints, nTiles, nPerDim, queue);
-    }
+    using Device = decltype(alpaka::getDev(queue));
+	tiles->initialize(n_points, n_tiles, nPerDim, queue);
 
-    auto min_max = clue::make_host_buffer<CoordinateExtremes<Ndim>>(queue);
-    auto tile_sizes = clue::make_host_buffer<float[Ndim]>(queue);
-
+    std::array<float, Ndim> tiles_sizes;
+    std::ranges::transform(
+        coordinate_extremes, tiles_sizes.begin(), [](const auto& dimPair) -> float {
+          return dimPair[1] - dimPair[0];
+        });
     const auto device = alpaka::getDev(queue);
-    alpaka::memcpy(queue, d_tiles->minMax(), min_max);
-    alpaka::memcpy(queue, d_tiles->tileSize(), tile_sizes);
-    alpaka::memcpy(
-        queue, d_tiles->wrapped(), clue::make_host_view(h_points.wrapped().data(), Ndim));
+    alpaka::memcpy(queue, tiles->minMax(), coordinate_extremes);
+    alpaka::memcpy(queue, tiles->tileSize(), tiles_sizes);
     alpaka::wait(queue);
+
+    return tiles;
   }
 
 }  // namespace clue

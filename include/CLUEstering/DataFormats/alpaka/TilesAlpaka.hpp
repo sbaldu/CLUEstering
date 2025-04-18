@@ -12,6 +12,7 @@
 #include "../../AlpakaCore/alpakaMemory.hpp"
 #include "AlpakaVecArray.hpp"
 #include "AssociationMap.hpp"
+#include "PointsAlpaka.hpp"
 
 using clue::VecArray;
 

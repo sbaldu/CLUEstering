@@ -177,45 +177,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   }
 
   template <uint8_t Ndim>
-  void CLUEAlgoAlpaka<Ndim>::setupTiles(Queue queue, const PointsAlpaka<Ndim>& d_points) {
-    uint32_t npoints = 0u;
-    const auto device = alpaka::getDevByIdx(alpaka::Platform<Acc1D>{}, 0u);
-    alpaka::memcpy(queue,
-                   clue::make_host_view<uint32_t>(npoints),
-                   clue::make_device_view<uint32_t>(device, d_points.view()->n));
-    // TODO: reconsider the way that we compute the number of tiles
-    auto nTiles =
-        static_cast<int32_t>(std::ceil(npoints / static_cast<float>(pointsPerTile_)));
-    const auto nPerDim = static_cast<int32_t>(std::ceil(std::pow(nTiles, 1. / Ndim)));
-    nTiles = static_cast<int32_t>(std::pow(nPerDim, Ndim));
-
-    if (!d_tiles.has_value()) {
-      d_tiles = std::make_optional<TilesAlpaka<Ndim>>(queue, npoints, nTiles);
-      m_tiles = d_tiles->view();
-    }
-    // check if tiles are large enough for current data
-    if (!(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
-              d_tiles->indexes())[0u] >= npoints) or
-        !(alpaka::trait::GetExtents<clue::device_buffer<Device, uint32_t[]>>{}(
-              d_tiles->offsets())[0u] >= nTiles)) {
-      d_tiles->initialize(npoints, nTiles, nPerDim, queue);
-    } else {
-      d_tiles->reset(npoints, nTiles, nPerDim, queue);
-    }
-
-    auto min_max = clue::make_host_buffer<CoordinateExtremes<Ndim>>(queue);
-    auto tile_sizes = clue::make_host_buffer<float[Ndim]>(queue);
-    calculate_tile_size(min_max.data(), tile_sizes.data(), h_points, nPerDim);
-
-    const auto device = alpaka::getDev(queue);
-    alpaka::memcpy(queue, d_tiles->minMax(), min_max);
-    alpaka::memcpy(queue, d_tiles->tileSize(), tile_sizes);
-    alpaka::memcpy(
-        queue, d_tiles->wrapped(), clue::make_host_view(h_points.wrapped().data(), Ndim));
-    alpaka::wait(queue);
-  }
-
-  template <uint8_t Ndim>
   void CLUEAlgoAlpaka<Ndim>::setupPoints(const PointsSoA<Ndim>& h_points,
                                          PointsAlpaka<Ndim>& dev_points,
                                          Queue queue,
@@ -320,6 +281,69 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
                    clue::make_device_view(
                        device, dev_points.result_buffer.data() + nPoints, 2 * nPoints),
                    2 * nPoints);
+    alpaka::wait(queue);
+  }
+
+  template <uint8_t Ndim>
+  template <typename KernelType>
+  void CLUEAlgoAlpaka<Ndim>::make_clusters(PointsAlpaka<Ndim>& dev_points,
+                                           const KernelType& kernel,
+                                           Queue queue,
+                                           std::size_t block_size) {
+    const auto device = alpaka::getDev(queue);
+    const auto nPoints = 0u;
+	alpaka::memcpy(queue, clue::make_host_view(nPoints), clue::make_device_view(device, dev_points.view()->n));
+    // setupTiles(queue, h_points);		// As of now, tiles need to be already set
+										// when using data on the device
+    alpaka::memset(queue, *d_seeds, 0x00);
+    const Idx grid_size = clue::divide_up_by(nPoints, block_size);
+    const auto working_div = clue::make_workdiv<Acc1D>(grid_size, block_size);
+    alpaka::exec<Acc1D>(
+        queue, working_div, KernelResetFollowers{}, m_followers, nPoints);
+
+
+    // fill the tiles
+    // alpaka::memcpy(
+    //     queue, d_tiles->wrapped(), clue::make_host_view(h_points.wrapped().data(), Ndim));
+    d_tiles->fill(queue, dev_points, nPoints);
+
+    alpaka::exec<Acc1D>(queue,
+                        working_div,
+                        KernelCalculateLocalDensity{},
+                        m_tiles,
+                        dev_points.view(),
+                        kernel,
+                        dc_,
+                        nPoints);
+    alpaka::exec<Acc1D>(queue,
+                        working_div,
+                        KernelCalculateNearestHigher{},
+                        m_tiles,
+                        dev_points.view(),
+                        dm_,
+                        dc_,
+                        nPoints);
+    alpaka::exec<Acc1D>(queue,
+                        working_div,
+                        KernelFindClusters<Ndim>{},
+                        m_seeds,
+                        m_followers,
+                        dev_points.view(),
+                        dm_,
+                        dc_,
+                        rhoc_,
+                        nPoints);
+
+    // We change the working division when assigning the clusters
+    const Idx grid_size_seeds = clue::divide_up_by(reserve, block_size);
+    auto working_div_seeds = clue::make_workdiv<Acc1D>(grid_size_seeds, block_size);
+
+    alpaka::exec<Acc1D>(queue,
+                        working_div_seeds,
+                        KernelAssignClusters<Ndim>{},
+                        m_seeds,
+                        m_followers,
+                        dev_points.view());
     alpaka::wait(queue);
   }
 
