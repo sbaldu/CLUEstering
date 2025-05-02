@@ -20,7 +20,7 @@
 
 namespace clue {
 
-  template <uint8_t Ndim>
+  template <uint8_t Ndim, typename ParameterFunction>
   class Clusterer {
   public:
     using Device = ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Device;

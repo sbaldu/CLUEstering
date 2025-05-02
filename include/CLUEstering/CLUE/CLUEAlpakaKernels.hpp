@@ -37,7 +37,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
     }
   };
 
-  template <typename TAcc, uint8_t Ndim, uint8_t N_, typename KernelType>
+  template <typename TAcc, uint8_t Ndim, uint8_t N_, typename KernelType, typename ParameterType>
   ALPAKA_FN_HOST_ACC void for_recursion(
       const TAcc& acc,
       VecArray<uint32_t, Ndim>& base_vec,
@@ -47,7 +47,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
       const KernelType& kernel,
       const float* coords_i,
       float* rho_i,
-      float dc,
+      const ParameterType& dc,
       uint32_t point_id) {
     if constexpr (N_ == 0) {
       auto binId = tiles->getGlobalBinByBin(acc, base_vec);
@@ -91,12 +91,12 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE_CLUE {
   }
 
   struct KernelCalculateLocalDensity {
-    template <typename TAcc, uint8_t Ndim, typename KernelType>
+    template <typename TAcc, uint8_t Ndim, typename KernelType, typename ParameterType>
     ALPAKA_FN_ACC void operator()(const TAcc& acc,
                                   TilesAlpakaView<Ndim>* dev_tiles,
                                   PointsView* dev_points,
                                   const KernelType& kernel,
-                                  float dc,
+                                  const ParameterType& dc,
                                   uint32_t n_points) const {
       for (auto i : alpaka::uniformElements(acc, n_points)) {
         float rho_i{0.f};
