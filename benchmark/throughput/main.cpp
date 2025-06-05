@@ -48,7 +48,7 @@ float stddev(const std::vector<float>& values) {
 std::vector<std::string> GetFiles(int min, int max) {
   std::vector<std::string> files(max - min + 1);
   std::generate(files.begin(), files.end(), [n = min]() mutable -> std::string {
-    auto filename = "../../data/data_" + std::to_string(static_cast<int>(std::pow(2, n))) + ".csv";
+    auto filename = "../../data/throughput/data_" + std::to_string(static_cast<int>(std::pow(2, n))) + "_clusters.csv";
     ++n;
     return filename;
   });
@@ -63,7 +63,7 @@ void plot(const TimeMeasures& measures, const std::string& filename) {
   py::bind_vector<std::vector<float>>(plt, "VectorFloat");
   plt.attr("errorbar")(
       measures.sizes, measures.time_averages, measures.time_stddevs, "fmt"_a = "r--^");
-  plt.attr("xlabel")("Number of points");
+  plt.attr("xlabel")("Number of clusters");
   plt.attr("ylabel")("Execution time (ms)");
   plt.attr("grid")("ls"_a = "--", "lw"_a = .5);
   plt.attr("savefig")(filename);
@@ -90,19 +90,19 @@ using ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Device;
 using ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Queue;
 
 void run(const std::string& input_file) {
-  auto coords = read_csv<float, 2>(input_file);
-  const auto n_points = coords.size() / 3;
+  auto coords = read_csv<float, 3>(input_file);
+  const auto n_points = coords.size() / 4;
   std::vector<int> results(2 * n_points);
 
   const auto dev_acc = alpaka::getDevByIdx(alpaka::Platform<Acc1D>{}, 0u);
   Queue queue(dev_acc);
 
   // Create the points host and device objects
-  clue::PointsHost<2> h_points(queue, n_points, coords.data(), results.data());
-  clue::PointsDevice<2, Device> d_points(queue, n_points);
+  clue::PointsHost<3> h_points(queue, n_points, coords.data(), results.data());
+  clue::PointsDevice<3, Device> d_points(queue, n_points);
 
-  const float dc{1.5f}, rhoc{10.f}, outlier{1.5f};
-  clue::Clusterer<2> algo(queue, dc, rhoc, outlier);
+  const float dc{4.f}, rhoc{5.f}, outlier{7.f};
+  clue::Clusterer<3> algo(queue, dc, rhoc, outlier);
 
   const std::size_t block_size{256};
   algo.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, block_size);
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
   std::transform(files.begin(), files.end(), sizes.begin(), [](auto file) {
     auto first_it = std::find(file.begin(), file.end(), '_') + 1;
     auto first = std::distance(file.begin(), first_it);
-    auto len = std::distance(first_it, std::find(file.begin(), file.end(), '.') - 1);
+    auto len = std::distance(first_it, std::find(file.begin(), file.end(), 'c') - 1);
     return std::stoi(file.substr(first, len));
   });
 
