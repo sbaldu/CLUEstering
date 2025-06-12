@@ -7,6 +7,7 @@
 #include "CLUEstering/CLUE/CLUEAlpakaKernels.hpp"
 #include "CLUEstering/CLUE/ConvolutionalKernel.hpp"
 #include "CLUEstering/utility/validation.hpp"
+#include "xtd/algorithm.h"
 
 #include <algorithm>
 #include <alpaka/mem/view/Traits.hpp>
@@ -316,6 +317,10 @@ namespace clue {
                         m_seed_dc,
                         m_rhoc,
                         nPoints);
+
+    auto n_seeds =
+        xtd::reduce(dev_points.nearestHigher().begin(), dev_points.nearestHigher().end(), 0u, [] ALPAKA_FN_ACC (int x, int y) { return std::max(x, y); });
+	std::cout << n_seeds << " seeds found" << std::endl;
 
     // We change the working division when assigning the clusters
     const Idx grid_size_seeds = clue::divide_up_by(reserve, block_size);
