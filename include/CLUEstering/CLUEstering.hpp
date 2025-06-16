@@ -19,6 +19,11 @@
 #include <utility>
 #include <vector>
 
+template <typename T>
+struct Max {
+  inline constexpr T operator()(T x, T y) const { return std::max(x, y); }
+};
+
 namespace clue {
 
   template <uint8_t Ndim>
@@ -318,12 +323,8 @@ namespace clue {
                         m_rhoc,
                         nPoints);
 
-    auto n_seeds =
-        xtd::reduce(dev_points.nearestHigher().begin(), dev_points.nearestHigher().end(), 0u, [] ALPAKA_FN_ACC (int x, int y) { return std::max(x, y); });
-	std::cout << n_seeds << " seeds found" << std::endl;
-
     // We change the working division when assigning the clusters
-    const Idx grid_size_seeds = clue::divide_up_by(reserve, block_size);
+    const Idx grid_size_seeds = clue::divide_up_by(, block_size);
     auto working_div_seeds = clue::make_workdiv<Acc1D>(grid_size_seeds, block_size);
 
     alpaka::exec<Acc1D>(
