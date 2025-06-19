@@ -88,5 +88,32 @@ namespace clue {
       std::fill(points.weights().begin(), points.weights().end(), 1.0f);
     }
 
+    template <uint8_t Ndim, typename TQueue>
+    clue::PointsHost<Ndim> generateRandomData(TQueue& queue,
+                                              size_t n_points,
+                                              size_t n_clusters,
+                                              std::pair<float, float> space_boundaries,
+                                              float stddev,
+                                              float noisiness = .1f,
+                                              int seed = 0) {
+      clue::PointsHost<Ndim> points(queue, n_points);
+      std::mt19937 gen(seed);
+      std::uniform_real_distribution<float> uniform_dist(space_boundaries.first,
+                                                         space_boundaries.second);
+
+      auto cluster_centers = detail::computeClusterCenters<Ndim>(n_clusters, uniform_dist, gen);
+
+      const auto cluster_size =
+          static_cast<size_t>(std::floor(points.size() * (1 - noisiness) / n_clusters));
+      const auto data_size = n_clusters * cluster_size;
+      const auto noise_size = points.size() - data_size;
+      detail::generateClusterData<Ndim>(
+          points, cluster_centers, n_clusters, cluster_size, stddev, gen);
+      detail::generateNoiseData<Ndim>(points, data_size, noise_size, uniform_dist, gen);
+      std::fill(points.weights().begin(), points.weights().end(), 1.0f);
+
+      return points;
+    }
+
   }  // namespace utils
 }  // namespace clue

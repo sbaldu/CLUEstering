@@ -43,6 +43,7 @@ namespace clue {
     inline static constexpr auto max_followers = ALPAKA_ACCELERATOR_NAMESPACE_CLUE::max_followers;
     inline static constexpr auto reserve = ALPAKA_ACCELERATOR_NAMESPACE_CLUE::reserve;
 
+	Clusterer() = default;
     explicit Clusterer(float dc, float rhoc, float dm, float seed_dc = -1.f, int pPBin = 128)
         : m_dc{dc},
           m_seed_dc{seed_dc},
