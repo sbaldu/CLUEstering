@@ -17,6 +17,7 @@
 #include <oneapi/tbb/parallel_for.h>
 #include <oneapi/tbb/task_arena.h>
 
+<<<<<<< HEAD
 namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE;
 
 using Event = clue::PointsHost<3>;
@@ -28,6 +29,26 @@ using QueuePool = std::vector<Queue>;
 using ClustererPool = std::vector<clue::Clusterer<3>>;
 
 using Times = oneapi::tbb::concurrent_vector<long long>;
+=======
+#ifdef PYBIND11
+#include <pybind11/embed.h>
+#include <pybind11/stl_bind.h>
+
+namespace py = pybind11;
+using namespace pybind11::literals;
+
+PYBIND11_MAKE_OPAQUE(std::vector<int>);
+PYBIND11_MAKE_OPAQUE(std::vector<float>);
+#endif
+
+using Event = clue::PointsHost<2>;
+using EventPool = oneapi::tbb::concurrent_vector<Event>;
+using Queue = alpaka_cuda_async::Queue;
+using Platform = alpaka_cuda_async::Platform;
+
+using QueuePool = std::vector<Queue>;
+using ClustererPool = std::vector<clue::Clusterer<2>>;
+>>>>>>> d3deab4 (Draft of gpu throughput script)
 
 constexpr float dc = 1.5f, rhoc = 10.f, dm = 1.5f;
 constexpr int blocksize = 512;
@@ -74,14 +95,20 @@ float stddev(const std::vector<float>& values) {
 //   file.close();
 // }
 
+<<<<<<< HEAD
 double runEvents(int nThreads, int nEvents, int nClusters) {
   const auto device = alpaka::getDevByIdx(alpaka::Platform<backend::Acc1D>{}, 0u);
+=======
+double runEvents(int nThreads, int nEvents, int nPoints) {
+  const auto device = alpaka::getDevByIdx(alpaka::Platform<alpaka_cuda_async::Acc1D>{}, 0u);
+>>>>>>> d3deab4 (Draft of gpu throughput script)
 
   EventPool eventPool;
   QueuePool queuePool;
   ClustererPool clustererPool;
 
   for (auto i = 0; i < nThreads; ++i) {
+<<<<<<< HEAD
     queuePool.emplace_back(backend::Queue(device));
   }
 
@@ -106,17 +133,45 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
   tbb::task_arena arena(nThreads);
   auto start = std::chrono::high_resolution_clock::now();
   std::cout << start.time_since_epoch().count() << std::endl;
+=======
+    queuePool.emplace_back(alpaka_cuda_async::Queue(device));
+  }
+  for (auto i = 0; i < nEvents; ++i) {
+    eventPool.emplace_back(clue::utils::generateRandomData<2>(
+        queuePool[0], nPoints, 20, std::make_pair(-100.f, 100.f), 1.f));
+  }
+  for (auto& queue : queuePool) {
+    clustererPool.emplace_back(clue::Clusterer<2>(queue, dc, rhoc, dm));
+  }
+  // std::ranges::generate(queuePool, [&device] { return alpaka_cuda_async::Queue(device); });
+  // std::generate(eventPool.begin(), eventPool.end(), [&] {
+  //   return clue::utils::generateRandomData<2>(
+  //       queuePool[0], nPoints, 20, std::make_pair(-100.f, 100.f), 1.f);
+  // });
+  // std::ranges::transform(queuePool, clustererPool.begin(), [&queuePool](auto queue) {
+  //   return clue::Clusterer<2>(queue, dc, rhoc, dm);
+  // });
+
+  std::atomic<int> eventCounter = 0;
+  tbb::task_arena arena(nThreads);
+  auto start = std::chrono::high_resolution_clock::now();
+>>>>>>> d3deab4 (Draft of gpu throughput script)
   arena.execute([&] {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
       auto& clusterer = clustererPool[i];
+<<<<<<< HEAD
       clue::PointsDevice<3, backend::Device> d_points(queue, eventPool[0].size());
+=======
+      clue::PointsDevice<2, alpaka_cuda_async::Device> d_points(queue, nPoints);
+>>>>>>> d3deab4 (Draft of gpu throughput script)
       while (eventCounter < nEvents) {
         int eventId = eventCounter.fetch_add(1);
         if (eventId >= nEvents)
           return;
 
         auto& h_points = eventPool[eventId];
+<<<<<<< HEAD
         clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
 
         if (eventId % 500 == 0) {
@@ -125,16 +180,25 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
               std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
           partialTimes.push_back(duration);
         }
+=======
+
+        // clue::utils::generateRandomData<2>(h_points, 20, std::make_pair(-100.f, 100.f), 1.f);
+        clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
+>>>>>>> d3deab4 (Draft of gpu throughput script)
       }
     });
   });
   auto end = std::chrono::high_resolution_clock::now();
+<<<<<<< HEAD
   std::cout << end.time_since_epoch().count() << std::endl;
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   for (const auto& time : partialTimes) {
     std::cout << "Partial time: " << time << " ms" << std::endl;
   }
   std::cout << "Total time: " << duration << " ms" << std::endl;
+=======
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+>>>>>>> d3deab4 (Draft of gpu throughput script)
   return (1000. * nEvents) / duration;
 }
 
@@ -153,8 +217,13 @@ int main(int argc, char* argv[]) {
   std::vector<int> sizes(range);
   std::vector<float> throughput(range);
   std::ranges::for_each(std::views::iota(min) | std::views::take(range), [&](auto i) -> void {
+<<<<<<< HEAD
     const auto nClusters = static_cast<std::size_t>(std::pow(2, i));
     // std::cout << nClusters << " " << runEvents(nThreads, nEvents, nClusters) << std::endl;
+=======
+    const auto nPoints = static_cast<std::size_t>(std::pow(2, i));
+    runEvents(nThreads, nEvents, nPoints);
+>>>>>>> d3deab4 (Draft of gpu throughput script)
   });
 
   // #ifdef PYBIND11

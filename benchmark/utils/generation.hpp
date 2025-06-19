@@ -157,6 +157,7 @@ namespace clue {
       return points;
     }
 
+<<<<<<< HEAD
     template <uint8_t Ndim, typename TQueue>
     clue::PointsHost<Ndim> generateClustersWithEnergy(TQueue& queue,
                                                       size_t mean_cluster_size,
@@ -212,5 +213,7 @@ namespace clue {
       return points;
     }
 
+=======
+>>>>>>> d3deab4 (Draft of gpu throughput script)
   }  // namespace utils
 }  // namespace clue
