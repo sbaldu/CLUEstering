@@ -133,7 +133,7 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
 		if (eventId % 500 == 0) {
 		  auto end = std::chrono::high_resolution_clock::now();
 		  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		  times.push_back(duration);
+		  partialTimes.push_back(duration);
 		}
       }
     });
