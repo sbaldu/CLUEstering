@@ -93,6 +93,9 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
   for (auto i = 0; i < nThreads; ++i) {
     queuePool.emplace_back(backend::Queue(device));
   }
+
+  std::array<std::pair<float, float>, 3> boundaries = {
+      std::make_pair(0.f, 300.f), std::make_pair(0.f, 300.f), std::make_pair(0.f, 100.f)};
   for (auto i = 0; i < nEvents; ++i) {
     eventPool.emplace_back(clue::utils::generateClustersWithEnergy<3>(queuePool[0],
                                                            120,
@@ -113,7 +116,7 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
       auto& clusterer = clustererPool[i];
-	  clue::PointsDevice<2, backend::Device> d_points(queue, eventPool[0].size());
+      clue::PointsDevice<2, backend::Device> d_points(queue, eventPool[0].size());
       while (eventCounter < nEvents) {
         int eventId = eventCounter.fetch_add(1);
         if (eventId >= nEvents)
@@ -145,7 +148,7 @@ int main(int argc, char* argv[]) {
   std::vector<float> throughput(range);
   std::ranges::for_each(std::views::iota(min) | std::views::take(range), [&](auto i) -> void {
     const auto nClusters = static_cast<std::size_t>(std::pow(2, i));
-    std::cout << nPoints << " " << runEvents(nThreads, nEvents, nPoints) << std::endl;
+    std::cout << nClusters << " " << runEvents(nThreads, nEvents, nPoints) << std::endl;
   });
 
   // #ifdef PYBIND11
