@@ -30,13 +30,13 @@ PYBIND11_MAKE_OPAQUE(std::vector<float>);
 
 namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE;
 
-using Event = clue::PointsHost<2>;
+using Event = clue::PointsHost<3>;
 using EventPool = oneapi::tbb::concurrent_vector<Event>;
 using Queue = backend::Queue;
 using Platform = backend::Platform;
 
 using QueuePool = std::vector<Queue>;
-using ClustererPool = std::vector<clue::Clusterer<2>>;
+using ClustererPool = std::vector<clue::Clusterer<3>>;
 
 constexpr float dc = 1.5f, rhoc = 10.f, dm = 1.5f;
 constexpr int blocksize = 512;
@@ -107,7 +107,7 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
                                                    0));
   }
   for (auto& queue : queuePool) {
-    clustererPool.emplace_back(clue::Clusterer<2>(queue, dc, rhoc, dm));
+    clustererPool.emplace_back(clue::Clusterer<3>(queue, dc, rhoc, dm));
   }
 
   std::atomic<int> eventCounter = 0;
@@ -117,7 +117,7 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
       auto& clusterer = clustererPool[i];
-      clue::PointsDevice<2, backend::Device> d_points(queue, eventPool[0].size());
+      clue::PointsDevice<3, backend::Device> d_points(queue, eventPool[0].size());
       while (eventCounter < nEvents) {
         int eventId = eventCounter.fetch_add(1);
         if (eventId >= nEvents)
