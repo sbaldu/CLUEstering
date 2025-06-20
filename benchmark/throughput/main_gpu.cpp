@@ -28,7 +28,7 @@ PYBIND11_MAKE_OPAQUE(std::vector<int>);
 PYBIND11_MAKE_OPAQUE(std::vector<float>);
 #endif
 
-namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE; 
+namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE;
 
 using Event = clue::PointsHost<2>;
 using EventPool = oneapi::tbb::concurrent_vector<Event>;
@@ -113,13 +113,13 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
       auto& clusterer = clustererPool[i];
-	  auto& h_points = eventPool[eventId];
-      clue::PointsDevice<2, backend::Device> d_points(queue, h_points.size());
+	  clue::PointsDevice<2, backend::Device> d_points(queue, eventPool[0].size());
       while (eventCounter < nEvents) {
         int eventId = eventCounter.fetch_add(1);
         if (eventId >= nEvents)
           return;
 
+        auto& h_points = eventPool[eventId];
         clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
       }
     });
@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
   std::vector<float> throughput(range);
   std::ranges::for_each(std::views::iota(min) | std::views::take(range), [&](auto i) -> void {
     const auto nClusters = static_cast<std::size_t>(std::pow(2, i));
-    runEvents(nThreads, nEvents, nClusters);
+    std::cout << nPoints << " " << runEvents(nThreads, nEvents, nPoints) << std::endl;
   });
 
   // #ifdef PYBIND11
