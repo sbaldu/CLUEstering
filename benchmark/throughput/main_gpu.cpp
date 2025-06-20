@@ -38,6 +38,8 @@ using Platform = backend::Platform;
 using QueuePool = std::vector<Queue>;
 using ClustererPool = std::vector<clue::Clusterer<3>>;
 
+using Times = oneapi::tbb::concurrent_vector<long long>;
+
 constexpr float dc = 1.5f, rhoc = 10.f, dm = 1.5f;
 constexpr int blocksize = 512;
 
@@ -110,9 +112,11 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
     clustererPool.emplace_back(clue::Clusterer<3>(queue, dc, rhoc, dm));
   }
 
+  Times partialTimes;
   std::atomic<int> eventCounter = 0;
   tbb::task_arena arena(nThreads);
   auto start = std::chrono::high_resolution_clock::now();
+  std::cout << start.time_since_epoch().count() << std::endl;
   arena.execute([&] {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
@@ -125,10 +129,17 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
 
         auto& h_points = eventPool[eventId];
         clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
+
+		if (eventId % 500 == 0) {
+		  auto end = std::chrono::high_resolution_clock::now();
+		  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		  times.push_back(duration);
+		}
       }
     });
   });
   auto end = std::chrono::high_resolution_clock::now();
+  std::cout << end.time_since_epoch().count() << std::endl;
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   return (1000. * nEvents) / duration;
 }
