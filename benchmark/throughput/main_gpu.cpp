@@ -28,10 +28,12 @@ PYBIND11_MAKE_OPAQUE(std::vector<int>);
 PYBIND11_MAKE_OPAQUE(std::vector<float>);
 #endif
 
+namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE; 
+
 using Event = clue::PointsHost<2>;
 using EventPool = oneapi::tbb::concurrent_vector<Event>;
-using Queue = alpaka_cuda_async::Queue;
-using Platform = alpaka_cuda_async::Platform;
+using Queue = backend::Queue;
+using Platform = backend::Platform;
 
 using QueuePool = std::vector<Queue>;
 using ClustererPool = std::vector<clue::Clusterer<2>>;
@@ -81,31 +83,28 @@ float stddev(const std::vector<float>& values) {
 //   file.close();
 // }
 
-double runEvents(int nThreads, int nEvents, int nPoints) {
-  const auto device = alpaka::getDevByIdx(alpaka::Platform<alpaka_cuda_async::Acc1D>{}, 0u);
+double runEvents(int nThreads, int nEvents, int nClusters) {
+  const auto device = alpaka::getDevByIdx(alpaka::Platform<backend::Acc1D>{}, 0u);
 
   EventPool eventPool;
   QueuePool queuePool;
   ClustererPool clustererPool;
 
   for (auto i = 0; i < nThreads; ++i) {
-    queuePool.emplace_back(alpaka_cuda_async::Queue(device));
+    queuePool.emplace_back(backend::Queue(device));
   }
   for (auto i = 0; i < nEvents; ++i) {
-    eventPool.emplace_back(clue::utils::generateRandomData<2>(
-        queuePool[0], nPoints, 20, std::make_pair(-100.f, 100.f), 1.f));
+    eventPool.emplace_back(clue::utils::generateClustersWithEnergy<3>(queuePool[0],
+                                                           120,
+                                                           512,
+                                                           boundaries,
+                                                           std::make_pair(0.f, 3.f),
+                                                           std::array<float, 3>({1.f, 1.f, 5.f}),
+                                                           0);
   }
   for (auto& queue : queuePool) {
     clustererPool.emplace_back(clue::Clusterer<2>(queue, dc, rhoc, dm));
   }
-  // std::ranges::generate(queuePool, [&device] { return alpaka_cuda_async::Queue(device); });
-  // std::generate(eventPool.begin(), eventPool.end(), [&] {
-  //   return clue::utils::generateRandomData<2>(
-  //       queuePool[0], nPoints, 20, std::make_pair(-100.f, 100.f), 1.f);
-  // });
-  // std::ranges::transform(queuePool, clustererPool.begin(), [&queuePool](auto queue) {
-  //   return clue::Clusterer<2>(queue, dc, rhoc, dm);
-  // });
 
   std::atomic<int> eventCounter = 0;
   tbb::task_arena arena(nThreads);
@@ -114,15 +113,13 @@ double runEvents(int nThreads, int nEvents, int nPoints) {
     tbb::parallel_for(0, nThreads, [&](int i) {
       auto& queue = queuePool[i];
       auto& clusterer = clustererPool[i];
-      clue::PointsDevice<2, alpaka_cuda_async::Device> d_points(queue, nPoints);
+	  auto& h_points = eventPool[eventId];
+      clue::PointsDevice<2, backend::Device> d_points(queue, h_points.size());
       while (eventCounter < nEvents) {
         int eventId = eventCounter.fetch_add(1);
         if (eventId >= nEvents)
           return;
 
-        auto& h_points = eventPool[eventId];
-
-        // clue::utils::generateRandomData<2>(h_points, 20, std::make_pair(-100.f, 100.f), 1.f);
         clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
       }
     });
@@ -147,8 +144,8 @@ int main(int argc, char* argv[]) {
   std::vector<int> sizes(range);
   std::vector<float> throughput(range);
   std::ranges::for_each(std::views::iota(min) | std::views::take(range), [&](auto i) -> void {
-    const auto nPoints = static_cast<std::size_t>(std::pow(2, i));
-    runEvents(nThreads, nEvents, nPoints);
+    const auto nClusters = static_cast<std::size_t>(std::pow(2, i));
+    runEvents(nThreads, nEvents, nClusters);
   });
 
   // #ifdef PYBIND11
