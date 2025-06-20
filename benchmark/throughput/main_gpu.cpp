@@ -130,17 +130,22 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
         auto& h_points = eventPool[eventId];
         clusterer.make_clusters(h_points, d_points, FlatKernel{.5f}, queue, blocksize);
 
-		if (eventId % 500 == 0) {
-		  auto end = std::chrono::high_resolution_clock::now();
-		  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		  partialTimes.push_back(duration);
-		}
+        if (eventId % 500 == 0) {
+          auto end = std::chrono::high_resolution_clock::now();
+          auto duration =
+              std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+          partialTimes.push_back(duration);
+        }
       }
     });
   });
   auto end = std::chrono::high_resolution_clock::now();
   std::cout << end.time_since_epoch().count() << std::endl;
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+  for (const auto& time : partialTimes) {
+    std::cout << "Partial time: " << time << " ms" << std::endl;
+  }
+  std::cout << "Total time: " << duration << " ms" << std::endl;
   return (1000. * nEvents) / duration;
 }
 
@@ -160,7 +165,7 @@ int main(int argc, char* argv[]) {
   std::vector<float> throughput(range);
   std::ranges::for_each(std::views::iota(min) | std::views::take(range), [&](auto i) -> void {
     const auto nClusters = static_cast<std::size_t>(std::pow(2, i));
-    std::cout << nClusters << " " << runEvents(nThreads, nEvents, nClusters) << std::endl;
+    // std::cout << nClusters << " " << runEvents(nThreads, nEvents, nClusters) << std::endl;
   });
 
   // #ifdef PYBIND11
