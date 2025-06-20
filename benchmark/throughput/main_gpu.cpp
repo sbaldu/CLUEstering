@@ -100,7 +100,7 @@ double runEvents(int nThreads, int nEvents, int nClusters) {
     eventPool.emplace_back(
         clue::utils::generateClustersWithEnergy<3>(queuePool[0],
                                                    120,
-                                                   512,
+                                                   nClusters,
                                                    boundaries,
                                                    std::make_pair(0.f, 3.f),
                                                    std::array<float, 3>({1.f, 1.f, 5.f}),
