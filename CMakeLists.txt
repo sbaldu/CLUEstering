@@ -41,7 +41,7 @@ FetchContent_MakeAvailable(alpaka)
 # create lib directory in CLUEstering folder
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/CLUEstering/lib)
 
-add_subdirectory(CLUEstering/BindingModules)
+# add_subdirectory(CLUEstering/BindingModules)
 
 # generate version header
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.hpp.in
