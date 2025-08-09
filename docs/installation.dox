@@ -18,7 +18,7 @@
  * #### Adding CLUEstering as a git submodule
  * ```shell
  * cd my-project
- * git submodule add https://github.com/cms-patatrack/CLUEstering.git external/CLUEstering
+ * git submodule add https://github.com/cms-patatrack/CLUEstering.git external/CLUEstering --branch branch-name
  * ```
  * #### Using CMake's `FetchContent` 
  * If the poject is built using CMake, CLUEstering can be added as a dependency using the `FetchContent` module:
@@ -30,6 +30,19 @@
  *```
  *
  * ## Installing the Python interface
+ * The Python interface of CLUEstering can be easily installed using pip with the following command:
+ * ```shell
+ * cd CLUEstering
+ * pip install .
+ * ```
+ * Alternatively, the library is uploaded to PuPi, so the lavest versions can be installed with:
+ * ```shell
+ * pip install CLUEstering
+ * ```
+ * or, if a specific version is required:
+ * ```shell
+ * pip install CLUEstering==<version>
+ * ```
  *
  */
 
