@@ -64,15 +64,57 @@ namespace clue {
 
   }  // namespace internal
 
-  struct PointsView {
-    float* coords;
-    float* weight;
-    int* cluster_index;
-    int* is_seed;
-    float* rho;
-    float* delta;
-    int* nearest_higher;
-    int32_t n;
+  class PointsView {
+  private:
+    float* m_coords;
+    float* m_weight;
+    int* m_cluster_index;
+    int* m_is_seed;
+    float* m_rho;
+    float* m_delta;
+    int* m_nearest_higher;
+    int32_t m_size;
+
+  public:
+    PointsView() = default;
+
+      ALPAKA_FN_HOST_ACC int32_t size() const { return static_cast<const TPoints*>(this)->m_size; }
+
+      ALPAKA_FN_HOST_ACC auto coords() const {
+        return std::span<const float>(m_coords, m_size * TPoints::Ndim_);
+      }
+      ALPAKA_FN_HOST_ACC auto coords() {
+        return std::span<float>(m_coords, m_size * TPoints::Ndim_);
+      }
+
+      ALPAKA_FN_HOST_ACC auto coords(size_t dim) const {
+        return std::span<const float>(m_coords + dim * m_size, m_size);
+      }
+      ALPAKA_FN_HOST_ACC auto coords(size_t dim) {
+        return std::span<float>(m_coords + dim * m_size, m_size);
+      }
+
+      ALPAKA_FN_HOST_ACC auto weights() const {
+        return std::span<const float>(m_weight, m_size);
+      }
+      ALPAKA_FN_HOST_ACC auto weights() {
+        return std::span<float>(m_weight, m_size);
+      }
+
+      ALPAKA_FN_HOST_ACC auto clusterIndexes() const {
+        return std::span<const int>(m_cluster_index, m_size);
+      }
+      ALPAKA_FN_HOST_ACC auto clusterIndexes() {
+        return std::span<int>(m_cluster_index, m_size);
+      }
+
+      ALPAKA_FN_HOST_ACC auto isSeed() const {
+        return std::span<const int>(m_is_seed, m_size);
+      }
+      ALPAKA_FN_HOST_ACC auto isSeed() {
+        return std::span<int>(m_is_seed, m_size);
+      }
+
   };
 
   namespace concepts {
