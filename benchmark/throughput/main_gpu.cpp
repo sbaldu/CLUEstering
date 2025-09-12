@@ -17,17 +17,6 @@
 #include <oneapi/tbb/parallel_for.h>
 #include <oneapi/tbb/task_arena.h>
 
-#ifdef PYBIND11
-#include <pybind11/embed.h>
-#include <pybind11/stl_bind.h>
-
-namespace py = pybind11;
-using namespace pybind11::literals;
-
-PYBIND11_MAKE_OPAQUE(std::vector<int>);
-PYBIND11_MAKE_OPAQUE(std::vector<float>);
-#endif
-
 namespace backend = ALPAKA_ACCELERATOR_NAMESPACE_CLUE;
 
 using Event = clue::PointsHost<3>;

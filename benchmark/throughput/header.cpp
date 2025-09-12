@@ -4,8 +4,10 @@
 #include "defines.hpp"
 
 namespace backend {
-  clue::Clusterer<2> foo(float dc, float rhoc, float dm) {
-    auto c = clue::Clusterer<2>(dc, rhoc, dm);
-    return c;
+  std::unique_ptr<clue::Clusterer<2>, void (*)(clue::Clusterer<2>*)> foo(float dc,
+                                                                         float rhoc,
+                                                                         float dm) {
+    return std::unique_ptr<clue::Clusterer<2>, void (*)(clue::Clusterer<2>*)>(
+        new clue::Clusterer<2>(dc, rhoc, dm), [](clue::Clusterer<2>* ptr) { delete ptr; });
   }
 }  // namespace backend

@@ -24,6 +24,7 @@ string(
 )
 
 find_package(Boost 1.75.0 REQUIRED)
+find_package(TBB REQUIRED)
 find_package(pybind11)
 
 if(pybind11_FOUND)
@@ -49,28 +50,8 @@ if(CMAKE_CUDA_COMPILER)
   add_subdirectory(cuda)
 endif()
 
-set(_sycl_search_dirs ${SYCL_ROOT_DIR} /usr/lib /usr/local/lib
-                      /opt/intel/oneapi/compiler/latest/linux)
-find_program(
-  SYCL_COMPILER
-  NAMES icpx
-  HINTS ${_sycl_search_dirs}
-  PATH_SUFFIXES bin)
-find_path(
-  SYCL_INCLUDE_DIR
-  NAMES sycl/sycl.hpp
-  HINTS ${_sycl_search_dirs}
-  PATH_SUFFIXES include)
-find_path(
-  SYCL_LIB_DIR
-  NAMES libsycl.so
-  HINTS ${_sycl_search_dirs}
-  PATH_SUFFIXES lib)
-find_package(oneDPL)
-
-if(oneDPL_FOUND
-   AND SYCL_COMPILER
-   AND SYCL_INCLUDE_DIR
-   AND SYCL_LIB_DIR)
-  add_subdirectory(sycl)
-endif()
+add_executable(test.out test.cpp)
+target_link_libraries(test.out PRIVATE serial)
+target_link_libraries(test.out PRIVATE cuda)
+target_include_directories(test.out PRIVATE ${CMAKE_SOURCE_DIR}/../../include ${CMAKE_SOURCE_DIR}/../ ${alpaka_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
+target_link_libraries(test.out PRIVATE TBB::tbb)

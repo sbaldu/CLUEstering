@@ -7,14 +7,13 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 endif()
 
-set_source_files_properties(${CMAKE_SOURCE_DIR}/main.cpp PROPERTIES LANGUAGE CUDA)
-add_executable(cuda.out ${CMAKE_SOURCE_DIR}/main.cpp)
+set_source_files_properties(${CMAKE_SOURCE_DIR}/header.cpp PROPERTIES LANGUAGE CUDA)
+add_library(cuda SHARED ${CMAKE_SOURCE_DIR}/header.cpp)
 target_include_directories(
-  cuda.out PRIVATE ${CMAKE_SOURCE_DIR}/../../include
-				   ${alpaka_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
-target_link_libraries(cuda.out PRIVATE ${pybind_link})
-target_compile_definitions(cuda.out PRIVATE ALPAKA_ACC_GPU_CUDA_ENABLED)
-target_compile_options(cuda.out PRIVATE --expt-relaxed-constexpr)
-set_target_properties(cuda.out PROPERTIES CUDA_SEPARABLE_COMPILATION ON
+    cuda PRIVATE ${CMAKE_SOURCE_DIR}/../../include
+                       ${alpaka_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
+target_compile_definitions(cuda PRIVATE ALPAKA_ACC_GPU_CUDA_ENABLED)
+target_compile_options(cuda PRIVATE --expt-relaxed-constexpr)
+set_target_properties(cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON
 										  CUDA_ARCHITECTURES "50;60;61;62;70;80;90")
 
