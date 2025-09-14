@@ -9,9 +9,9 @@ namespace clue {
 }
 
 namespace serial {
-  std::unique_ptr<clue::Clusterer<2>, void(*)(clue::Clusterer<2>*)> foo(float, float, float);
+  auto foo(float, float, float);
 }
 
 namespace cuda {
-  std::unique_ptr<clue::Clusterer<2>, void(*)(clue::Clusterer<2>*)> foo(float, float, float);
+  auto foo(float, float, float);
 }
