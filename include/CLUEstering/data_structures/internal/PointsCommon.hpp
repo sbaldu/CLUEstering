@@ -9,8 +9,15 @@ namespace clue {
 
   namespace internal {
 
+	struct ClusterProperties {
+	  std::optional<std::size_t> n_clusters;
+	  //std::optional<>;
+	};
+
     template <typename TPoints>
     struct points_interface {
+    protected:
+    public:
       ALPAKA_FN_HOST int32_t size() const { return static_cast<const TPoints*>(this)->m_size; }
 
       ALPAKA_FN_HOST auto coords() const {
