@@ -3,6 +3,14 @@
 
 #include "CLUEstering/internal/alpaka/config.hpp"
 
+#if not defined(ALPAKA_BACKEND)
+#if defined(__CUDACC__)
+#define ALPAKA_ACC_GPU_CUDA_ENABLED
+#else
+#define ALPAKA_ACC_CPU_B_SEQ_T_ENABLED
+#endif
+#endif
+
 namespace clue {
 
   using Platform = ALPAKA_BACKEND::Platform;
