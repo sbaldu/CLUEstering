@@ -9,11 +9,6 @@ namespace clue {
 
   namespace internal {
 
-	struct ClusterProperties {
-	  std::optional<std::size_t> n_clusters;
-	  //std::optional<>;
-	};
-
     template <typename TPoints>
     struct points_interface {
     protected:

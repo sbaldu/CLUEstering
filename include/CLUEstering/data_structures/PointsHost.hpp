@@ -39,6 +39,12 @@ namespace clue {
       float cluster_index() const;
     };
 
+	struct ClusterProperties {
+	  std::optional<std::size_t> n_clusters;
+	  std::optional<host_associator> clusters_to_points;
+	  std::optional<std::vector<std::size_t>> cluster_sizes;
+	};
+
     template <concepts::queue TQueue>
     PointsHost(TQueue& queue, int32_t n_points);
 
@@ -104,6 +110,8 @@ namespace clue {
 #endif
 
     Point operator[](std::size_t idx) const;
+
+	auto n_clusters();
 
   private:
     inline static constexpr uint8_t Ndim_ = Ndim;
