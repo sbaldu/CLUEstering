@@ -55,6 +55,7 @@ namespace clue {
         std::count(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), '\n') -
         1;
     clue::PointsHost<NDim> points(queue, n_points);
+	auto view = points.view();
 
     file = std::fstream(file_path);
     // discard the header
@@ -67,7 +68,7 @@ namespace clue {
 
       for (size_t dim = 0; dim < NDim; ++dim) {
         getline(buffer_stream, value, ',');
-        points.coords(dim)[point_id] = std::stof(value);
+        view.coords[point_id + n_points * dim] = std::stof(value);
       }
       getline(buffer_stream, value, ',');
       points.weights()[point_id] = std::stof(value);
