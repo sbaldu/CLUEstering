@@ -241,13 +241,13 @@ namespace clue {
           local_stack[local_stack_size] = idx_this_seed;
           ++local_stack_size;
           while (local_stack_size > 0) {
-            int idx_end_of_local_stack{local_stack[local_stack_size - 1]};
+            int idx_end_of_local_stack = local_stack[local_stack_size - 1];
             int temp_cluster_index = dev_points.cluster_index[idx_end_of_local_stack];
             local_stack[local_stack_size - 1] = -1;
             --local_stack_size;
             const auto& followers_ies = followers[idx_end_of_local_stack];
             const auto followers_size = followers_ies.size();
-            for (int j{}; j != followers_size; ++j) {
+            for (int j = 0; j != followers_size; ++j) {
               int follower = followers_ies[j];
               dev_points.cluster_index[follower] = temp_cluster_index;
               local_stack[local_stack_size] = follower;

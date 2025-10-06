@@ -21,13 +21,13 @@ namespace clue {
                                          std::size_t cluster_id) {
     // TODO: add error handling
     // TODO: possibly use getClusters inside here
-    Centroid centroid;
+    Centroid<Ndim> centroid;
     int size = 0;
     for (auto dim = 0; dim < Ndim; ++dim) {
       auto coords = points.coords(dim);
       auto cluster_ids = points.clusterIndexes();
       std::for_each_n(nostd::zip(coords.begin(), cluster_ids.begin()),
-                      [&centroid, dim, &size](auto&& tuple) -> void {
+                      [=, &centroid, &size](auto&& tuple) -> void {
                         const auto coord = std::get<0>(tuple);
                         const auto point_cluster = std::get<1>(tuple);
                         if (point_cluster == cluster_id) {
