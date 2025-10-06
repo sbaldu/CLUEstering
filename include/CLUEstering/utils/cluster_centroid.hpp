@@ -14,8 +14,9 @@ namespace clue {
   using Centroids = std::vector<Centroid>;
 
   template <uint8_t Ndim>
-  inline Centroid<Ndim> cluster_centroid(const clue::PointsHost<Ndim>& points, std::size_t cluster_id);
+  inline Centroid<Ndim> cluster_centroid(const clue::PointsHost<Ndim>& points,
+                                         std::size_t cluster_id);
 
-}
+}  // namespace clue
 
 #include "CLUEstering/utils/detail/cluster_centroid.hpp"
