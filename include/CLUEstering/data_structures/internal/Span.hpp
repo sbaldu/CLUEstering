@@ -19,4 +19,4 @@ namespace clue {
     ALPAKA_FN_ACC const T& operator[](int i) const { return buf[i]; }
   };
 
-};  // namespace clue
+}  // namespace clue

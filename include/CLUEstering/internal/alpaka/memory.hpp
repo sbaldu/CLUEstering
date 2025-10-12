@@ -48,7 +48,7 @@ namespace clue {
       using type = alpaka::Buf<TDev, T, Dim1D, Idx>;
     };
 
-    template <typename TDev, typename T, int N>
+    template <typename TDev, typename T, std::size_t N>
     struct buffer_type<TDev, T[N]> {
       using type = alpaka::Buf<TDev, T, Dim1D, Idx>;
     };
@@ -63,7 +63,7 @@ namespace clue {
       using type = alpaka::ViewPlainPtr<TDev, T, Dim1D, Idx>;
     };
 
-    template <typename TDev, typename T, int N>
+    template <typename TDev, typename T, std::size_t N>
     struct view_type<TDev, T[N]> {
       using type = alpaka::ViewPlainPtr<TDev, T, Dim1D, Idx>;
     };
@@ -100,8 +100,8 @@ namespace clue {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<T, Idx>(host, queue, Scalar{});
     } else {
-      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
-      return alpaka::allocMappedBuf<T, Idx>(host, platform<Platform>(), Scalar{});
+      using _Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      return alpaka::allocMappedBuf<T, Idx>(host, platform<_Platform>(), Scalar{});
     }
   }
 
@@ -110,9 +110,9 @@ namespace clue {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<std::remove_extent_t<T>, Idx>(host, queue, Vec1D{extent});
     } else {
-      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      using _Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
       return alpaka::allocMappedBuf<std::remove_extent_t<T>, Idx>(
-          host, platform<Platform>(), Vec1D{extent});
+          host, platform<_Platform>(), Vec1D{extent});
     }
   }
 
@@ -121,9 +121,9 @@ namespace clue {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<std::remove_extent_t<T>, Idx>(host, queue, Vec1D{std::extent_v<T>});
     } else {
-      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      using _Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
       return alpaka::allocMappedBuf<std::remove_extent_t<T>, Idx>(
-          host, platform<Platform>(), Vec1D{std::extent_v<T>});
+          host, platform<_Platform>(), Vec1D{std::extent_v<T>});
     }
   }
 

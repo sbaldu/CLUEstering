@@ -20,8 +20,8 @@ namespace clue {
 
   namespace internal {
     template <clue::concepts::queue TQueue>
-    auto make_associator(TQueue& queue, std::span<int32_t> associations, int32_t elements);
-    auto make_associator(std::span<int32_t> associations, int32_t elements)
+    auto make_associator(TQueue& queue, std::span<int32_t> associations, std::size_t elements);
+    auto make_associator(std::span<int32_t> associations, std::size_t elements)
         -> AssociationMap<alpaka::DevCpu>;
   }  // namespace internal
 
@@ -196,8 +196,8 @@ namespace clue {
     friend class TilesAlpaka;
 
     template <concepts::queue _TQueue>
-    friend auto clue::internal::make_associator(_TQueue&, std::span<int32_t>, int32_t);
-    friend auto clue::internal::make_associator(std::span<int32_t>, int32_t)
+    friend auto clue::internal::make_associator(_TQueue&, std::span<int32_t>, std::size_t);
+    friend auto clue::internal::make_associator(std::span<int32_t>, std::size_t)
         -> AssociationMap<alpaka::DevCpu>;
   };
 

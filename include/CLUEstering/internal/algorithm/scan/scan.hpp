@@ -160,12 +160,12 @@ namespace clue {
       const auto threadIdx = alpaka::getIdx<alpaka::Block, alpaka::Threads>(acc)[0u];
       ALPAKA_ASSERT_ACC(elementsPerGrid >= size);
       // first each block does a scan
-      [[maybe_unused]] int off = elementsPerBlock * blockIdx;
+      [[maybe_unused]] auto off = elementsPerBlock * blockIdx;
       if (size - off > 0) {
         blockPrefixScan(acc,
                         ci + off,
                         co + off,
-                        std::min(elementsPerBlock, static_cast<uint32_t>(size - off)),
+                        std::min(elementsPerBlock, size - off),
                         ws);
       }
 
