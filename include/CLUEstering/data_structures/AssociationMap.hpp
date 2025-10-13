@@ -12,6 +12,7 @@
 #include "CLUEstering/internal/alpaka/memory.hpp"
 
 #include <alpaka/alpaka.hpp>
+#include <span>
 
 namespace clue {
 
