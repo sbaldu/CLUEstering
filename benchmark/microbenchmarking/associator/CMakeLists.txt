@@ -17,7 +17,7 @@ string(APPEND CMAKE_CXX_FLAGS_DEBUG
 string(
   APPEND
   CMAKE_CXX_FLAGS
-  "-O2 -funroll-loops -funsafe-math-optimizations -fopt-info-vec -ftree-vectorize -march=native"
+  "-O2 -funroll-loops -funsafe-math-optimizations -ftree-vectorize -march=native"
 )
 
 find_package(Boost 1.75.0 REQUIRED)
