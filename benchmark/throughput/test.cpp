@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "utils/generation.hpp"
+// #include "utils/generation.hpp"
 
 #include <oneapi/tbb/concurrent_vector.h>
 #include <oneapi/tbb/parallel_for.h>
@@ -25,13 +25,15 @@ PYBIND11_MAKE_OPAQUE(std::vector<int>);
 PYBIND11_MAKE_OPAQUE(std::vector<float>);
 #endif
 
+// #include "CLUEstering/data_structures/PointsHost.hpp"
+
 namespace cpu = serial;
 namespace gpu = cuda;
 
 // using Event = clue::PointsHost<3>;
 // using EventPool = oneapi::tbb::concurrent_vector<Event>;
-// using Queue = backend::Queue;
-// using Platform = backend::Platform;
+using QueueCpu = alpaka::QueueCpuBlocking;
+using QueueGpu = alpaka::QueueCudaRtNonBlocking;
 
 // using QueuePool = std::vector<Queue>;
 // using ClustererPool = std::vector<clue::Clusterer<3>>;

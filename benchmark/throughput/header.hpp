@@ -1,4 +1,5 @@
 
+#include "alpaka/dev/DevCpu.hpp"
 #include "defines.hpp"
 #include <cstdint>
 #include <memory>
@@ -9,9 +10,9 @@ namespace clue {
 }
 
 namespace serial {
-  auto foo(float, float, float);
+  ::std::unique_ptr<clue::Clusterer<2>, void (*)(clue::Clusterer<2>*)> foo(float, float, float);
 }
 
 namespace cuda {
-  auto foo(float, float, float);
+  ::std::unique_ptr<clue::Clusterer<2>, void (*)(clue::Clusterer<2>*)> foo(float, float, float);
 }
