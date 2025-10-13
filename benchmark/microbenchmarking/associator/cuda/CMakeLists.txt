@@ -6,9 +6,9 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 endif()
 
-set_source_files_properties(${CMAKE_SOURCE_DIR}/main.cpp PROPERTIES LANGUAGE
+set_source_files_properties(${CMAKE_SOURCE_DIR}/associator_build.cpp PROPERTIES LANGUAGE
                                                                     CUDA)
-add_executable(cuda.out ${CMAKE_SOURCE_DIR}/main.cpp)
+add_executable(cuda.out ${CMAKE_SOURCE_DIR}/associator_build.cpp)
 target_include_directories(
   cuda.out PRIVATE ${CMAKE_SOURCE_DIR}/../../../include)
 target_link_libraries(cuda.out PRIVATE alpaka::alpaka Boost::boost benchmark::benchmark)
