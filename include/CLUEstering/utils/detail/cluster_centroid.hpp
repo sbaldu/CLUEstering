@@ -37,6 +37,12 @@ namespace clue {
                         }
                       });
     }
+    std::transform(internal::default_policy,
+                   centroid.begin(),
+                   centroid.end(),
+                   centroid.begin(),
+                   [=](auto&& val) { return val / size; });
+    return centroid;
   }
 
 }  // namespace clue
