@@ -9,6 +9,7 @@ endif()
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/header.cpp PROPERTIES LANGUAGE CUDA)
 add_library(cuda SHARED ${CMAKE_SOURCE_DIR}/header.cpp)
+target_link_libraries(cuda PRIVATE alpaka::alpaka Boost::boost)
 target_include_directories(
     cuda PRIVATE ${CMAKE_SOURCE_DIR}/../../include
                        ${alpaka_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})

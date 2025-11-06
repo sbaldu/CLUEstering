@@ -35,12 +35,14 @@ else()
   message(STATUS "pybind11 not found, so no plots will be generated.")
 endif()
 
-include(FetchContent)
-FetchContent_Declare(
-  alpaka
-  URL https://github.com/alpaka-group/alpaka/archive/refs/tags/1.2.0.tar.gz)
-
-FetchContent_MakeAvailable(alpaka)
+find_package(alpaka)
+if(NOT alpaka_FOUND)
+  include(FetchContent)
+  FetchContent_Declare(
+	alpaka
+	URL https://github.com/alpaka-group/alpaka/archive/refs/tags/1.2.0.tar.gz)
+  FetchContent_MakeAvailable(alpaka)
+endif()
 
 add_subdirectory(cpu)
 
@@ -53,5 +55,6 @@ endif()
 add_executable(test.out test.cpp)
 target_link_libraries(test.out PRIVATE serial)
 target_link_libraries(test.out PRIVATE cuda)
-target_include_directories(test.out PRIVATE ${CMAKE_SOURCE_DIR}/../../include ${CMAKE_SOURCE_DIR}/../ ${alpaka_SOURCE_DIR}/include ${Boost_INCLUDE_DIR})
-target_link_libraries(test.out PRIVATE TBB::tbb)
+target_include_directories(test.out PRIVATE ${CMAKE_SOURCE_DIR}/../../include ${CMAKE_SOURCE_DIR}/..)
+target_link_libraries(test.out PRIVATE alpaka::alpaka Boost::boost TBB::tbb)
+target_compile_definitions(test.out PRIVATE ALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED ALPAKA_HOST_ONLY)

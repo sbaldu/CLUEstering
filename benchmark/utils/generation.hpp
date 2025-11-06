@@ -10,16 +10,16 @@
 namespace clue {
   namespace utils {
 
-    template <uint8_t Ndim>
+    template <std::size_t Ndim>
     using ClusterCenters = std::vector<std::array<float, Ndim>>;
-    template <uint8_t Ndim>
+    template <std::size_t Ndim>
     using SpaceBoundaries = std::array<std::pair<float, float>, Ndim>;
-    template <uint8_t Ndim>
+    template <std::size_t Ndim>
     using UniformDistributions = std::array<std::uniform_real_distribution<float>, Ndim>;
 
     namespace detail {
 
-      template <uint8_t Ndim>
+      template <std::size_t Ndim>
       ClusterCenters<Ndim> computeClusterCenters(size_t n_clusters,
                                                  std::uniform_real_distribution<float> uniform_dist,
                                                  std::mt19937& gen) {
@@ -36,7 +36,7 @@ namespace clue {
         return cluster_centers;
       }
 
-      template <uint8_t Ndim>
+      template <std::size_t Ndim>
       ClusterCenters<Ndim> computeClusterCenters(size_t n_clusters,
                                                  const UniformDistributions<Ndim>& uniform_dists,
                                                  std::mt19937& gen) {
@@ -52,7 +52,7 @@ namespace clue {
         return cluster_centers;
       }
 
-      template <uint8_t Ndim>
+      template <std::size_t Ndim>
       void generateClusterData(clue::PointsHost<Ndim>& points,
                                const ClusterCenters<Ndim>& cluster_centers,
                                size_t n_clusters,
@@ -70,7 +70,7 @@ namespace clue {
         }
       }
 
-      template <uint8_t Ndim>
+      template <std::size_t Ndim>
       void generateNoiseData(clue::PointsHost<Ndim>& points,
                              size_t data_size,
                              size_t noise_size,
@@ -84,7 +84,7 @@ namespace clue {
         }
       }
 
-      template <uint8_t Ndim>
+      template <std::size_t Ndim>
       void generateEnergies(clue::PointsHost<Ndim>& points,
                             int cluster_size,
                             int cumulative_cluster_size,
@@ -100,14 +100,14 @@ namespace clue {
             distance += (points.coords(dim)[i] - cluster_center[dim]) *
                         (points.coords(dim)[i] - cluster_center[dim]);
           }
-		  // std::cout << "Distance: " << distance << std::endl;
+          // std::cout << "Distance: " << distance << std::endl;
           points.weights()[i] = amplitude * std::exp(-distance / (2 * sigma * sigma));
         }
       }
 
     }  // namespace detail
 
-    template <uint8_t Ndim>
+    template <std::size_t Ndim>
     void generateRandomData(clue::PointsHost<Ndim>& points,
                             size_t n_clusters,
                             std::pair<float, float> space_boundaries,
@@ -130,7 +130,7 @@ namespace clue {
       std::fill(points.weights().begin(), points.weights().end(), 1.0f);
     }
 
-    template <uint8_t Ndim, typename TQueue>
+    template <std::size_t Ndim, typename TQueue>
     clue::PointsHost<Ndim> generateRandomData(TQueue& queue,
                                               size_t n_points,
                                               size_t n_clusters,
@@ -157,8 +157,7 @@ namespace clue {
       return points;
     }
 
-<<<<<<< HEAD
-    template <uint8_t Ndim, typename TQueue>
+    template <std::size_t Ndim, typename TQueue>
     clue::PointsHost<Ndim> generateClustersWithEnergy(TQueue& queue,
                                                       size_t mean_cluster_size,
                                                       size_t n_clusters,
@@ -213,7 +212,5 @@ namespace clue {
       return points;
     }
 
-=======
->>>>>>> d3deab4 (Draft of gpu throughput script)
   }  // namespace utils
 }  // namespace clue

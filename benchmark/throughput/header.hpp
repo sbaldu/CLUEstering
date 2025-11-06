@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace clue {
-  template <uint8_t N>
+  template <std::size_t N>
   class Clusterer;
 }
 
@@ -13,5 +13,5 @@ namespace serial {
 }
 
 namespace cuda {
-  std::unique_ptr<clue::Clusterer<2>, void(*)(clue::Clusterer<2>*)> foo(float, float, float);
+  ::std::unique_ptr<clue::Clusterer<2>, void(*)(clue::Clusterer<2>*)> foo(float, float, float);
 }

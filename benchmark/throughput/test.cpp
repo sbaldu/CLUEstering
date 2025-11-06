@@ -36,7 +36,7 @@ namespace gpu = cuda;
 // using QueuePool = std::vector<Queue>;
 // using ClustererPool = std::vector<clue::Clusterer<3>>;
 
-using Times = oneapi::tbb::concurrent_vector<long long>;
+// using Times = oneapi::tbb::concurrent_vector<long long>;
 
 constexpr float dc = 1.5f, rhoc = 10.f, dm = 1.5f;
 constexpr int blocksize = 512;
