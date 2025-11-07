@@ -6,38 +6,63 @@
 #           options:
 #             docstring_style: google
 #             show_source: false
-site_name: CLUEstering 
-repo_url: https://github.com/cms-patatrack/CLUEstering
-edit_uri: edit/docs/docs/ 
+# site_name: CLUEstering 
+# repo_url: https://github.com/cms-patatrack/CLUEstering
+# edit_uri: edit/docs/docs/ 
+# theme:
+#   name: material
+#   # logo: logo_white.svg
+#   # favicon: favicon.svg
+#   features:
+#     # - navigation.instant
+#     - navigation.tabs
+#     - navigation.expand
+#     - content.code.annotate
+#     # - search.suggest
+#     # - search.highlight
+#     # - toc.integrate 
+#     # - navigation.top
+#     # - content.action.view
+#   palette:
+#     scheme: slate
+#     primary: blue
+
+# nav:
+#     - Home: index.md
+#     - Getting started: getting_started.md
+#     - Python API Reference: api.md
+#     - C++ API Reference: api/cpp/index.md
+
+# plugins:
+# - search
+# - mkdocstrings:
+#     handlers:
+#       python:
+#         options:
+#           docstring_style: google
+#           show_source: false
+site_name: CLUEstering Docs
 theme:
   name: material
-  # logo: logo_white.svg
-  # favicon: favicon.svg
-  features:
-    # - navigation.instant
-    - navigation.tabs
-    - navigation.expand
-    - content.code.annotate
-    # - search.suggest
-    # - search.highlight
-    # - toc.integrate 
-    # - navigation.top
-    # - content.action.view
-  palette:
-    scheme: slate
-    primary: blue
-
-nav:
-    - Home: index.md
-    - Getting started: getting_started.md
-    - Python API Reference: api.md
-    - C++ API Reference: api/cpp/index.md
 
 plugins:
-- search
-- mkdocstrings:
-    handlers:
-      python:
-        options:
-          docstring_style: google
-          show_source: false
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_api.py
+  - literate-nav:
+      nav_file: python_api/SUMMARY.md
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+  # - mkdocs-simple-plugin
+  # - mkdocs-section-index
+  # - mkdocs-redirects
+
+nav:
+  - Home: index.md
+  - Python API: python_api/index.md
+  - C++ API: cpp_api/index.html
+

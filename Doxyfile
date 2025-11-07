@@ -66,7 +66,7 @@ PROJECT_ICON           =
 # entered, it will be relative to the location where Doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = docs/doxygen
+OUTPUT_DIRECTORY       = docs/cpp_api
 
 # If the CREATE_SUBDIRS tag is set to YES then Doxygen will create up to 4096
 # sub-directories (in 2 levels) under the output directory of each output format
@@ -1114,7 +1114,7 @@ EXCLUDE_PATTERNS       =
 # wildcard * is used, a substring. Examples: ANamespace, AClass,
 # ANamespace::AClass, ANamespace::*Test
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = operator<= operator>= operator> operator<
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -1376,7 +1376,7 @@ IGNORE_PREFIX          =
 # If the GENERATE_HTML tag is set to YES, Doxygen will generate HTML output
 # The default value is: YES.
 
-GENERATE_HTML          = NO
+GENERATE_HTML          = YES
 
 # The HTML_OUTPUT tag is used to specify where the HTML docs will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of
@@ -2527,7 +2527,11 @@ INCLUDE_FILE_PATTERNS  = *.hpp *.dox
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = CLUE_BUILD_DOXYGEN= ALPAKA_FN_HOST_ACC= ALPAKA_FN_HOST= ALPAKA_FN_ACC=
+PREDEFINED             += CLUE_BUILD_DOXYGEN ALPAKA_FN_HOST_ACC= ALPAKA_FN_HOST= ALPAKA_FN_ACC= ALPAKA_FN_INLINE=
+PREDEFINED             += ALPAKA_FN_HOST_ACC=
+PREDEFINED             += ALPAKA_FN_HOST=
+PREDEFINED             += ALPAKA_FN_ACC=
+PREDEFINED             += ALPAKA_FN_INLINE=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
