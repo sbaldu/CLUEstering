@@ -46,7 +46,7 @@ namespace clue::detail {
         }
 
         auto k = kernel(acc, clue::internal::math::sqrt(distance), point_id, j);
-        rho_i += static_cast<int>(distance_vector <= dc) * k * dev_points.weight[j];
+        rho_i += static_cast<int>(distance_vector <= dc) * k * dev_points.weight()[j];
       }
       return;
     } else {
@@ -85,7 +85,7 @@ namespace clue::detail {
         for_recursion<TAcc, Ndim, Ndim>(
             acc, base_vec, searchbox_bins, dev_tiles, dev_points, kernel, coords_i, rho_i, dc, i);
 
-        dev_points.rho[i] = rho_i;
+        dev_points.rho()[i] = rho_i;
       }
     }
   };
@@ -108,7 +108,7 @@ namespace clue::detail {
 
       for (auto binIter = 0; binIter < binSize; ++binIter) {
         const auto j = tiles[binId][binIter];
-        float rho_j = dev_points.rho[j];
+        float rho_j = dev_points.rho()[j];
         bool found_higher = (rho_j > rho_i);
         found_higher = found_higher || ((rho_j == rho_i) && (rho_j > 0.f) && (j > point_id));
 
@@ -159,7 +159,7 @@ namespace clue::detail {
         float delta_i = std::numeric_limits<float>::max();
         int nh_i = -1;
         auto coords_i = dev_points[i];
-        float rho_i = dev_points.rho[i];
+        float rho_i = dev_points.rho()[i];
 
         clue::SearchBoxExtremes<Ndim> searchbox_extremes;
         for (auto dim = 0u; dim != Ndim; ++dim) {
@@ -183,7 +183,7 @@ namespace clue::detail {
                                                        dm,
                                                        i);
 
-        dev_points.nearest_higher[i] = nh_i;
+        dev_points.nearest_higher()[i] = nh_i;
       }
     }
   };
@@ -198,22 +198,22 @@ namespace clue::detail {
                                   float rhoc,
                                   int32_t n_points) const {
       for (auto i : alpaka::uniformElements(acc, n_points)) {
-        dev_points.cluster_index[i] = -1;
-        auto nh = dev_points.nearest_higher[i];
+        dev_points.cluster_index()[i] = -1;
+        auto nh = dev_points.nearest_higher()[i];
 
         auto coords_i = dev_points[i];
         auto coords_nh = dev_points[nh];
         auto distance_vector = tiles.distance(coords_i, coords_nh);
 
-        float rho_i = dev_points.rho[i];
+        float rho_i = dev_points.rho()[i];
         bool is_seed = (distance_vector > seed_dc) && (rho_i >= rhoc);
 
         if (is_seed) {
-          dev_points.is_seed[i] = 1;
-          dev_points.nearest_higher[i] = -1;
+          dev_points.is_seed()[i] = 1;
+          dev_points.nearest_higher()[i] = -1;
           seeds->push_back(acc, i);
         } else {
-          dev_points.is_seed[i] = 0;
+          dev_points.is_seed()[i] = 0;
         }
       }
     }
@@ -232,19 +232,19 @@ namespace clue::detail {
         int local_stack_size = 0;
 
         int idx_this_seed = seeds_0[idx_cls];
-        dev_points.cluster_index[idx_this_seed] = idx_cls;
+        dev_points.cluster_index()[idx_this_seed] = idx_cls;
         local_stack[local_stack_size] = idx_this_seed;
         ++local_stack_size;
         while (local_stack_size > 0) {
           int idx_end_of_local_stack = local_stack[local_stack_size - 1];
-          int temp_cluster_index = dev_points.cluster_index[idx_end_of_local_stack];
+          int temp_cluster_index = dev_points.cluster_index()[idx_end_of_local_stack];
           local_stack[local_stack_size - 1] = -1;
           --local_stack_size;
           const auto& followers_ies = followers[idx_end_of_local_stack];
           const auto followers_size = followers_ies.size();
           for (auto j = 0u; j != followers_size; ++j) {
             int follower = followers_ies[j];
-            dev_points.cluster_index[follower] = temp_cluster_index;
+            dev_points.cluster_index()[follower] = temp_cluster_index;
             local_stack[local_stack_size] = follower;
             ++local_stack_size;
           }

@@ -36,8 +36,8 @@ TEST_CASE("Test host points with internal allocation") {
   }
 
   SUBCASE("Set from view") {
-    auto coords = view.coords[0];
-    auto weights = view.weight;
+    auto coords = view.coords()[0];
+    auto weights = view.weight();
 
     std::iota(coords, coords + 2 * size, 2000.f);
     std::fill(weights, weights + size, 2.f);
