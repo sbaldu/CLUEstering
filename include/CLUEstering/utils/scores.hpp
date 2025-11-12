@@ -27,6 +27,20 @@ namespace clue {
   template <std::size_t Ndim>
   auto silhouette(const clue::PointsHost<Ndim>& points);
 
+  namespace dunn {
+
+    struct maximum_distance;
+    struct mean_distance;
+    struct centroid_distance;
+
+  }  // namespace dunn
+
+  template <std::size_t Ndim>
+  auto dunn(const clue::PointsHost<Ndim>& points, std::size_t point);
+
+  template <std::size_t Ndim>
+  auto dunn(const clue::PointsHost<Ndim>& points);
+
 }  // namespace clue
 
 #include "CLUEstering/utils/detail/scores.hpp"

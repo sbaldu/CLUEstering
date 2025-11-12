@@ -52,4 +52,10 @@ namespace clue {
     return std::reduce(scores.begin(), scores.end(), 0.f) / static_cast<float>(points.size());
   }
 
+  template <std::size_t Ndim>
+  auto dunn(const clue::PointsHost<Ndim>& points, std::size_t point) {}
+
+  template <std::size_t Ndim>
+  auto dunn(const clue::PointsHost<Ndim>& points) {}
+
 }  // namespace clue
