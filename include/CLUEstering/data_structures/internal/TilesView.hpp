@@ -24,22 +24,22 @@ namespace clue::internal {
     int32_t ntiles;
     int32_t nperdim;
 
-    ALPAKA_FN_ACC inline constexpr const float* minMax() const { return minmax; }
-    ALPAKA_FN_ACC inline constexpr float* minMax() { return minmax; }
+    ALPAKA_FN_ACC inline constexpr const auto* minMax() const { return minmax; }
+    ALPAKA_FN_ACC inline constexpr auto* minMax() { return minmax; }
 
-    ALPAKA_FN_ACC inline constexpr const float* tileSize() const { return tilesizes; }
-    ALPAKA_FN_ACC inline constexpr float* tileSize() { return tilesizes; }
+    ALPAKA_FN_ACC inline constexpr const auto* tileSize() const { return tilesizes; }
+    ALPAKA_FN_ACC inline constexpr auto* tileSize() { return tilesizes; }
 
-    ALPAKA_FN_ACC inline constexpr const uint8_t* wrapped() const { return wrapping; }
-    ALPAKA_FN_ACC inline constexpr uint8_t* wrapped() { return wrapping; }
+    ALPAKA_FN_ACC inline constexpr const auto* wrapped() const { return wrapping; }
+    ALPAKA_FN_ACC inline constexpr auto* wrapped() { return wrapping; }
 
     ALPAKA_FN_ACC inline constexpr int getBin(float coord, int dim) const {
       int coord_bin;
       if (wrapping[dim]) {
         coord_bin =
-            static_cast<int>((normalizeCoordinate(coord, dim) - minmax->min(dim)) / tilesizes[dim]);
+            static_cast<int>((normalizeCoordinate(coord, dim) - (*minmax)[dim][]) / tilesizes[dim]);
       } else {
-        coord_bin = static_cast<int>((coord - minmax->min(dim)) / tilesizes[dim]);
+        coord_bin = static_cast<int>((coord - (*minmax)[dim][]) / tilesizes[dim]);
       }
 
       // Address the cases of underflow and overflow
@@ -89,10 +89,11 @@ namespace clue::internal {
 
     ALPAKA_FN_ACC inline constexpr float normalizeCoordinate(float coord, int dim) const {
       const float range = minmax->range(dim);
+      const auto& extreme = (*minmax)[dim];
       float remainder = coord - static_cast<int>(coord / range) * range;
-      if (remainder >= minmax->max(dim))
+      if (remainder >= extreme[1])
         remainder -= range;
-      else if (remainder < minmax->min(dim))
+      else if (remainder < extreme[0])
         remainder += range;
       return remainder;
     }

@@ -214,12 +214,13 @@ namespace clue {
       m_tiles->reset(h_points.size(), nTiles, nPerDim);
     }
 
-    auto min_max = clue::make_host_buffer<CoordinateExtremes>(queue);
-    auto tile_sizes = clue::make_host_buffer<float[Ndim]>(queue);
-    detail::compute_tile_size(min_max.data(), tile_sizes.data(), h_points, nPerDim);
+    internal::CoordinateRanges<Ndim> min_max;
+    std::array<float, Ndim> tile_sizes;
+    detail::compute_tile_size(min_max, tile_sizes, h_points, nPerDim);
 
-    alpaka::memcpy(queue, m_tiles->minMax(), min_max);
-    alpaka::memcpy(queue, m_tiles->tileSize(), tile_sizes);
+    alpaka::memcpy(queue, m_tiles->minMax(), clue::make_host_view(min_max));
+    alpaka::memcpy(
+        queue, m_tiles->tileSize(), clue::make_host_view<float[]>(tile_sizes.data(), Ndim));
     alpaka::memcpy(
         queue, m_tiles->wrapped(), clue::make_host_view(m_wrappedCoordinates.data(), Ndim));
   }
@@ -242,12 +243,13 @@ namespace clue {
       m_tiles->reset(d_points.size(), nTiles, nPerDim);
     }
 
-    auto min_max = clue::make_host_buffer<CoordinateExtremes>(queue);
-    auto tile_sizes = clue::make_host_buffer<float[Ndim]>(queue);
-    detail::compute_tile_size(min_max.data(), tile_sizes.data(), d_points, nPerDim);
+    internal::CoordinateRanges<Ndim> min_max;
+    std::array<float, Ndim> tile_sizes;
+    detail::compute_tile_size(min_max, tile_sizes, d_points, nPerDim);
 
-    alpaka::memcpy(queue, m_tiles->minMax(), min_max);
-    alpaka::memcpy(queue, m_tiles->tileSize(), tile_sizes);
+    alpaka::memcpy(queue, m_tiles->minMax(), clue::make_host_view(min_max));
+    alpaka::memcpy(
+        queue, m_tiles->tileSize(), clue::make_host_view<float[]>(tile_sizes.data(), Ndim));
     alpaka::memcpy(
         queue, m_tiles->wrapped(), clue::make_host_view(m_wrappedCoordinates.data(), Ndim));
   }
