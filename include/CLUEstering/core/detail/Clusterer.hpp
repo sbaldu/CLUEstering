@@ -155,6 +155,60 @@ namespace clue {
     make_clusters_impl(dev_points, kernel, queue, block_size);
     alpaka::wait(queue);
   }
+  template <std::size_t Ndim>
+  template <concepts::neighborhood NeighborhoodPolicy, concepts::convolutional_kernel Kernel>
+  inline void Clusterer<Ndim>::make_clusters(NeighborhoodPolicy&&,
+                                             Queue& queue,
+                                             PointsHost& h_points,
+                                             const Kernel& kernel,
+                                             std::size_t block_size) {
+    auto d_points = PointsDevice(queue, h_points.size());
+
+    setup(queue, h_points, d_points);
+    make_clusters_impl(h_points, d_points, kernel, queue, block_size);
+    alpaka::wait(queue);
+  }
+  template <std::size_t Ndim>
+  template <concepts::neighborhood NeighborhoodPolicy, concepts::convolutional_kernel Kernel>
+  inline void Clusterer<Ndim>::make_clusters(NeighborhoodPolicy&&,
+                                             PointsHost& h_points,
+                                             const Kernel& kernel,
+                                             std::size_t block_size) {
+    auto device = alpaka::getDevByIdx(Platform{}, 0u);
+    Queue queue(device);
+    init_device(queue);
+
+    auto d_points = PointsDevice(queue, h_points.size());
+
+    setup(queue, h_points, d_points);
+    make_clusters_impl(h_points, d_points, kernel, queue, block_size);
+    alpaka::wait(queue);
+  }
+  template <std::size_t Ndim>
+  template <concepts::neighborhood NeighborhoodPolicy, concepts::convolutional_kernel Kernel>
+  inline void Clusterer<Ndim>::make_clusters(NeighborhoodPolicy&&,
+                                             Queue& queue,
+                                             PointsHost& h_points,
+                                             PointsDevice& dev_points,
+                                             const Kernel& kernel,
+                                             std::size_t block_size) {
+    setup(queue, h_points, dev_points);
+    make_clusters_impl(h_points, dev_points, kernel, queue, block_size);
+    alpaka::wait(queue);
+  }
+  template <std::size_t Ndim>
+  template <concepts::neighborhood NeighborhoodPolicy, concepts::convolutional_kernel Kernel>
+  inline void Clusterer<Ndim>::make_clusters(NeighborhoodPolicy&&,
+                                             Queue& queue,
+                                             PointsDevice& dev_points,
+                                             const Kernel& kernel,
+                                             std::size_t block_size) {
+    setupTiles(queue, dev_points);
+    setupFollowers(queue, dev_points.size());
+    alpaka::memset(queue, *m_seeds, 0x00);
+    make_clusters_impl(dev_points, kernel, queue, block_size);
+    alpaka::wait(queue);
+  }
 
   template <std::size_t Ndim>
   template <std::ranges::contiguous_range TRange>

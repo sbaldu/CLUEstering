@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "CLUEstering/core/DistanceParameter.hpp"
 #include "CLUEstering/core/ConvolutionalKernel.hpp"
+#include "CLUEstering/core/DistanceParameter.hpp"
+#include "CLUEstering/core/NeighborhoodPolicy.hpp"
 #include "CLUEstering/core/detail/ClusteringKernels.hpp"
 #include "CLUEstering/core/detail/defines.hpp"
 #include "CLUEstering/data_structures/AssociationMap.hpp"
@@ -156,15 +157,55 @@ namespace clue {
                        PointsDevice& dev_points,
                        const Kernel& kernel = FlatKernel{.5f},
                        std::size_t block_size = 256);
+    /// @brief Construct the clusters from device points
+    ///
+    /// @param queue The queue to use for the device operations
+    /// @param dev_points Device points to cluster
+    /// @param kernel The convolutional kernel to use for computing the local densities, default is FlatKernel with height 0.5
+    /// @param block_size The size of the blocks to use for clustering, default is 256
+    template <concepts::convolutional_kernel Kernel = FlatKernel>
+    void make_clusters(Queue& queue,
+                       PointsDevice& dev_points,
+                       const Kernel& kernel = FlatKernel{.5f},
+                       std::size_t block_size = 256);
+
+    /// @brief Construct the clusters from host points
+    ///
+    /// @param queue The queue to use for the device operations
+    /// @param h_points Host points to cluster
+    /// @param kernel The convolutional kernel to use for computing the local densities, default is FlatKernel with height 0.5
+    /// @param block_size The size of the blocks to use for clustering, default is 256
+    template <concepts::neighborhood NeighborhoodPolicy,
+              concepts::convolutional_kernel Kernel = FlatKernel>
+    void make_clusters(NeighborhoodPolicy&& neighborhood,
+                       Queue& queue,
+                       PointsHost& h_points,
+                       const Kernel& kernel = FlatKernel{.5f},
+                       std::size_t block_size = 256);
+    /// @brief Construct the clusters from host points
+    ///
+    /// @param h_points Host points to cluster
+    /// @param kernel The convolutional kernel to use for computing the local densities, default is FlatKernel with height 0.5
+    /// @param block_size The size of the blocks to use for clustering, default is 256
+    /// @note This method creates a temporary queue for the operations on the device
+    template <concepts::neighborhood NeighborhoodPolicy,
+              concepts::convolutional_kernel Kernel = FlatKernel>
+    void make_clusters(NeighborhoodPolicy&& neighborhood,
+                       PointsHost& h_points,
+                       const Kernel& kernel = FlatKernel{.5f},
+                       std::size_t block_size = 256);
     /// @brief Construct the clusters from host and device points
     ///
+    /// @param queue The queue to use for the device operations
     /// @param h_points Host points to cluster
     /// @param dev_points Device points to cluster
     /// @param kernel The convolutional kernel to use for computing the local densities, default is FlatKernel with height 0.5
     /// @param block_size The size of the blocks to use for clustering, default is 256
-    /// @note This method creates a temporary queue for the operations on the device
-    template <concepts::convolutional_kernel Kernel = FlatKernel>
-    void make_clusters(PointsHost& h_points,
+    template <concepts::neighborhood NeighborhoodPolicy,
+              concepts::convolutional_kernel Kernel = FlatKernel>
+    void make_clusters(NeighborhoodPolicy&& neighborhood,
+                       Queue& queue,
+                       PointsHost& h_points,
                        PointsDevice& dev_points,
                        const Kernel& kernel = FlatKernel{.5f},
                        std::size_t block_size = 256);
@@ -174,8 +215,10 @@ namespace clue {
     /// @param dev_points Device points to cluster
     /// @param kernel The convolutional kernel to use for computing the local densities, default is FlatKernel with height 0.5
     /// @param block_size The size of the blocks to use for clustering, default is 256
-    template <concepts::convolutional_kernel Kernel = FlatKernel>
-    void make_clusters(Queue& queue,
+    template <concepts::neighborhood NeighborhoodPolicy,
+              concepts::convolutional_kernel Kernel = FlatKernel>
+    void make_clusters(NeighborhoodPolicy&& neighborhood,
+                       Queue& queue,
                        PointsDevice& dev_points,
                        const Kernel& kernel = FlatKernel{.5f},
                        std::size_t block_size = 256);

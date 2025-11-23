@@ -13,7 +13,11 @@ namespace clue {
   inline constexpr auto round_neighborhood = round_neighborhood_policy{};
   inline constexpr auto square_neighborhood = square_neighborhood_policy{};
 
-  template <typename Policy>
-  concept neighbohood = std::is_base_of_v<neighborhood_policy, Policy>;
+  namespace concepts {
+
+    template <typename Policy>
+    concept neighborhood = std::is_base_of_v<neighborhood_policy, Policy>;
+
+  }
 
 }  // namespace clue
