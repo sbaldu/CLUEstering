@@ -17,6 +17,25 @@
 
 namespace clue::internal {
 
+  template <typename TFunc>
+  struct KernelComputeTileAssociations {
+    template <typename TAcc>
+      requires(alpaka::Dim<TAcc>::value == 1)
+    ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                  size_t size,
+                                  int32_t* associations,
+                                  TFunc func) const {
+      for (auto i : alpaka::uniformElements(acc, size)) {
+        associations[i] = func(i);
+      }
+    }
+  };
+
+  template <concepts::device TDev>
+  template <concepts::accelerator TAcc, typename TFunc, concepts::queue TQueue>
+  ALPAKA_FN_HOST inline void AssociationMap<TDev>::fill(size_type size, TFunc func, TQueue& queue) {
+  }
+
   template <std::size_t Ndim, clue::concepts::device TDev>
   class Tiles {
   public:
@@ -90,9 +109,61 @@ namespace clue::internal {
 
     template <clue::concepts::accelerator TAcc, clue::concepts::queue TQueue>
     ALPAKA_FN_HOST void fill(TQueue& queue, PointsDevice<Ndim, TDev>& d_points, size_t size) {
-      auto dev = alpaka::getDev(queue);
-      auto pointsView = d_points.view();
-      m_assoc.template fill<TAcc>(size, GetGlobalBin{pointsView, m_view}, queue);
+      if (m_extents.keys == 0)
+        return;
+
+      auto bin_buffer = make_device_buffer<int32_t[]>(queue, size);
+
+      const auto blocksize = 512;
+      const auto gridsize = divide_up_by(size, blocksize);
+      const auto workdiv = make_workdiv<TAcc>(gridsize, blocksize);
+      alpaka::exec<TAcc>(queue,
+                         workdiv,
+                         detail::KernelComputeAssociations<TFunc>{},
+                         size,
+                         bin_buffer.data(),
+                         GetGlobalBin{d_points.view(), m_view});
+
+      auto sizes_buffer = make_device_buffer<int32_t[]>(queue, m_extents.keys);
+      alpaka::memset(queue, sizes_buffer, 0);
+      alpaka::exec<TAcc>(queue,
+                         workdiv,
+                         detail::KernelComputeAssociationSizes{},
+                         bin_buffer.data(),
+                         sizes_buffer.data(),
+                         size);
+
+      auto block_counter = make_device_buffer<int32_t>(queue);
+      alpaka::memset(queue, block_counter, 0);
+
+      auto temp_offsets = make_device_buffer<int32_t[]>(queue, m_extents.keys + 1);
+      alpaka::memset(queue, temp_offsets, 0u, 1u);
+      const auto blocksize_multiblockscan = 1024;
+      auto gridsize_multiblockscan = divide_up_by(m_extents.keys, blocksize_multiblockscan);
+      const auto workdiv_multiblockscan =
+          make_workdiv<TAcc>(gridsize_multiblockscan, blocksize_multiblockscan);
+      const auto dev = alpaka::getDev(queue);
+      auto warp_size = alpaka::getPreferredWarpSize(dev);
+      alpaka::exec<TAcc>(queue,
+                         workdiv_multiblockscan,
+                         multiBlockPrefixScan<int32_t>{},
+                         sizes_buffer.data(),
+                         temp_offsets.data() + 1,
+                         m_extents.keys,
+                         gridsize_multiblockscan,
+                         block_counter.data(),
+                         warp_size);
+
+      alpaka::memcpy(queue,
+                     make_device_view(alpaka::getDev(queue), m_offsets.data(), m_extents.keys + 1),
+                     temp_offsets);
+      alpaka::exec<TAcc>(queue,
+                         workdiv,
+                         detail::KernelFillAssociator{},
+                         m_indexes.data(),
+                         bin_buffer.data(),
+                         temp_offsets.data(),
+                         size);
     }
 
     ALPAKA_FN_HOST inline clue::device_buffer<TDev, CoordinateExtremes<Ndim>> minMax() const {

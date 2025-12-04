@@ -15,53 +15,6 @@
 
 namespace clue {
 
-  namespace detail {
-
-    template <typename TFunc>
-    struct KernelComputeAssociations {
-      template <typename TAcc>
-      ALPAKA_FN_ACC void operator()(const TAcc& acc,
-                                    size_t size,
-                                    int32_t* associations,
-                                    TFunc func) const {
-        for (auto i : alpaka::uniformElements(acc, size)) {
-          associations[i] = func(i);
-        }
-      }
-    };
-
-    struct KernelComputeAssociationSizes {
-      template <typename TAcc>
-      ALPAKA_FN_ACC void operator()(const TAcc& acc,
-                                    const int32_t* associations,
-                                    int32_t* bin_sizes,
-                                    size_t size) const {
-        for (auto i : alpaka::uniformElements(acc, size)) {
-          if (associations[i] >= 0)
-            alpaka::atomicAdd(acc, &bin_sizes[associations[i]], 1);
-        }
-      }
-    };
-
-    struct KernelFillAssociator {
-      template <typename TAcc>
-      ALPAKA_FN_ACC void operator()(const TAcc& acc,
-                                    int32_t* indexes,
-                                    const int32_t* bin_buffer,
-                                    int32_t* temp_offsets,
-                                    size_t size) const {
-        for (auto i : alpaka::uniformElements(acc, size)) {
-          const auto binId = bin_buffer[i];
-          if (binId >= 0) {
-            auto prev = alpaka::atomicAdd(acc, &temp_offsets[binId], 1);
-            indexes[prev] = i;
-          }
-        }
-      }
-    };
-
-  }  // namespace detail
-
   template <concepts::device TDev>
   inline AssociationMap<TDev>::AssociationMap(size_type nelements, size_type nbins)
     requires std::same_as<TDev, alpaka::DevCpu>
@@ -281,62 +234,6 @@ namespace clue {
   }
 
   template <concepts::device TDev>
-  template <concepts::accelerator TAcc, typename TFunc, concepts::queue TQueue>
-  ALPAKA_FN_HOST inline void AssociationMap<TDev>::fill(size_type size, TFunc func, TQueue& queue) {
-    if (m_extents.keys == 0)
-      return;
-
-    auto bin_buffer = make_device_buffer<int32_t[]>(queue, size);
-
-    const auto blocksize = 512;
-    const auto gridsize = divide_up_by(size, blocksize);
-    const auto workdiv = make_workdiv<TAcc>(gridsize, blocksize);
-    alpaka::exec<TAcc>(
-        queue, workdiv, detail::KernelComputeAssociations<TFunc>{}, size, bin_buffer.data(), func);
-
-    auto sizes_buffer = make_device_buffer<int32_t[]>(queue, m_extents.keys);
-    alpaka::memset(queue, sizes_buffer, 0);
-    alpaka::exec<TAcc>(queue,
-                       workdiv,
-                       detail::KernelComputeAssociationSizes{},
-                       bin_buffer.data(),
-                       sizes_buffer.data(),
-                       size);
-
-    auto block_counter = make_device_buffer<int32_t>(queue);
-    alpaka::memset(queue, block_counter, 0);
-
-    auto temp_offsets = make_device_buffer<int32_t[]>(queue, m_extents.keys + 1);
-    alpaka::memset(queue, temp_offsets, 0u, 1u);
-    const auto blocksize_multiblockscan = 1024;
-    auto gridsize_multiblockscan = divide_up_by(m_extents.keys, blocksize_multiblockscan);
-    const auto workdiv_multiblockscan =
-        make_workdiv<TAcc>(gridsize_multiblockscan, blocksize_multiblockscan);
-    const auto dev = alpaka::getDev(queue);
-    auto warp_size = alpaka::getPreferredWarpSize(dev);
-    alpaka::exec<TAcc>(queue,
-                       workdiv_multiblockscan,
-                       multiBlockPrefixScan<int32_t>{},
-                       sizes_buffer.data(),
-                       temp_offsets.data() + 1,
-                       m_extents.keys,
-                       gridsize_multiblockscan,
-                       block_counter.data(),
-                       warp_size);
-
-    alpaka::memcpy(queue,
-                   make_device_view(alpaka::getDev(queue), m_offsets.data(), m_extents.keys + 1),
-                   temp_offsets);
-    alpaka::exec<TAcc>(queue,
-                       workdiv,
-                       detail::KernelFillAssociator{},
-                       m_indexes.data(),
-                       bin_buffer.data(),
-                       temp_offsets.data(),
-                       size);
-  }
-
-  template <concepts::device TDev>
   ALPAKA_FN_HOST void AssociationMap<TDev>::fill(std::span<const key_type> associations)
     requires std::same_as<TDev, alpaka::DevCpu>
   {
@@ -371,18 +268,12 @@ namespace clue {
     const auto gridsize = divide_up_by(size, blocksize);
     const auto workdiv = make_workdiv<TAcc>(gridsize, blocksize);
 
-    auto sizes_buffer = make_device_buffer<key_type[]>(queue, m_extents.keys);
-    alpaka::memset(queue, sizes_buffer, 0);
-    alpaka::exec<TAcc>(queue,
-                       workdiv,
-                       detail::KernelComputeAssociationSizes{},
-                       associations.data(),
-                       sizes_buffer.data(),
-                       size);
+    auto keys_counts = detail::compute_key_counts(queue, associations, m_extents.keys);
 
     auto block_counter = make_device_buffer<int32_t>(queue);
     alpaka::memset(queue, block_counter, 0);
 
+	detail::compute_key_offsets(queue, keys_counts, m_offsets, m_extents.keys);
     auto temp_offsets = make_device_buffer<key_type[]>(queue, m_extents.keys + 1);
     alpaka::memset(queue, temp_offsets, 0u, 1u);
     const auto blocksize_multiblockscan = 1024;
