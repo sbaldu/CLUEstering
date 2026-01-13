@@ -2,9 +2,12 @@
 #pragma once
 
 #include "CLUEstering/CLUEstering.hpp"
+#include "CLUEstering/core/DistanceMetrics.hpp"
+#include "MetricTags.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include <pybind11/pybind11.h>
@@ -14,7 +17,9 @@
 
 namespace py = pybind11;
 
-template <std::size_t Ndim, clue::concepts::convolutional_kernel Kernel>
+template <std::size_t Ndim,
+          clue::concepts::convolutional_kernel Kernel,
+          clue::concepts::distance_metric<Ndim> DistanceMetric>
 void run(float dc,
          float rhoc,
          float dm,
@@ -24,6 +29,7 @@ void run(float dc,
          std::tuple<float*, int*>&& pData,
          int32_t n_points,
          const Kernel& kernel,
+         const DistanceMetric& dm,
          clue::Queue queue,
          size_t block_size) {
   clue::Clusterer<Ndim> algo(queue, dc, rhoc, dm, seed_dc, pPBin);
@@ -41,7 +47,7 @@ namespace ALPAKA_BACKEND {
     const char tab = '\t';
     const std::vector<Device> devices = alpaka::getDevs(clue::Platform{});
     if (devices.empty()) {
-      std::cout << "No devices found for the " << backend << " backend." << std::endl;
+      std::cout << "No devices found for the " << backend << " backend.\n";
       return;
     } else {
       std::cout << backend << " devices found: \n";
@@ -51,7 +57,7 @@ namespace ALPAKA_BACKEND {
     }
   }
 
-  template <clue::concepts::convolutional_kernel Kernel>
+  template <clue::concepts::convolutional_kernel Kernel, typename DistanceMetricTag>
   void mainRun(float dc,
                float rhoc,
                float dm,
@@ -61,6 +67,7 @@ namespace ALPAKA_BACKEND {
                py::array_t<float> data,
                py::array_t<int> results,
                const Kernel& kernel,
+               const DistanceMetricTag& metric,
                int Ndim,
                int32_t n_points,
                size_t block_size,
@@ -72,7 +79,6 @@ namespace ALPAKA_BACKEND {
 
     auto queue = clue::get_queue(device_id);
 
-    // Running the clustering algorithm //
     switch (Ndim) {
       [[unlikely]] case (1):
         run<1, Kernel>(dc,
@@ -84,6 +90,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -97,6 +104,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -110,6 +118,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -123,6 +132,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -136,6 +146,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -149,6 +160,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -162,6 +174,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -175,6 +188,7 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
@@ -188,21 +202,24 @@ namespace ALPAKA_BACKEND {
                        std::make_tuple(pData, pResults),
                        n_points,
                        kernel,
+                       static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
                        queue,
                        block_size);
         return;
       [[unlikely]] case (10):
-        run<10, Kernel>(dc,
-                        rhoc,
-                        dm,
-                        seed_dc,
-                        pPBin,
-                        std::move(wrapped),
-                        std::make_tuple(pData, pResults),
-                        n_points,
-                        kernel,
-                        queue,
-                        block_size);
+        run<10, Kernel>(
+            dc,
+            rhoc,
+            dm,
+            seed_dc,
+            pPBin,
+            std::move(wrapped),
+            std::make_tuple(pData, pResults),
+            n_points,
+            kernel,
+            static_cast<clue::internal::TagToMetric<DistanceMetricTag>::type<1>>(metric),
+            queue,
+            block_size);
         return;
       [[unlikely]] default:
         std::cout << "This library only works up to 10 dimensions\n";
