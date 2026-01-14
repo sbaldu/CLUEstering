@@ -8,13 +8,20 @@
 PYBIND11_MODULE(CLUE_DistanceMetrics, m) {
   m.doc() = "Binding of the distance metrics used in the CLUE algorithm.";
 
-  pybind11::class_<clue::EuclideanMetricTag>(m, "EuclideanMetric").def(pybind11::init<>());
-  pybind11::class_<clue::WeightedEuclideanTag>(m, "WeightedEuclideanMetric")
+  pybind11::class_<clue::DistanceMetricTag>(m, "DistanceMetricTag").def(pybind11::init<>());
+  pybind11::class_<clue::EuclideanMetricTag, clue::DistanceMetricTag>(m, "EuclideanMetric")
+      .def(pybind11::init<>());
+  pybind11::class_<clue::WeightedEuclideanTag, clue::DistanceMetricTag>(m,
+                                                                        "WeightedEuclideanMetric")
       .def(pybind11::init<std::vector<float>>());
-  pybind11::class_<clue::PeriodicEuclideanTag>(m, "PeriodicEuclideanMetric")
+  pybind11::class_<clue::PeriodicEuclideanTag, clue::DistanceMetricTag>(m,
+                                                                        "PeriodicEuclideanMetric")
       .def(pybind11::init<std::vector<float>>());
-  pybind11::class_<clue::ManhattanTag>(m, "ManhattanMetric").def(pybind11::init<>());
-  pybind11::class_<clue::ChebyshevTag>(m, "ChebyshevMetric").def(pybind11::init<>());
-  pybind11::class_<clue::WeightedChebyshevTag>(m, "WeightedChebyshevMetric")
+  pybind11::class_<clue::ManhattanTag, clue::DistanceMetricTag>(m, "ManhattanMetric")
+      .def(pybind11::init<>());
+  pybind11::class_<clue::ChebyshevTag, clue::DistanceMetricTag>(m, "ChebyshevMetric")
+      .def(pybind11::init<>());
+  pybind11::class_<clue::WeightedChebyshevTag, clue::DistanceMetricTag>(m,
+                                                                        "WeightedChebyshevMetric")
       .def(pybind11::init<std::vector<float>>());
 }

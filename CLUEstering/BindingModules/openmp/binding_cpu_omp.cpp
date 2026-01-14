@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 
+#include "../MetricTags.hpp"
 #include "../Run.hpp"
 
 #include <pybind11/pybind11.h>
@@ -33,6 +34,7 @@ namespace alpaka_omp2_async {
                                   py::array_t<float>,
                                   py::array_t<int>,
                                   const clue::FlatKernel&,
+                                  const clue::DistanceMetricTag&,
                                   int,
                                   int32_t,
                                   size_t,
@@ -48,6 +50,7 @@ namespace alpaka_omp2_async {
                                   py::array_t<float>,
                                   py::array_t<int>,
                                   const clue::ExponentialKernel&,
+                                  const clue::DistanceMetricTag&,
                                   int,
                                   int32_t,
                                   size_t,
@@ -63,6 +66,7 @@ namespace alpaka_omp2_async {
                                   py::array_t<float>,
                                   py::array_t<int>,
                                   const clue::GaussianKernel&,
+                                  const clue::DistanceMetricTag&,
                                   int,
                                   int32_t,
                                   size_t,

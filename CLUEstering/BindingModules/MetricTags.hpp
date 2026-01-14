@@ -12,7 +12,11 @@
 
 namespace clue {
 
-  class EuclideanMetricTag {
+  struct DistanceMetricTag {
+  	virtual ~DistanceMetricTag() = default;
+};
+
+  class EuclideanMetricTag final : public DistanceMetricTag {
   public:
     EuclideanMetricTag() = default;
 
@@ -22,7 +26,7 @@ namespace clue {
     }
   };
 
-  class WeightedEuclideanTag {
+  class WeightedEuclideanTag final : public DistanceMetricTag {
   private:
     std::vector<float> m_weights;
 
@@ -40,7 +44,7 @@ namespace clue {
     }
   };
 
-  class PeriodicEuclideanTag {
+  class PeriodicEuclideanTag final : public DistanceMetricTag {
   private:
     std::vector<float> m_periods;
 
@@ -58,7 +62,7 @@ namespace clue {
     }
   };
 
-  class ManhattanTag {
+  class ManhattanTag final : public DistanceMetricTag {
   public:
     ManhattanTag() = default;
 
@@ -68,7 +72,7 @@ namespace clue {
     }
   };
 
-  class ChebyshevTag {
+  class ChebyshevTag : public DistanceMetricTag {
   public:
     ChebyshevTag() = default;
 
@@ -78,7 +82,7 @@ namespace clue {
     }
   };
 
-  class WeightedChebyshevTag {
+  class WeightedChebyshevTag final : public DistanceMetricTag {
   private:
     std::vector<float> m_weights;
 
