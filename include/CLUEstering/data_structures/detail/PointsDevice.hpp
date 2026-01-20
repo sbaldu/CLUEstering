@@ -33,13 +33,14 @@ namespace clue {
     template <std::size_t Ndim>
     inline void partitionSoAView(PointsView<Ndim>& view, std::byte* buffer, int32_t n_points) {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(buffer + Dim * n_points * sizeof(float));
+        view.coords[Dim] = reinterpret_cast<float*>(buffer + (Dim * n_points * sizeof(float)));
       });
-      view.weight = reinterpret_cast<float*>(buffer + Ndim * n_points * sizeof(float));
-      view.cluster_index = reinterpret_cast<int*>(buffer + (Ndim + 1) * n_points * sizeof(float));
-      view.is_seed = reinterpret_cast<int*>(buffer + (Ndim + 2) * n_points * sizeof(float));
-      view.rho = reinterpret_cast<float*>(buffer + (Ndim + 3) * n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(buffer + (Ndim + 4) * n_points * sizeof(float));
+      view.weight = reinterpret_cast<float*>(buffer + (Ndim * n_points * sizeof(float)));
+      view.cluster_index = reinterpret_cast<int*>(buffer + ((Ndim + 1) * n_points * sizeof(float)));
+      view.is_seed = reinterpret_cast<int*>(buffer + ((Ndim + 2) * n_points * sizeof(float)));
+      view.rho = reinterpret_cast<float*>(buffer + ((Ndim + 3) * n_points * sizeof(float)));
+      view.nearest_higher =
+          reinterpret_cast<int*>(buffer + ((Ndim + 4) * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim>
@@ -48,13 +49,13 @@ namespace clue {
                                  std::byte* buffer,
                                  int32_t n_points) {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(buffer + Dim * n_points * sizeof(float));
+        view.coords[Dim] = reinterpret_cast<float*>(buffer + (Dim * n_points * sizeof(float)));
       });
-      view.weight = reinterpret_cast<float*>(buffer + Ndim * n_points * sizeof(float));
-      view.cluster_index = reinterpret_cast<int*>(buffer + (Ndim + 1) * n_points * sizeof(float));
+      view.weight = reinterpret_cast<float*>(buffer + (Ndim * n_points * sizeof(float)));
+      view.cluster_index = reinterpret_cast<int*>(buffer + ((Ndim + 1) * n_points * sizeof(float)));
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim>
@@ -65,13 +66,13 @@ namespace clue {
                                  std::span<float> weights,
                                  std::span<int> output) {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(coordinates.data() + Dim * n_points);
+        view.coords[Dim] = reinterpret_cast<float*>(coordinates.data() + (Dim * n_points));
       });
       view.weight = weights.data();
       view.cluster_index = output.data();
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim, concepts::pointer... TBuffers>
@@ -83,13 +84,13 @@ namespace clue {
       auto buffers_tuple = std::make_tuple(buffer...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(std::get<0>(buffers_tuple) + Dim * n_points);
+        view.coords[Dim] = reinterpret_cast<float*>(std::get<0>(buffers_tuple) + (Dim * n_points));
       });
       view.weight = std::get<1>(buffers_tuple);
       view.cluster_index = std::get<2>(buffers_tuple);
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim>
@@ -99,13 +100,13 @@ namespace clue {
                                  std::span<float> input,
                                  std::span<int> output) {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(input.data() + Dim * n_points);
+        view.coords[Dim] = reinterpret_cast<float*>(input.data() + (Dim * n_points));
       });
-      view.weight = input.data() + Ndim * n_points;
+      view.weight = input.data() + (Ndim * n_points);
       view.cluster_index = output.data();
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim, concepts::pointer... TBuffers>
@@ -117,13 +118,13 @@ namespace clue {
       auto buffers_tuple = std::make_tuple(buffers...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<float*>(std::get<0>(buffers_tuple) + Dim * n_points);
+        view.coords[Dim] = reinterpret_cast<float*>(std::get<0>(buffers_tuple) + (Dim * n_points));
       });
-      view.weight = std::get<0>(buffers_tuple) + Ndim * n_points;
+      view.weight = std::get<0>(buffers_tuple) + (Ndim * n_points);
       view.cluster_index = std::get<1>(buffers_tuple);
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
     template <std::size_t Ndim, concepts::pointer... TBuffers>
@@ -135,13 +136,13 @@ namespace clue {
       auto buffers_tuple = std::make_tuple(buffers...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = (std::get<Dim>(buffers_tuple) + Dim * n_points);
+        view.coords[Dim] = (std::get<Dim>(buffers_tuple) + (Dim * n_points));
       });
-      view.weight = std::get<Ndim>(buffers_tuple) + Ndim * n_points;
+      view.weight = std::get<Ndim>(buffers_tuple) + (Ndim * n_points);
       view.cluster_index = std::get<Ndim + 1>(buffers_tuple);
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
-      view.rho = reinterpret_cast<float*>(alloc_buffer + n_points * sizeof(float));
-      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + 2 * n_points * sizeof(float));
+      view.rho = reinterpret_cast<float*>(alloc_buffer + (n_points * sizeof(float)));
+      view.nearest_higher = reinterpret_cast<int*>(alloc_buffer + (2 * n_points * sizeof(float)));
       view.n = n_points;
     }
 
@@ -172,10 +173,11 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TDev>::PointsDevice(TQueue& queue,
                                                 int32_t n_points,
-                                                std::span<float> input,
+                                                std::span<const float> input,
                                                 std::span<int> output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(float))},
-        m_view{},
+        m_view{std::nullopt},
+        m_const_view{},
         m_size{n_points} {
     soa::device::partitionSoAView<Ndim>(m_view, m_buffer.data(), n_points, input, output);
   }
@@ -184,11 +186,12 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TDev>::PointsDevice(TQueue& queue,
                                                 int32_t n_points,
-                                                std::span<float> coordinates,
-                                                std::span<float> weights,
+                                                std::span<const float> coordinates,
+                                                std::span<const float> weights,
                                                 std::span<int> output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(float))},
-        m_view{},
+        m_view{std::nullopt},
+        m_const_view{},
         m_size{n_points} {
     soa::device::partitionSoAView<Ndim>(
         m_view, m_buffer.data(), n_points, coordinates, weights, output);
@@ -198,10 +201,11 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TDev>::PointsDevice(TQueue& queue,
                                                 int32_t n_points,
-                                                float* input,
+                                                const float* input,
                                                 int* output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(float))},
-        m_view{},
+        m_view{std::nullopt},
+        m_const_view{},
         m_size{n_points} {
     soa::device::partitionSoAView<Ndim>(m_view, m_buffer.data(), n_points, input, output);
   }
@@ -209,9 +213,10 @@ namespace clue {
   template <std::size_t Ndim, concepts::device TDev>
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TDev>::PointsDevice(
-      TQueue& queue, int32_t n_points, float* coordinates, float* weights, int* output)
+      TQueue& queue, int32_t n_points, const float* coordinates, const float* weights, int* output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(float))},
-        m_view{},
+        m_view{std::nullopt},
+        m_const_view{},
         m_size{n_points} {
     soa::device::partitionSoAView<Ndim>(
         m_view, m_buffer.data(), n_points, coordinates, weights, output);
@@ -224,7 +229,8 @@ namespace clue {
                                                 int32_t n_points,
                                                 TBuffers... buffers)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(float))},
-        m_view{},
+        m_view{std::nullopt},
+        m_const_view{},
         m_size{n_points} {
     soa::device::partitionSoAView<Ndim>(m_view, m_buffer.data(), n_points, buffers...);
   }

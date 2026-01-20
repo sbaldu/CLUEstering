@@ -41,7 +41,8 @@ namespace clue {
   class PointsDevice : public internal::points_interface<PointsDevice<Ndim, TDev>> {
   private:
     device_buffer<TDev, std::byte[]> m_buffer;
-    PointsView<Ndim> m_view;
+    std::optional<PointsView<Ndim>> m_view;
+    std::optional<PointsView<Ndim>> m_const_view;
     std::optional<std::size_t> m_nclusters;
     int32_t m_size;
     bool m_clustered = false;
@@ -70,7 +71,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsDevice(TQueue& queue, int32_t n_points, std::span<float> input, std::span<int> output);
+    PointsDevice(TQueue& queue, int32_t n_points, std::span<const float> input, std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the device using separate coordinate and weight buffers
     ///
@@ -83,8 +84,8 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsDevice(TQueue& queue,
                  int32_t n_points,
-                 std::span<float> coordinates,
-                 std::span<float> weights,
+                 std::span<const float> coordinates,
+                 std::span<const float> weights,
                  std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the device using interleaved data
@@ -95,7 +96,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsDevice(TQueue& queue, int32_t n_points, float* input, int* output);
+    PointsDevice(TQueue& queue, int32_t n_points, const float* input, int* output);
 
     /// @brief Constructs a container for the points allocated on the device using separate coordinate and weight buffers
     ///
@@ -106,7 +107,7 @@ namespace clue {
     /// @param output The pre-allocated buffer to store the cluster indexes
     /// @note The coordinates buffer must have a size of n_points * Ndim
     template <concepts::queue TQueue>
-    PointsDevice(TQueue& queue, int32_t n_points, float* coordinates, float* weights, int* output);
+    PointsDevice(TQueue& queue, int32_t n_points, const float* coordinates, const float* weights, int* output);
 
     /// @brief Construct a PointsDevice object with a pre-allocated buffer
     ///
