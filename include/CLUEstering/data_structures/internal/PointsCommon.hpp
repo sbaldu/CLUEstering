@@ -83,6 +83,27 @@ namespace clue {
     }
   };
 
+  template <std::size_t Ndim>
+  struct ConstPointsView {
+    std::array<const float*, Ndim> coords;
+    const float* weight;
+    int* cluster_index;
+    int* is_seed;
+    float* rho;
+    int* nearest_higher;
+    int32_t n;
+
+    ALPAKA_FN_HOST_ACC auto operator[](int i) const {
+      if (i == -1)
+        return clue::nostd::make_array<float, Ndim + 1>(std::numeric_limits<float>::max());
+
+      std::array<float, Ndim + 1> point;
+      meta::apply<Ndim>([&]<std::size_t Dim>() { point[Dim] = coords[Dim][i]; });
+      point[Ndim] = weight[i];
+      return point;
+    }
+  };
+
   // TODO: implement for better cache use
   template <std::size_t Ndim>
   int32_t computeAlignSoASize(int32_t n_points);
