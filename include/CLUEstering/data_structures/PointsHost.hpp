@@ -9,6 +9,7 @@
 #include "CLUEstering/detail/concepts.hpp"
 #include "CLUEstering/internal/alpaka/memory.hpp"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -46,7 +47,8 @@ namespace clue {
   class PointsHost : public internal::points_interface<PointsHost<Ndim>> {
   private:
     std::optional<host_buffer<std::byte[]>> m_buffer;
-    PointsView<Ndim> m_view;
+    std::optional<PointsView<Ndim>> m_view;
+    ConstPointsView<Ndim> m_const_view;
     std::optional<ClusterProperties> m_clusterProperties;
     std::optional<std::size_t> m_nclusters;
     int32_t m_size;
@@ -89,7 +91,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsHost(TQueue& queue, int32_t n_points, std::span<float> input, std::span<int> output);
+    PointsHost(TQueue& queue, int32_t n_points, std::span<const float> input, std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the host using separate coordinate and weight buffers
     ///
@@ -102,8 +104,8 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsHost(TQueue& queue,
                int32_t n_points,
-               std::span<float> coordinates,
-               std::span<float> weights,
+               std::span<const float> coordinates,
+               std::span<const float> weights,
                std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the host using multiple pre-allocated buffers
@@ -123,7 +125,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsHost(TQueue& queue, int32_t n_points, float* input, int* output);
+    PointsHost(TQueue& queue, int32_t n_points, const float* input, int* output);
 
     /// @brief Constructs a container for the points allocated on the host using separate coordinate and weight buffers
     ///
@@ -134,7 +136,11 @@ namespace clue {
     /// @param output The pre-allocated buffer to store the cluster indexes
     /// @note The coordinates buffer must have a size of n_points * Ndim
     template <concepts::queue TQueue>
-    PointsHost(TQueue& queue, int32_t n_points, float* coordinates, float* weights, int* output);
+    PointsHost(TQueue& queue,
+               int32_t n_points,
+               const float* coordinates,
+               const float* weights,
+               int* output);
 
     /// @brief Constructs a container for the points allocated on the host using multiple pre-allocated buffers
     ///

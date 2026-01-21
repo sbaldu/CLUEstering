@@ -25,8 +25,8 @@ namespace clue {
         if (dim >= TPoints::Ndim_) {
           throw std::out_of_range("Dimension out of range in call to coords.");
         }
-        auto& view = static_cast<const TPoints*>(this)->m_view;
-        return std::span<const float>(view.coords[dim], view.n);
+        auto& const_view = static_cast<const TPoints*>(this)->m_const_view;
+        return std::span<const float>(const_view.coords[dim], const_view.n);
       }
       ALPAKA_FN_HOST auto coords(std::size_t dim) {
         if (dim >= TPoints::Ndim_) {
@@ -37,8 +37,8 @@ namespace clue {
       }
 
       ALPAKA_FN_HOST auto weights() const {
-        auto& view = static_cast<const TPoints*>(this)->m_view;
-        return std::span<const float>(view.weight, view.n);
+        auto& const_view = static_cast<const TPoints*>(this)->m_const_view;
+        return std::span<const float>(const_view.weight, const_view.n);
       }
       ALPAKA_FN_HOST auto weights() {
         auto& view = static_cast<TPoints*>(this)->m_view;
@@ -48,7 +48,7 @@ namespace clue {
       ALPAKA_FN_HOST auto clusterIndexes() const {
         assert(static_cast<const TPoints&>(*this).m_clustered &&
                "The points have not been clustered yet, so the cluster indexes cannot be accessed");
-        auto& view = static_cast<const TPoints*>(this)->m_view;
+        auto& const_view = static_cast<const TPoints*>(this)->m_const_view;
         return std::span<const int>(view.cluster_index, view.n);
       }
 
