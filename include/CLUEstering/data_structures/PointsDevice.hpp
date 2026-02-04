@@ -79,7 +79,7 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsDevice(TQueue& queue,
                  std::int32_t n_points,
-                 std::span<value_type> input,
+                 std::span<const value_type> input,
                  std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the device using separate coordinate and weight buffers
@@ -93,8 +93,8 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsDevice(TQueue& queue,
                  std::int32_t n_points,
-                 std::span<value_type> coordinates,
-                 std::span<value_type> weights,
+                 std::span<const value_type> coordinates,
+                 std::span<const value_type> weights,
                  std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the device using interleaved data
@@ -105,7 +105,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsDevice(TQueue& queue, std::int32_t n_points, value_type* input, int* output);
+    PointsDevice(TQueue& queue, std::int32_t n_points, const value_type* input, int* output);
 
     /// @brief Constructs a container for the points allocated on the device using separate coordinate and weight buffers
     ///
@@ -118,8 +118,8 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsDevice(TQueue& queue,
                  std::int32_t n_points,
-                 value_type* coordinates,
-                 value_type* weights,
+                 const value_type* coordinates,
+                 const value_type* weights,
                  int* output);
 
     /// @brief Construct a PointsDevice object with a pre-allocated buffer

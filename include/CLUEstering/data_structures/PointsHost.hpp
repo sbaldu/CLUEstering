@@ -97,7 +97,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsHost(TQueue& queue, int32_t n_points, std::span<value_type> input, std::span<int> output);
+    PointsHost(TQueue& queue, int32_t n_points, std::span<const value_type> input, std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the host using separate coordinate and weight buffers
     ///
@@ -110,8 +110,8 @@ namespace clue {
     template <concepts::queue TQueue>
     PointsHost(TQueue& queue,
                int32_t n_points,
-               std::span<value_type> coordinates,
-               std::span<value_type> weights,
+               std::span<const value_type> coordinates,
+               std::span<const value_type> weights,
                std::span<int> output);
 
     /// @brief Constructs a container for the points allocated on the host using multiple pre-allocated buffers
@@ -131,7 +131,7 @@ namespace clue {
     /// @param output_buffer The pre-allocated buffer to store the cluster indexes
     /// @note The input buffer must contain the coordinates and weights in an SoA format
     template <concepts::queue TQueue>
-    PointsHost(TQueue& queue, int32_t n_points, value_type* input, int* output);
+    PointsHost(TQueue& queue, int32_t n_points, const value_type* input, int* output);
 
     /// @brief Constructs a container for the points allocated on the host using separate coordinate and weight buffers
     ///
@@ -143,7 +143,7 @@ namespace clue {
     /// @note The coordinates buffer must have a size of n_points * Ndim
     template <concepts::queue TQueue>
     PointsHost(
-        TQueue& queue, int32_t n_points, value_type* coordinates, value_type* weights, int* output);
+        TQueue& queue, int32_t n_points, const value_type* coordinates, const value_type* weights, int* output);
 
     /// @brief Constructs a container for the points allocated on the host using multiple pre-allocated buffers
     ///

@@ -50,7 +50,7 @@ namespace clue {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
         view.coords[Dim] = reinterpret_cast<TData*>(std::get<0>(buffers_tuple) + Dim * n_points);
       });
-      view.weight = std::get<1>(buffers_tuple);
+      view.weight = const_cast<TData*>(std::get<1>(buffers_tuple));
       view.cluster_index = std::get<2>(buffers_tuple);
       view.n = n_points;
     }
@@ -64,7 +64,7 @@ namespace clue {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
         view.coords[Dim] = reinterpret_cast<TData*>(std::get<0>(buffers_tuple) + Dim * n_points);
       });
-      view.weight = std::get<0>(buffers_tuple) + Ndim * n_points;
+      view.weight = const_cast<TData*>(std::get<0>(buffers_tuple) + Ndim * n_points);
       view.cluster_index = std::get<1>(buffers_tuple);
       view.n = n_points;
     }
@@ -90,10 +90,9 @@ namespace clue {
       auto buffers_tuple = std::forward_as_tuple(std::forward<TBuffers>(buffers)...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] =
-            reinterpret_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
       });
-      view.weight = std::get<1>(buffers_tuple).data();
+      view.weight = const_cast<TData*>(std::get<1>(buffers_tuple).data());
       view.cluster_index = std::get<2>(buffers_tuple).data();
       view.n = n_points;
     }
@@ -105,10 +104,9 @@ namespace clue {
       auto buffers_tuple = std::forward_as_tuple(std::forward<TBuffers>(buffers)...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] =
-            reinterpret_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
       });
-      view.weight = std::get<0>(buffers_tuple).data() + Ndim * n_points;
+      view.weight = const_cast<TData*>(std::get<0>(buffers_tuple).data() + Ndim * n_points);
       view.cluster_index = std::get<1>(buffers_tuple).data();
       view.n = n_points;
     }
@@ -120,10 +118,9 @@ namespace clue {
       auto buffers_tuple = std::forward_as_tuple(std::forward<TBuffers>(buffers)...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] =
-            reinterpret_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(std::get<0>(buffers_tuple).data() + Dim * n_points);
       });
-      view.weight = std::get<0>(buffers_tuple).data() + Ndim * n_points;
+      view.weight = const_cast<TData*>(std::get<0>(buffers_tuple).data() + Ndim * n_points);
       view.cluster_index = std::get<1>(buffers_tuple).data();
       view.n = n_points;
     }
@@ -151,7 +148,7 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsHost<Ndim, TData>::PointsHost(TQueue&,
                                              int32_t n_points,
-                                             std::span<value_type> input,
+                                             std::span<const value_type> input,
                                              std::span<int> output)
       : m_view{}, m_size{n_points} {
     soa::host::partitionSoAView<Ndim>(m_view, n_points, input, output);
@@ -161,8 +158,8 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsHost<Ndim, TData>::PointsHost(TQueue&,
                                              int32_t n_points,
-                                             std::span<value_type> coordinates,
-                                             std::span<value_type> weights,
+                                             std::span<const value_type> coordinates,
+                                             std::span<const value_type> weights,
                                              std::span<int> output)
       : m_view{}, m_size{n_points} {
     soa::host::partitionSoAView<Ndim>(m_view, n_points, coordinates, weights, output);
@@ -180,7 +177,7 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsHost<Ndim, TData>::PointsHost(TQueue&,
                                              int32_t n_points,
-                                             value_type* input,
+                                             const value_type* input,
                                              int* output)
       : m_view{}, m_size{n_points} {
     soa::host::partitionSoAView<Ndim>(m_view, n_points, input, output);
@@ -188,8 +185,11 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point TData>
   template <concepts::queue TQueue>
-  inline PointsHost<Ndim, TData>::PointsHost(
-      TQueue&, int32_t n_points, value_type* coordinates, value_type* weights, int* output)
+  inline PointsHost<Ndim, TData>::PointsHost(TQueue&,
+                                             int32_t n_points,
+                                             const value_type* coordinates,
+                                             const value_type* weights,
+                                             int* output)
       : m_view{}, m_size{n_points} {
     soa::host::partitionSoAView<Ndim>(m_view, n_points, coordinates, weights, output);
   }

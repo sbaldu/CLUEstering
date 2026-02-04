@@ -65,13 +65,13 @@ namespace clue {
     inline void partitionSoAView(PointsView<Ndim, TData>& view,
                                  std::byte* alloc_buffer,
                                  int32_t n_points,
-                                 std::span<TData> coordinates,
-                                 std::span<TData> weights,
+                                 std::span<const TData> coordinates,
+                                 std::span<const TData> weights,
                                  std::span<int> output) {
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<TData*>(coordinates.data() + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(coordinates.data() + Dim * n_points);
       });
-      view.weight = weights.data();
+      view.weight = const_cast<TData*>(weights.data());
       view.cluster_index = output.data();
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
       view.rho = reinterpret_cast<TData*>(alloc_buffer + n_points * sizeof(TData));
@@ -87,9 +87,9 @@ namespace clue {
       auto buffers_tuple = std::make_tuple(buffer...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = reinterpret_cast<TData*>(std::get<0>(buffers_tuple) + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(std::get<0>(buffers_tuple) + Dim * n_points);
       });
-      view.weight = std::get<1>(buffers_tuple);
+      view.weight = const_cast<TData*>(std::get<1>(buffers_tuple));
       view.cluster_index = std::get<2>(buffers_tuple);
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
       view.rho = reinterpret_cast<TData*>(alloc_buffer + n_points * sizeof(TData));
@@ -139,9 +139,9 @@ namespace clue {
       auto buffers_tuple = std::make_tuple(buffers...);
 
       meta::apply<Ndim>([&]<std::size_t Dim>() {
-        view.coords[Dim] = (std::get<Dim>(buffers_tuple) + Dim * n_points);
+        view.coords[Dim] = const_cast<TData*>(std::get<Dim>(buffers_tuple) + Dim * n_points);
       });
-      view.weight = std::get<Ndim>(buffers_tuple) + Ndim * n_points;
+      view.weight = const_cast<TData*>(std::get<Ndim>(buffers_tuple) + Ndim * n_points);
       view.cluster_index = std::get<Ndim + 1>(buffers_tuple);
       view.is_seed = reinterpret_cast<int*>(alloc_buffer);
       view.rho = reinterpret_cast<TData*>(alloc_buffer + n_points * sizeof(TData));
@@ -176,7 +176,7 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TData, TDev>::PointsDevice(TQueue& queue,
                                                        int32_t n_points,
-                                                       std::span<value_type> input,
+                                                       std::span<const value_type> input,
                                                        std::span<int> output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(value_type))},
         m_view{},
@@ -188,8 +188,8 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TData, TDev>::PointsDevice(TQueue& queue,
                                                        int32_t n_points,
-                                                       std::span<value_type> coordinates,
-                                                       std::span<value_type> weights,
+                                                       std::span<const value_type> coordinates,
+                                                       std::span<const value_type> weights,
                                                        std::span<int> output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(value_type))},
         m_view{},
@@ -202,7 +202,7 @@ namespace clue {
   template <concepts::queue TQueue>
   inline PointsDevice<Ndim, TData, TDev>::PointsDevice(TQueue& queue,
                                                        int32_t n_points,
-                                                       value_type* input,
+                                                       const value_type* input,
                                                        int* output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(value_type))},
         m_view{},
@@ -212,8 +212,11 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point TData, concepts::device TDev>
   template <concepts::queue TQueue>
-  inline PointsDevice<Ndim, TData, TDev>::PointsDevice(
-      TQueue& queue, int32_t n_points, value_type* coordinates, value_type* weights, int* output)
+  inline PointsDevice<Ndim, TData, TDev>::PointsDevice(TQueue& queue,
+                                                       int32_t n_points,
+                                                       const value_type* coordinates,
+                                                       const value_type* weights,
+                                                       int* output)
       : m_buffer{make_device_buffer<std::byte[]>(queue, 3 * n_points * sizeof(value_type))},
         m_view{},
         m_size{n_points} {
