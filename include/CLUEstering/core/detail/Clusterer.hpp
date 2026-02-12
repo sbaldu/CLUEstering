@@ -101,7 +101,7 @@ namespace clue {
                                                     const DistanceMetric& metric,
                                                     const Kernel& kernel,
                                                     std::size_t block_size) {
-    auto d_points = clue::PointsDevice<Ndim, T>(queue, h_points.size());
+    auto d_points = clue::PointsDevice<Ndim, value_type>(queue, h_points.size());
 
     setup(queue, h_points, d_points);
     make_clusters_impl(h_points, d_points, metric, kernel, queue, block_size);
@@ -117,7 +117,7 @@ namespace clue {
                                                     std::size_t block_size) {
     auto device = alpaka::getDevByIdx(Platform{}, 0u);
     Queue queue(device);
-    auto d_points = clue::PointsDevice<Ndim, T>(queue, h_points.size());
+    auto d_points = clue::PointsDevice<Ndim, value_type>(queue, h_points.size());
 
     setup(queue, h_points, d_points);
     make_clusters_impl(h_points, d_points, metric, kernel, queue, block_size);
@@ -129,7 +129,7 @@ namespace clue {
             concepts::distance_metric<Ndim> DistanceMetric>
   inline void Clusterer<Ndim, TData>::make_clusters(Queue& queue,
                                                     clue::PointsHost<Ndim, T>& h_points,
-                                                    clue::PointsDevice<Ndim, T>& dev_points,
+                                                    clue::PointsDevice<Ndim, value_type>& dev_points,
                                                     const DistanceMetric& metric,
                                                     const Kernel& kernel,
                                                     std::size_t block_size) {
@@ -158,7 +158,7 @@ namespace clue {
             concepts::distance_metric<Ndim> DistanceMetric>
   inline void Clusterer<Ndim, TData>::make_clusters(Queue& queue,
                                                     clue::PointsHost<Ndim, T>& h_points,
-                                                    clue::PointsDevice<Ndim, T>& dev_points,
+                                                    clue::PointsDevice<Ndim, value_type>& dev_points,
                                                     std::span<const uint32_t> batch_item_sizes,
                                                     const DistanceMetric& metric,
                                                     const Kernel& kernel,
@@ -240,7 +240,7 @@ namespace clue {
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
   void Clusterer<Ndim, TData>::make_clusters_impl(clue::PointsHost<Ndim, T>& h_points,
-                                                  clue::PointsDevice<Ndim, T>& dev_points,
+                                                  clue::PointsDevice<Ndim, value_type>& dev_points,
                                                   const DistanceMetric& metric,
                                                   const Kernel& kernel,
                                                   Queue& queue,

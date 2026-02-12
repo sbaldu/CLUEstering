@@ -53,7 +53,7 @@ namespace clue {
     template <std::floating_point T>
     void setup(Queue& queue,
                const clue::PointsHost<Ndim, T>& h_points,
-               clue::PointsDevice<Ndim, T>& dev_points) {
+               clue::PointsDevice<Ndim, value_type>& dev_points) {
       detail::setup_tiles(queue, m_tiles, h_points, m_pointsPerTile, m_wrappedCoordinates);
       detail::setup_followers(queue, m_followers, h_points.size());
       clue::copyToDevice(queue, dev_points, h_points);
@@ -62,7 +62,7 @@ namespace clue {
     template <std::floating_point T>
     void setup_batch(Queue& queue,
                      const clue::PointsHost<Ndim, T>& h_points,
-                     clue::PointsDevice<Ndim, T>& dev_points,
+                     clue::PointsDevice<Ndim, value_type>& dev_points,
                      std::size_t batch_size) {
       detail::setup_tiles(
           queue, m_tiles, h_points, m_pointsPerTile, m_wrappedCoordinates, batch_size);
@@ -83,7 +83,7 @@ namespace clue {
               concepts::convolutional_kernel Kernel = FlatKernel<>,
               concepts::distance_metric<Ndim> DistanceMetric = clue::EuclideanMetric<Ndim, TData>>
     void make_clusters_impl(clue::PointsHost<Ndim, T>& h_points,
-                            clue::PointsDevice<Ndim, T>& dev_points,
+                            clue::PointsDevice<Ndim, value_type>& dev_points,
                             const DistanceMetric& metric,
                             const Kernel& kernel,
                             Queue& queue,
@@ -195,7 +195,7 @@ namespace clue {
               concepts::distance_metric<Ndim> DistanceMetric = clue::EuclideanMetric<Ndim, TData>>
     void make_clusters(Queue& queue,
                        clue::PointsHost<Ndim, T>& h_points,
-                       clue::PointsDevice<Ndim, T>& dev_points,
+                       clue::PointsDevice<Ndim, value_type>& dev_points,
                        const DistanceMetric& metric = clue::EuclideanMetric<Ndim, TData>{},
                        const Kernel& kernel = FlatKernel<>{.5f},
                        std::size_t block_size = 256);
@@ -234,7 +234,7 @@ namespace clue {
               concepts::distance_metric<Ndim> DistanceMetric = clue::EuclideanMetric<Ndim, TData>>
     void make_clusters(Queue& queue,
                        clue::PointsHost<Ndim, T>& h_points,
-                       clue::PointsDevice<Ndim, T>& dev_points,
+                       clue::PointsDevice<Ndim, value_type>& dev_points,
                        std::span<const uint32_t> batch_item_sizes,
                        const DistanceMetric& metric = clue::EuclideanMetric<Ndim, TData>{},
                        const Kernel& kernel = FlatKernel<>{.5f},
