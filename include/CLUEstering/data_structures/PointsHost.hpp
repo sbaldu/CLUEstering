@@ -5,6 +5,7 @@
 #pragma once
 
 #include "CLUEstering/data_structures/ClusterProperties.hpp"
+#include "CLUEstering/data_structures/internal/Converter.hpp"
 #include "CLUEstering/data_structures/internal/PointsCommon.hpp"
 #include "CLUEstering/detail/concepts.hpp"
 #include "CLUEstering/internal/alpaka/memory.hpp"
@@ -23,32 +24,11 @@ namespace clue {
   template <std::size_t Ndim, std::floating_point TData>
   class Clusterer;
 
+  template <std::size_t NDim, std::floating_point TData, concepts::device TDev>
+  class PointsDevice;
+
   template <std::size_t NDim, std::floating_point TData, concepts::queue TQueue>
   clue::PointsHost<NDim, TData> read_output(TQueue& queue, const std::string& file_path);
-
-  template <concepts::queue TQueue,
-            std::size_t Ndim,
-            std::floating_point THostInput,
-            std::floating_point TDeviceInput,
-            concepts::device TDev>
-  void copyToHost(TQueue& queue,
-                  PointsHost<Ndim, THostInput>& h_points,
-                  const PointsDevice<Ndim, TDeviceInput, TDev>& d_points);
-
-  template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
-  auto copyToHost(TQueue& queue, const PointsDevice<Ndim, TInput, TDev>& d_points);
-
-  template <concepts::queue TQueue,
-            std::size_t Ndim,
-            std::floating_point TDeviceInput,
-            concepts::device TDev,
-            std::floating_point THostInput>
-  void copyToDevice(TQueue& queue,
-                    PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
-                    const PointsHost<Ndim, THostInput>& h_points);
-
-  template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
-  auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points);
 
   /// @brief The PointsHost class is a data structure that manages points in host memory.
   /// It provides methods to allocate, access, and manipulate points in host memory.
@@ -248,23 +228,8 @@ namespace clue {
 #ifndef CLUE_BUILD_DOXYGEN
     friend class Clusterer<Ndim, TData>;
 
-    template <concepts::queue TQueue,
-              std::size_t N,
-              std::floating_point THostInput,
-              std::floating_point TDeviceInput,
-              concepts::device TDev>
-    friend void copyToHost(TQueue& queue,
-                           PointsHost<N, THostInput>& h_points,
-                           const PointsDevice<N, TDeviceInput, TDev>& d_points);
-
-    template <concepts::queue TQueue,
-              std::size_t N,
-              std::floating_point TDeviceInput,
-              concepts::device TDev,
-              std::floating_point THostInput>
-    friend void copyToDevice(TQueue& queue,
-                             PointsDevice<N, TDeviceInput, TDev>& d_points,
-                             const PointsHost<N, THostInput>& h_points);
+    template <concepts::device TDev>
+    friend struct internal::Converter<PointsHost<Ndim, TData>, PointsDevice<Ndim, TData, TDev>>;
 
     friend struct internal::points_interface<PointsHost<Ndim, TData>>;
 
