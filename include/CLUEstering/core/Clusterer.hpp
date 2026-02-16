@@ -56,7 +56,7 @@ namespace clue {
     void setup(Queue& queue,
                const clue::PointsHost<Ndim, InputType>& h_points,
                clue::PointsDevice<Ndim, value_type>& dev_points) {
-      detail::setup_tiles(queue, m_tiles, h_points, m_pointsPerTile, m_wrappedCoordinates);
+      detail::setup_tiles(queue, h_points, m_tiles, m_pointsPerTile, m_wrappedCoordinates);
       detail::setup_followers(queue, m_followers, h_points.size());
       clue::copyToDevice(queue, dev_points, h_points);
     }
@@ -68,7 +68,7 @@ namespace clue {
                      clue::PointsDevice<Ndim, value_type>& dev_points,
                      std::size_t batch_size) {
       detail::setup_tiles(
-          queue, m_tiles, h_points, m_pointsPerTile, m_wrappedCoordinates, batch_size);
+          queue, h_points, m_tiles, m_pointsPerTile, m_wrappedCoordinates, batch_size);
       detail::setup_followers(queue, m_followers, h_points.size());
       clue::copyToDevice(queue, dev_points, h_points);
     }
@@ -79,7 +79,7 @@ namespace clue {
                      clue::PointsDevice<Ndim, InputType>& dev_points,
                      std::size_t batch_size) {
       detail::setup_tiles(
-          queue, m_tiles, dev_points, m_pointsPerTile, m_wrappedCoordinates, batch_size);
+          queue, dev_points, m_tiles, m_pointsPerTile, m_wrappedCoordinates, batch_size);
       detail::setup_followers(queue, m_followers, dev_points.size());
     }
 

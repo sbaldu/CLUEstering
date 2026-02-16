@@ -96,7 +96,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(Queue& queue,
                                                        clue::PointsHost<Ndim, InputType>& h_points,
                                                        const DistanceMetric& metric,
@@ -112,7 +113,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(clue::PointsHost<Ndim, InputType>& h_points,
                                                        const DistanceMetric& metric,
                                                        const Kernel& kernel,
@@ -129,7 +131,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(
       Queue& queue,
       clue::PointsHost<Ndim, InputType>& h_points,
@@ -145,14 +148,15 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(
       Queue& queue,
       clue::PointsDevice<Ndim, InputType>& dev_points,
       const DistanceMetric& metric,
       const Kernel& kernel,
       std::size_t block_size) {
-    detail::setup_tiles(queue, m_tiles, dev_points, m_pointsPerTile, m_wrappedCoordinates);
+    detail::setup_tiles(queue, dev_points, m_tiles, m_pointsPerTile, m_wrappedCoordinates);
     detail::setup_followers(queue, m_followers, dev_points.size());
     make_clusters_impl(dev_points, metric, kernel, queue, block_size);
     alpaka::wait(queue);
@@ -162,7 +166,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(
       Queue& queue,
       clue::PointsHost<Ndim, InputType>& h_points,
@@ -181,7 +186,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline void Clusterer<Ndim, DataType>::make_clusters(
       Queue& queue,
       clue::PointsDevice<Ndim, InputType>& dev_points,
@@ -208,7 +214,8 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point DataType>
   template <std::floating_point InputType>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline host_associator Clusterer<Ndim, DataType>::getClusters(
       const clue::PointsHost<Ndim, InputType>& h_points) {
     return clue::get_clusters(h_points);
@@ -216,7 +223,8 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point DataType>
   template <std::floating_point InputType>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline AssociationMap<Device> Clusterer<Ndim, DataType>::getClusters(
       Queue& queue, const clue::PointsDevice<Ndim, InputType>& d_points) {
     return clue::get_clusters(queue, d_points);
@@ -224,7 +232,8 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point DataType>
   template <std::floating_point InputType>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline host_associator Clusterer<Ndim, DataType>::getSampleAssociations(
       Queue& queue, clue::PointsHost<Ndim, InputType>& h_points) {
     auto event_associations = make_host_buffer<std::int32_t[]>(h_points.n_clusters());
@@ -240,7 +249,8 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point DataType>
   template <std::floating_point InputType>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   inline AssociationMap<Device> Clusterer<Ndim, DataType>::getSampleAssociations(
       Queue& queue, clue::PointsDevice<Ndim, InputType>& d_points) {
     return internal::make_associator(
@@ -253,7 +263,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   void Clusterer<Ndim, DataType>::make_clusters_impl(
       clue::PointsHost<Ndim, InputType>& h_points,
       clue::PointsDevice<Ndim, value_type>& dev_points,
@@ -302,7 +313,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   void Clusterer<Ndim, DataType>::make_clusters_impl(clue::PointsDevice<Ndim, InputType>& dev_points,
                                                      const DistanceMetric& metric,
                                                      const Kernel& kernel,
@@ -348,7 +360,8 @@ namespace clue {
   template <std::floating_point InputType,
             concepts::convolutional_kernel Kernel,
             concepts::distance_metric<Ndim> DistanceMetric>
-    requires std::same_as<std::remove_cv_t<InputType>, value_type>
+    requires std::same_as<std::remove_cv_t<InputType>,
+                          typename Clusterer<Ndim, DataType>::value_type>
   void Clusterer<Ndim, DataType>::make_clusters_batched(
       clue::PointsDevice<Ndim, InputType>& dev_points,
       std::span<const uint32_t> batch_item_sizes,
