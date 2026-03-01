@@ -51,21 +51,6 @@ namespace clue {
       using type = alpaka::Buf<TDev, T, Dim1D, Idx>;
     };
 
-    template <typename TDev, typename T>
-    struct view_type {
-      using type = alpaka::ViewPlainPtr<TDev, T, Dim0D, Idx>;
-    };
-
-    template <typename TDev, typename T>
-    struct view_type<TDev, T[]> {
-      using type = alpaka::ViewPlainPtr<TDev, T, Dim1D, Idx>;
-    };
-
-    template <typename TDev, typename T, int N>
-    struct view_type<TDev, T[N]> {
-      using type = alpaka::ViewPlainPtr<TDev, T, Dim1D, Idx>;
-    };
-
   }  // namespace detail
 
   // scalar and 1-dimensional host buffers
@@ -125,33 +110,6 @@ namespace clue {
     }
   }
 
-  // scalar and 1-dimensional host views
-
-  template <typename T>
-  using host_view = typename detail::view_type<DevHost, T>::type;
-
-  template <internal::concepts::scalar T>
-  host_view<T> make_host_view(T& data) {
-    return alpaka::ViewPlainPtr<DevHost, T, Dim0D, Idx>(&data, host, Scalar{});
-  }
-
-  template <internal::concepts::scalar T>
-  host_view<T[]> make_host_view(T* data, Extent extent) {
-    return alpaka::ViewPlainPtr<DevHost, T, Dim1D, Idx>(data, host, Vec1D{extent});
-  }
-
-  template <internal::concepts::unbounded_array T>
-  host_view<T> make_host_view(T& data, Extent extent) {
-    return alpaka::ViewPlainPtr<DevHost, std::remove_extent_t<T>, Dim1D, Idx>(
-        data, host, Vec1D{extent});
-  }
-
-  template <internal::concepts::bounded_array T>
-  host_view<T> make_host_view(T& data) {
-    return alpaka::ViewPlainPtr<DevHost, std::remove_extent_t<T>, Dim1D, Idx>(
-        data, host, Vec1D{std::extent_v<T>});
-  }
-
   // scalar and 1-dimensional device buffers
 
   template <typename TDev, typename T>
@@ -197,33 +155,6 @@ namespace clue {
       return alpaka::allocBuf<std::remove_extent_t<T>, Idx>(alpaka::getDev(queue),
                                                             Vec1D{std::extent_v<T>});
     }
-  }
-
-  // scalar and 1-dimensional device views
-
-  template <typename TDev, typename T>
-  using device_view = typename detail::view_type<TDev, T>::type;
-
-  template <internal::concepts::scalar T, concepts::device TDev>
-  device_view<TDev, T> make_device_view(TDev const& device, T& data) {
-    return alpaka::ViewPlainPtr<TDev, T, Dim0D, Idx>(&data, device, Scalar{});
-  }
-
-  template <internal::concepts::scalar T, concepts::device TDev>
-  device_view<TDev, T[]> make_device_view(TDev const& device, T* data, Extent extent) {
-    return alpaka::ViewPlainPtr<TDev, T, Dim1D, Idx>(data, device, Vec1D{extent});
-  }
-
-  template <internal::concepts::unbounded_array T, concepts::device TDev>
-  device_view<TDev, T> make_device_view(TDev const& device, T& data, Extent extent) {
-    return alpaka::ViewPlainPtr<TDev, std::remove_extent_t<T>, Dim1D, Idx>(
-        data, device, Vec1D{extent});
-  }
-
-  template <internal::concepts::bounded_array T, concepts::device TDev>
-  device_view<TDev, T> make_device_view(TDev const& device, T& data) {
-    return alpaka::ViewPlainPtr<TDev, std::remove_extent_t<T>, Dim1D, Idx>(
-        data, device, Vec1D{std::extent_v<T>});
   }
 
 }  // namespace clue
