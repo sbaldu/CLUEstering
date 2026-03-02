@@ -260,6 +260,9 @@ namespace clue {
     const Idx grid_size = nostd::ceil_div(n_points, block_size);
     auto work_division = clue::make_workdiv<internal::Acc>(grid_size, block_size);
 
+    clue::PointsDevice<Ndim, value_type> temp_points(queue, n_points);
+    detail::sortPointsByTile(queue, temp_points, m_tiles->view(), dev_points.view());
+
     detail::computeLocalDensity<internal::Acc>(
         queue, work_division, m_tiles->view(), dev_points.view(), kernel, m_dc, metric, n_points);
     auto seed_candidates = std::size_t{0};
