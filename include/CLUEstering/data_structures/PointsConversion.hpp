@@ -68,6 +68,28 @@ namespace clue {
   ///
   /// @tparam TQueue The type of the queue for the device operations
   /// @tparam Ndim The number of dimensions of the points
+  /// @tparam TDeviceInput The type of the input coordinates and weights for the device points
+  /// @tparam TDev The type of device that the points are allocated on
+  /// @tparam THostInput The type of the input coordinates and weights for the host points
+  /// @param queue The queue used for the device operations
+  /// @param d_points The empty points allocated on the device
+  /// @param h_points The points allocated on the host, containing the points' coordinates
+  /// and weights
+  /// NOTE: this overload is specific for CPU devices, preventing unnecessary data copies
+  template <concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point TDeviceInput,
+            concepts::device TDev,
+            std::floating_point THostInput>
+    requires std::same_as<TDev, alpaka::DevCpu>
+  void copyToDevice(TQueue& queue,
+                    PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
+                    const PointsHost<Ndim, THostInput>& h_points);
+
+  /// @brief Copies the coordinates and weights of the points from the host to the device
+  ///
+  /// @tparam TQueue The type of the queue for the device operations
+  /// @tparam Ndim The number of dimensions of the points
   /// @tparam TInput The type of the input coordinates and weights for the host points
   /// @tparam TDev The type of device that the points are allocated on
   /// @param queue The queue used for the device operations
@@ -75,6 +97,21 @@ namespace clue {
   /// @param h_points The points allocated on the host, containing the points' coordinates
   /// and weights
   template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
+  auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points);
+
+  /// @brief Copies the coordinates and weights of the points from the host to the device
+  ///
+  /// @tparam TQueue The type of the queue for the device operations
+  /// @tparam Ndim The number of dimensions of the points
+  /// @tparam TInput The type of the input coordinates and weights for the host points
+  /// @tparam TDev The type of device that the points are allocated on
+  /// @param queue The queue used for the device operations
+  /// @param d_points The empty points allocated on the device
+  /// @param h_points The points allocated on the host, containing the points' coordinates
+  /// and weights
+  /// NOTE: this overload is specific for CPU devices, preventing unnecessary data copies
+  template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
+    requires std::same_as<TDev, alpaka::DevCpu>
   auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points);
 
 }  // namespace clue

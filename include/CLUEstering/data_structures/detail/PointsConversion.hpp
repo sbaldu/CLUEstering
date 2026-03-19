@@ -63,6 +63,21 @@ namespace clue {
     alpaka::wait(queue);
   }
 
+  template <concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point TDeviceInput,
+            concepts::device TDev,
+            std::floating_point THostInput>
+    requires std::same_as<TDev, alpaka::DevCpu>
+  inline void copyToDevice(TQueue& queue,
+                           PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
+                           const PointsHost<Ndim, THostInput>& h_points) {
+    meta::apply<Ndim>([&]<std::size_t Dim>() -> void {
+      d_points.m_view.m_coords[Dim] = const_cast<TDeviceInput*>(h_points.m_view.m_coords[Dim]);
+    });
+    d_points.m_view.m_weight = const_cast<TDeviceInput*>(h_points.m_view.m_weight);
+  }
+
   template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
   inline auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points) {
     PointsDevice<Ndim, std::remove_cv_t<TInput>, TDev> d_points(queue, h_points.size());
@@ -80,5 +95,18 @@ namespace clue {
 
     return d_points;
   }
+
+  // template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
+  //   requires std::same_as<TDev, alpaka::DevCpu>
+  // inline auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points) {
+  //   PointsDevice<Ndim, std::remove_cv_t<TInput>, TDev> d_points(queue, h_points.size());
+
+  //   meta::apply<Ndim>([&]<std::size_t Dim>() -> void {
+  //     d_points.m_view.m_coords[Dim] = h_points.m_view.m_coords[Dim];
+  //   });
+  //   d_points.m_view.m_weight = h_points.m_view.m_weight;
+
+  //   return d_points;
+  // }
 
 }  // namespace clue

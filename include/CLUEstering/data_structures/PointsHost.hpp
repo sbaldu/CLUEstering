@@ -47,6 +47,16 @@ namespace clue {
                     PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
                     const PointsHost<Ndim, THostInput>& h_points);
 
+  template <concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point TDeviceInput,
+            concepts::device TDev,
+            std::floating_point THostInput>
+      requires std::same_as<TDev, alpaka::DevCpu>
+  void copyToDevice(TQueue& queue,
+                    PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
+                    const PointsHost<Ndim, THostInput>& h_points);
+
   template <concepts::queue TQueue, std::size_t Ndim, std::floating_point TInput, concepts::device TDev>
   auto copyToDevice(TQueue& queue, const PointsHost<Ndim, TInput>& h_points);
 
@@ -262,6 +272,16 @@ namespace clue {
               std::floating_point TDeviceInput,
               concepts::device TDev,
               std::floating_point THostInput>
+    friend void copyToDevice(TQueue& queue,
+                             PointsDevice<N, TDeviceInput, TDev>& d_points,
+                             const PointsHost<N, THostInput>& h_points);
+
+    template <concepts::queue TQueue,
+              std::size_t N,
+              std::floating_point TDeviceInput,
+              concepts::device TDev,
+              std::floating_point THostInput>
+      requires std::same_as<TDev, alpaka::DevCpu>
     friend void copyToDevice(TQueue& queue,
                              PointsDevice<N, TDeviceInput, TDev>& d_points,
                              const PointsHost<N, THostInput>& h_points);

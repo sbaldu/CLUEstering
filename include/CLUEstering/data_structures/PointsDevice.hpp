@@ -43,6 +43,16 @@ namespace clue {
                     PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
                     const PointsHost<Ndim, THostInput>& h_points);
 
+  template <concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point TDeviceInput,
+            concepts::device TDev,
+            std::floating_point THostInput>
+    requires std::same_as<TDev, alpaka::DevCpu>
+  void copyToDevice(TQueue& queue,
+                    PointsDevice<Ndim, TDeviceInput, TDev>& d_points,
+                    const PointsHost<Ndim, THostInput>& h_points);
+
   /// @brief The PointsDevice class is a data structure that manages points on a device.
   /// It provides methods to allocate, access, and manipulate points in device memory.
   ///
@@ -212,6 +222,16 @@ namespace clue {
               std::floating_point TDeviceInput,
               concepts::device Dev,
               std::floating_point THostInput>
+    friend void copyToDevice(TQueue& queue,
+                             PointsDevice<N, TDeviceInput, Dev>& d_points,
+                             const PointsHost<N, THostInput>& h_points);
+
+    template <concepts::queue TQueue,
+              std::size_t N,
+              std::floating_point TDeviceInput,
+              concepts::device Dev,
+              std::floating_point THostInput>
+      requires std::same_as<Dev, alpaka::DevCpu>
     friend void copyToDevice(TQueue& queue,
                              PointsDevice<N, TDeviceInput, Dev>& d_points,
                              const PointsHost<N, THostInput>& h_points);
