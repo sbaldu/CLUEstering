@@ -248,24 +248,6 @@ namespace clue {
 #ifndef CLUE_BUILD_DOXYGEN
     friend class Clusterer<Ndim, std::remove_cv_t<TData>>;
 
-    template <concepts::queue TQueue,
-              std::size_t N,
-              std::floating_point THostInput,
-              std::floating_point TDeviceInput,
-              concepts::device TDev>
-    friend void copyToHost(TQueue& queue,
-                           PointsHost<N, THostInput>& h_points,
-                           const PointsDevice<N, TDeviceInput, TDev>& d_points);
-
-    template <concepts::queue TQueue,
-              std::size_t N,
-              std::floating_point TDeviceInput,
-              concepts::device TDev,
-              std::floating_point THostInput>
-    friend void copyToDevice(TQueue& queue,
-                             PointsDevice<N, TDeviceInput, TDev>& d_points,
-                             const PointsHost<N, THostInput>& h_points);
-
     friend struct internal::points_interface<PointsHost<Ndim, TData>>;
 
     template <std::size_t N, std::floating_point Data, concepts::queue TQueue>
