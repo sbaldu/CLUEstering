@@ -266,7 +266,8 @@ namespace clue {
                                                      Queue& queue,
                                                      std::size_t block_size) {
     const auto n_points = dev_points.size();
-    m_tiles->template fill<internal::Acc>(queue, dev_points, n_points);
+    auto sorted_points = clue::PointsDevice<Ndim, value_type>(queue, n_points);
+    m_tiles->template fill<internal::Acc>(queue, dev_points, n_points, sorted_points);
 
     const Idx grid_size = nostd::ceil_div(n_points, block_size);
     auto work_division = clue::make_workdiv<internal::Acc>(grid_size, block_size);
@@ -274,7 +275,7 @@ namespace clue {
     detail::computeLocalDensity<internal::Acc>(queue,
                                                work_division,
                                                m_tiles->view(),
-                                               dev_points.view(),
+                                               sorted_points.view(),
                                                kernel,
                                                m_density_radius,
                                                metric,
@@ -283,7 +284,7 @@ namespace clue {
     detail::computeNearestHighers<internal::Acc>(queue,
                                                  work_division,
                                                  m_tiles->view(),
-                                                 dev_points.view(),
+                                                 sorted_points.view(),
                                                  m_outlier_distance,
                                                  m_seeding_distance,
                                                  metric,
@@ -293,7 +294,7 @@ namespace clue {
     detail::findClusterSeeds<internal::Acc>(queue,
                                             work_division,
                                             m_seeds.value(),
-                                            dev_points.view(),
+                                            sorted_points.view(),
                                             m_seeding_distance,
                                             metric,
                                             m_min_density,
@@ -302,7 +303,7 @@ namespace clue {
     m_followers->template fill<internal::Acc>(queue, dev_points);
 
     detail::assignPointsToClusters<internal::Acc>(
-        queue, block_size, m_seeds.value(), m_followers->view(), dev_points.view());
+        queue, block_size, m_seeds.value(), m_followers->view(), sorted_points.view());
 
     alpaka::wait(queue);
     dev_points.mark_clustered();

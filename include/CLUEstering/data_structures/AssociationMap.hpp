@@ -6,6 +6,7 @@
 
 #include "CLUEstering/core/detail/defines.hpp"
 #include "CLUEstering/data_structures/AssociationMapView.hpp"
+#include "CLUEstering/data_structures/PointsDevice.hpp"
 #include "CLUEstering/detail/concepts.hpp"
 #include "CLUEstering/internal/alpaka/memory.hpp"
 
@@ -200,8 +201,17 @@ namespace clue {
 
     ALPAKA_FN_HOST void reset(size_type nelements, size_type nbins);
 
-    template <concepts::accelerator TAcc, typename TFunc, concepts::queue TQueue>
-    ALPAKA_FN_HOST void fill(size_type size, TFunc func, TQueue& queue);
+    template <concepts::accelerator TAcc,
+              typename TFunc,
+              concepts::queue TQueue,
+              std::size_t Ndim,
+              std::floating_point Input,
+              std::floating_point Output>
+    ALPAKA_FN_HOST void fill(size_type size,
+                             TFunc func,
+                             TQueue& queue,
+                             const clue::PointsDevice<Ndim, Input, Device>& unsorted_points,
+                             clue::PointsDevice<Ndim, Output, Device>& sorted_points);
     ALPAKA_FN_HOST void fill(std::span<const key_type> associations)
       requires std::same_as<TDev, alpaka::DevCpu>;
     template <concepts::accelerator TAcc, concepts::queue TQueue>
