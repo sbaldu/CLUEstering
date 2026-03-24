@@ -37,9 +37,9 @@ namespace clue {
         for (auto idx : alpaka::uniformElements(acc, input.size())) {
           auto output_index = sorted_indexes[idx];
           for (auto dim = 0u; dim < Ndim; ++dim) {
-            output.coords()[dim][idx] = input.coords()[dim][output_index];
+            output.coords()[dim][output_index] = input.coords()[dim][idx];
           }
-          output.weights()[idx] = input.weights()[output_index];
+          output.weights()[output_index] = input.weights()[idx];
         }
       }
     };
@@ -369,21 +369,36 @@ namespace clue {
     alpaka::exec<TAcc>(
         queue, workdiv, detail::KernelComputeAssociations<TFunc>{}, size, bin_buffer.data(), func);
 
+    auto s = std::chrono::high_resolution_clock::now();
+    auto f = std::chrono::high_resolution_clock::now();
+
+    s = std::chrono::high_resolution_clock::now();
     auto indexes_buffer = make_device_buffer<int32_t[]>(queue, unsorted_points.size());
     alpaka::exec<TAcc>(
         queue, workdiv, detail::KernelIota{}, indexes_buffer.data(), unsorted_points.size());
+    f = std::chrono::high_resolution_clock::now();
+    std::cout << "Iota kernel time: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(f - s).count() << " ms\n";
 
+    s = std::chrono::high_resolution_clock::now();
     internal::algorithm::sort(queue,
                               indexes_buffer.data(),
                               indexes_buffer.data() + unsorted_points.size(),
                               [&](auto i, auto j) { return bin_buffer[i] < bin_buffer[j]; });
     alpaka::wait(queue);
+    f = std::chrono::high_resolution_clock::now();
+    std::cout << "Sort kernel time: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(f - s).count() << " ms\n";
     alpaka::exec<TAcc>(queue,
                        workdiv,
                        detail::KernelGatherPoints{},
                        unsorted_points.view(),
                        sorted_points.view(),
                        indexes_buffer.data());
+    alpaka::wait(queue);
+    f = std::chrono::high_resolution_clock::now();
+    std::cout << "Gather kernel time: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(f - s).count() << " ms\n";
 
     auto sizes_buffer = make_device_buffer<int32_t[]>(queue, m_extents.keys);
     alpaka::memset(queue, sizes_buffer, 0);
