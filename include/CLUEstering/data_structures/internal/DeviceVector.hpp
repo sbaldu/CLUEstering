@@ -24,8 +24,12 @@ namespace clue::internal {
                                                   std::size_t capacity)
         : m_data{data}, m_size{size}, m_capacity{capacity} {}
 
-    ALPAKA_FN_ACC constexpr auto& operator[](std::size_t index) { return m_data[index]; }
+    ALPAKA_FN_ACC constexpr auto& operator[](std::size_t index) {
+      assert(index < m_capacity);
+      return m_data[index];
+    }
     ALPAKA_FN_ACC constexpr const auto& operator[](std::size_t index) const {
+      assert(index < m_capacity);
       return m_data[index];
     }
 
