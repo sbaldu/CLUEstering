@@ -32,7 +32,8 @@ namespace clue::detail {
       min_max->min(dim) = dimMin;
       min_max->max(dim) = dimMax;
 
-      const auto tileSize = (dimMax - dimMin) / nPerDim;
+      const auto tileSize =
+          (dimMax != dimMin) ? (dimMax - dimMin) / nPerDim : std::remove_cv_t<TInput>{1};
       tile_sizes[dim] = tileSize;
     }
   }
@@ -56,7 +57,8 @@ namespace clue::detail {
       min_max->min(dim) = dimMin;
       min_max->max(dim) = dimMax;
 
-      const auto tileSize = (dimMax - dimMin) / nPerDim;
+      const auto tileSize =
+          (dimMax != dimMin) ? (dimMax - dimMin) / nPerDim : std::remove_cv_t<TInput>{1};
       tile_sizes[dim] = tileSize;
     }
   }
