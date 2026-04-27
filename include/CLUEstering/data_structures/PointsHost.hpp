@@ -216,6 +216,12 @@ namespace clue {
     /// @note The uncertainty gets multiplied to the `min_density` parameter
     void set_density_uncertainty(std::span<element_type> density_uncertainty);
 
+    /// @brief Sets the coordinate uncertainty for a specific dimension
+    ///
+    /// @param dim The dimension for which to set the uncertainty
+    /// @param uncertainty A span containing the uncertainty values for each point
+    void set_coordinate_uncertainty(std::size_t dim, std::span<element_type> uncertainty);
+
   private:
     inline static constexpr std::size_t Ndim_ = Ndim;
 

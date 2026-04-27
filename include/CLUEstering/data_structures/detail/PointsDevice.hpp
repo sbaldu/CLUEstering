@@ -129,4 +129,13 @@ namespace clue {
     m_view.m_density_uncertainty = density_uncertainty.data();
   }
 
+  template <std::size_t Ndim, std::floating_point TData, concepts::device TDev>
+  inline void PointsDevice<Ndim, TData, TDev>::set_coordinate_uncertainty(
+      std::size_t dim, std::span<element_type> uncertainty) {
+    assert(dim < Ndim && "Dimension out of range in set_coordinate_uncertainty");
+    assert(uncertainty.size() == static_cast<size_t>(m_size) &&
+           "The size of the coordinate uncertainty array must match the number of points");
+    m_view.m_coordinate_uncertainties[dim] = uncertainty.data();
+  }
+
 }  // namespace clue

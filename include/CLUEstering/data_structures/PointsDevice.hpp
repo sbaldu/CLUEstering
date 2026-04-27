@@ -40,6 +40,7 @@ namespace clue {
   private:
     device_buffer<TDev, std::byte[]> m_buffer;
     std::optional<device_buffer<TDev, value_type[]>> m_uncertainty_buffer;
+    std::array<std::optional<device_buffer<TDev, value_type[]>>, Ndim> m_coord_uncertainty_buffers;
     PointsView<Ndim, element_type> m_view;
     std::optional<std::size_t> m_nclusters;
     std::int32_t m_size;
@@ -175,6 +176,12 @@ namespace clue {
     /// @param density_uncertainty A span containing the uncertainty values for each point
     /// @note The uncertainty gets multiplied to the `min_density` parameter
     void set_density_uncertainty(std::span<element_type> density_uncertainty);
+
+    /// @brief Sets the coordinate uncertainty for a specific dimension
+    ///
+    /// @param dim The dimension for which to set the uncertainty
+    /// @param uncertainty A span containing the uncertainty values for each point
+    void set_coordinate_uncertainty(std::size_t dim, std::span<element_type> uncertainty);
 
   private:
     inline static constexpr std::size_t Ndim_ = Ndim;
