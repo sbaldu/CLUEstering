@@ -104,10 +104,10 @@ namespace clue::internal {
 
     ALPAKA_FN_HOST void fill(TQueue& queue,
                              PointsDevice<Ndim, TData, TDev>& d_points,
-                             size_t size) {
+                             size_t size, PointsDevice<Ndim, TData, TDev>& d_sorted_points) {
       auto dev = alpaka::getDev(queue);
       auto pointsView = d_points.view();
-      m_assoc.template fill<TAcc>(size, GetGlobalBin{pointsView, m_view}, queue);
+      m_assoc.template fill<TAcc>(size, GetGlobalBin{pointsView, m_view}, queue, d_points, d_sorted_points);
     }
 
     template <clue::concepts::accelerator TAcc, clue::concepts::queue TQueue>

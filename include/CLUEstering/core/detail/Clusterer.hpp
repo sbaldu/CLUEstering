@@ -263,7 +263,8 @@ namespace clue {
                                                      Queue& queue,
                                                      std::size_t block_size) {
     const auto n_points = dev_points.size();
-    m_tiles->template fill<internal::Acc>(queue, dev_points, n_points);
+    auto sorted_points = clue::PointsDevice<Ndim, value_type>(queue, n_points);
+    m_tiles->template fill<internal::Acc>(queue, dev_points, n_points, sorted_points);
 
     const Idx grid_size = nostd::ceil_div(n_points, block_size);
     auto work_division = clue::make_workdiv<internal::Acc>(grid_size, block_size);
@@ -271,7 +272,7 @@ namespace clue {
     detail::computeLocalDensity<internal::Acc>(queue,
                                                work_division,
                                                m_tiles->view(),
-                                               dev_points.view(),
+                                               sorted_points.view(),
                                                kernel,
                                                m_density_radius,
                                                metric,
@@ -280,7 +281,7 @@ namespace clue {
     detail::computeNearestHighers<internal::Acc>(queue,
                                                  work_division,
                                                  m_tiles->view(),
-                                                 dev_points.view(),
+                                                 sorted_points.view(),
                                                  m_outlier_distance,
                                                  m_seeding_distance,
                                                  metric,
@@ -290,14 +291,14 @@ namespace clue {
     detail::findClusterSeeds<internal::Acc>(queue,
                                             work_division,
                                             m_seeds.value(),
-                                            dev_points.view(),
+                                            sorted_points.view(),
                                             m_seeding_distance,
                                             metric,
                                             m_min_density,
                                             n_points);
 
     detail::assignPointsToClusters<internal::Acc>(
-        queue, block_size, m_seeds.value(), dev_points.view(), n_points);
+        queue, block_size, m_seeds.value(), sorted_points.view(), n_points);
 
     alpaka::wait(queue);
     internal::points_interface<std::remove_cvref_t<decltype(dev_points)>>::mark_clustered(

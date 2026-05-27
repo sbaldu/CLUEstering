@@ -3,10 +3,12 @@
 
 #include "CLUEstering/data_structures/AssociationMap.hpp"
 #include "CLUEstering/data_structures/AssociationMapView.hpp"
+#include "CLUEstering/data_structures/PointsDevice.hpp"
 #include "CLUEstering/detail/concepts.hpp"
 #include "CLUEstering/internal/alpaka/memory.hpp"
 #include "CLUEstering/internal/alpaka/work_division.hpp"
 #include "CLUEstering/internal/algorithm/scan/scan.hpp"
+#include "CLUEstering/internal/algorithm/sort/sort.hpp"
 
 #include <alpaka/alpaka.hpp>
 #include <cassert>
@@ -16,6 +18,31 @@
 namespace clue {
 
   namespace detail {
+
+    struct KernelIota {
+      template <typename TAcc>
+      ALPAKA_FN_ACC void operator()(const TAcc& acc, int32_t* buffer, int32_t size) const {
+        for (auto i : alpaka::uniformElements(acc, size)) {
+          buffer[i] = static_cast<int32_t>(i);
+        }
+      }
+    };
+
+    struct KernelGatherPoints {
+      template <typename TAcc, std::size_t Ndim>
+      ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                    PointsView<Ndim> input,
+                                    PointsView<Ndim> output,
+                                    int32_t* sorted_indexes) const {
+        for (auto idx : alpaka::uniformElements(acc, input.size())) {
+          auto output_index = sorted_indexes[idx];
+          for (auto dim = 0u; dim < Ndim; ++dim) {
+            output.coords()[dim][idx] = input.coords()[dim][output_index];
+          }
+          output.weights()[idx] = input.weights()[output_index];
+        }
+      }
+    };
 
     template <typename TFunc>
     struct KernelComputeAssociations {
@@ -315,10 +342,24 @@ namespace clue {
   }
 
   template <concepts::device TDev>
-  template <concepts::accelerator TAcc, typename TFunc, concepts::queue TQueue>
-  ALPAKA_FN_HOST inline void AssociationMap<TDev>::fill(size_type size, TFunc func, TQueue& queue) {
+  template <concepts::accelerator TAcc,
+            typename TFunc,
+            concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point Input,
+            std::floating_point Output>
+  ALPAKA_FN_HOST inline void AssociationMap<TDev>::fill(
+      size_type size,
+      TFunc func,
+      TQueue& queue,
+      const clue::PointsDevice<Ndim, Input, Device>& unsorted_points,
+      clue::PointsDevice<Ndim, Output, Device>& sorted_points) {
     if (m_extents.keys == 0)
       return;
+
+    if (size != static_cast<size_type>(unsorted_points.size())) {
+      throw std::invalid_argument("Size parameter does not match the number of unsorted points.");
+    }
 
     auto bin_buffer = make_device_buffer<int32_t[]>(queue, size);
 
@@ -327,6 +368,22 @@ namespace clue {
     const auto workdiv = make_workdiv<TAcc>(gridsize, blocksize);
     alpaka::exec<TAcc>(
         queue, workdiv, detail::KernelComputeAssociations<TFunc>{}, size, bin_buffer.data(), func);
+
+    auto indexes_buffer = make_device_buffer<int32_t[]>(queue, unsorted_points.size());
+    alpaka::exec<TAcc>(
+        queue, workdiv, detail::KernelIota{}, indexes_buffer.data(), unsorted_points.size());
+
+    internal::algorithm::sort(queue,
+                              indexes_buffer.data(),
+                              indexes_buffer.data() + unsorted_points.size(),
+                              [&](auto i, auto j) { return bin_buffer[i] < bin_buffer[j]; });
+    alpaka::wait(queue);
+    alpaka::exec<TAcc>(queue,
+                       workdiv,
+                       detail::KernelGatherPoints{},
+                       unsorted_points.view(),
+                       sorted_points.view(),
+                       indexes_buffer.data());
 
     auto sizes_buffer = make_device_buffer<int32_t[]>(queue, m_extents.keys);
     alpaka::memset(queue, sizes_buffer, 0);
