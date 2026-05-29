@@ -1,4 +1,12 @@
-pybind11_add_module(CLUE_CPU_Serial NO_EXTRAS SHARED binding_cpu.cpp)
+set(CLUE_MAINRUN_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_flat.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_exponential.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_gaussian.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_flat.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_exponential.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_gaussian.cpp)
+
+pybind11_add_module(CLUE_CPU_Serial NO_EXTRAS SHARED binding_cpu.cpp ${CLUE_MAINRUN_SRCS})
 target_include_directories(CLUE_CPU_Serial
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../include)
 target_link_libraries(CLUE_CPU_Serial PRIVATE alpaka::alpaka Boost::atomic)

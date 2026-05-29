@@ -1,4 +1,12 @@
-pybind11_add_module(CLUE_CPU_TBB NO_EXTRAS SHARED binding_cpu_tbb.cpp)
+set(CLUE_MAINRUN_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_flat.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_exponential.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_float_gaussian.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_flat.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_exponential.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../mainrun_double_gaussian.cpp)
+
+pybind11_add_module(CLUE_CPU_TBB NO_EXTRAS SHARED binding_cpu_tbb.cpp ${CLUE_MAINRUN_SRCS})
 target_include_directories(CLUE_CPU_TBB
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../include)
 target_compile_definitions(

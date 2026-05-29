@@ -6,7 +6,7 @@
 #include <tuple>
 #include <vector>
 
-#include "../Run.hpp"
+#include "../RunInstantiations.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -24,12 +24,11 @@ namespace alpaka_tbb_async {
           &alpaka_tbb_async::listDevices,
           "List the available devices for the TBB backend");
 
-    m.def("mainRun", &alpaka_tbb_async::mainRun<float, clue::FlatKernel>);
-    m.def("mainRun", &alpaka_tbb_async::mainRun<float, clue::ExponentialKernel>);
-    m.def("mainRun", &alpaka_tbb_async::mainRun<float, clue::GaussianKernel>);
-
-    m.def("mainRun", &alpaka_tbb_async::mainRun<double, clue::FlatKernel>);
-    m.def("mainRun", &alpaka_tbb_async::mainRun<double, clue::ExponentialKernel>);
-    m.def("mainRun", &alpaka_tbb_async::mainRun<double, clue::GaussianKernel>);
+    register_mainRun_float_FlatKernel(m);
+    register_mainRun_float_ExponentialKernel(m);
+    register_mainRun_float_GaussianKernel(m);
+    register_mainRun_double_FlatKernel(m);
+    register_mainRun_double_ExponentialKernel(m);
+    register_mainRun_double_GaussianKernel(m);
   }
 };  // namespace alpaka_tbb_async

@@ -6,7 +6,7 @@
 #include <tuple>
 #include <vector>
 
-#include "../Run.hpp"
+#include "../RunInstantiations.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -24,12 +24,11 @@ namespace alpaka_serial_sync {
           &alpaka_serial_sync::listDevices,
           "List the available devices for the CPU serial backend");
 
-    m.def("mainRun", &alpaka_serial_sync::mainRun<float, clue::FlatKernel>);
-    m.def("mainRun", &alpaka_serial_sync::mainRun<float, clue::ExponentialKernel>);
-    m.def("mainRun", &alpaka_serial_sync::mainRun<float, clue::GaussianKernel>);
-
-    m.def("mainRun", &alpaka_serial_sync::mainRun<double, clue::FlatKernel>);
-    m.def("mainRun", &alpaka_serial_sync::mainRun<double, clue::ExponentialKernel>);
-    m.def("mainRun", &alpaka_serial_sync::mainRun<double, clue::GaussianKernel>);
+    register_mainRun_float_FlatKernel(m);
+    register_mainRun_float_ExponentialKernel(m);
+    register_mainRun_float_GaussianKernel(m);
+    register_mainRun_double_FlatKernel(m);
+    register_mainRun_double_ExponentialKernel(m);
+    register_mainRun_double_GaussianKernel(m);
   }
 };  // namespace alpaka_serial_sync

@@ -52,7 +52,7 @@ void run(TInput dc,
 
 namespace ALPAKA_BACKEND {
 
-  void listDevices(const std::string& backend) {
+  inline void listDevices(const std::string& backend) {
     const char tab = '\t';
     const std::vector<Device> devices = alpaka::getDevs(clue::Platform{});
     if (devices.empty()) {
