@@ -3,6 +3,7 @@
 
 #include "fabs/fabs.hpp"
 #include "exp/exp.hpp"
+#include "log/log.hpp"
 #include "max/max.hpp"
 #include "min/min.hpp"
 #include "pow/pow.hpp"

@@ -268,6 +268,7 @@ namespace clue {
     const Idx grid_size = nostd::ceil_div(n_points, block_size);
     auto work_division = clue::make_workdiv<internal::Acc>(grid_size, block_size);
 
+    // pilot pass with fixed bandwidth
     detail::computeLocalDensity<internal::Acc>(queue,
                                                work_division,
                                                m_tiles->view(),
@@ -276,6 +277,25 @@ namespace clue {
                                                m_density_radius,
                                                metric,
                                                n_points);
+
+    // compute per-point adaptive bandwidths from pilot densities
+    auto d_density_radii = clue::make_device_buffer<value_type[]>(queue, n_points);
+    detail::computeAdaptiveBandwidths<internal::Acc>(queue,
+                                                     work_division,
+                                                     dev_points.view().rho().data(),
+                                                     d_density_radii.data(),
+                                                     m_density_radius,
+                                                     n_points);
+
+    // final density pass with adaptive per-point bandwidths
+    detail::computeLocalDensityAdaptive<internal::Acc>(queue,
+                                                       work_division,
+                                                       m_tiles->view(),
+                                                       dev_points.view(),
+                                                       kernel,
+                                                       d_density_radii.data(),
+                                                       metric,
+                                                       n_points);
     auto seed_candidates = std::size_t{0};
     detail::computeNearestHighers<internal::Acc>(queue,
                                                  work_division,

@@ -11,6 +11,8 @@
 #include "CLUEstering/data_structures/internal/TilesView.hpp"
 #include "CLUEstering/detail/make_array.hpp"
 #include "CLUEstering/detail/concepts.hpp"
+#include "CLUEstering/internal/algorithm/reduce/reduce.hpp"
+#include "CLUEstering/internal/alpaka/memory.hpp"
 #include "CLUEstering/internal/alpaka/work_division.hpp"
 #include "CLUEstering/internal/nostd/ceil_div.hpp"
 #include "CLUEstering/internal/math/math.hpp"
@@ -255,6 +257,81 @@ namespace clue::detail {
     }
   };
 
+  struct KernelComputeLogDensity {
+    template <typename TAcc, std::floating_point TData>
+      requires(alpaka::Dim<TAcc>::value == 1)
+    ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                  const TData* rho,
+                                  TData* log_rho,
+                                  int32_t n_points) const {
+      for (auto i : alpaka::uniformElements(acc, n_points)) {
+        log_rho[i] = clue::math::log(clue::math::max(rho[i], static_cast<TData>(1e-6)));
+      }
+    }
+  };
+
+  struct KernelComputeAdaptiveBandwidths {
+    template <typename TAcc, std::floating_point TData>
+      requires(alpaka::Dim<TAcc>::value == 1)
+    ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                  const TData* rho,
+                                  TData* density_radii,
+                                  TData h0,
+                                  TData g,
+                                  int32_t n_points) const {
+      for (auto i : alpaka::uniformElements(acc, n_points)) {
+        density_radii[i] = h0 * clue::math::sqrt(g / clue::math::max(rho[i], static_cast<TData>(1e-6)));
+      }
+    }
+  };
+
+  struct KernelCalculateLocalDensityAdaptive {
+    template <typename TAcc,
+              std::size_t Ndim,
+              std::floating_point TData,
+              concepts::convolutional_kernel KernelType,
+              concepts::distance_metric<Ndim> DistanceMetric>
+      requires(alpaka::Dim<TAcc>::value == 1)
+    ALPAKA_FN_ACC void operator()(const TAcc& acc,
+                                  internal::TilesView<Ndim, TData> dev_tiles,
+                                  PointsView<Ndim, TData> dev_points,
+                                  const KernelType& kernel,
+                                  const TData* density_radii,
+                                  DistanceMetric metric,
+                                  int32_t n_points) const {
+      for (auto i : alpaka::uniformElements(acc, n_points)) {
+        auto rho_i = static_cast<TData>(0.);
+        auto coords_i = dev_points[i];
+        auto h_i = density_radii[i];
+
+        clue::SearchBoxExtremes<Ndim, TData> searchbox_extremes;
+        for (auto dim = 0u; dim != Ndim; ++dim) {
+          searchbox_extremes[dim] = clue::nostd::make_array(coords_i[dim] - h_i,
+                                                            coords_i[dim] + h_i);
+        }
+
+        clue::SearchBoxBins<Ndim> searchbox_bins;
+        dev_tiles.searchBox(searchbox_extremes, searchbox_bins);
+
+        std::array<int32_t, Ndim> base_vec;
+        for_recursion<TAcc, Ndim, Ndim>(acc,
+                                        base_vec,
+                                        searchbox_bins,
+                                        dev_tiles,
+                                        dev_points,
+                                        kernel,
+                                        coords_i,
+                                        rho_i,
+                                        h_i,
+                                        metric,
+                                        i);
+
+        assert(rho_i >= TData{0});
+        dev_points.rho()[i] = rho_i;
+      }
+    }
+  };
+
   struct KernelFindClusters {
     template <typename TAcc, std::size_t Ndim, std::floating_point TData>
       requires(alpaka::Dim<TAcc>::value == 1)
@@ -333,6 +410,53 @@ namespace clue::detail {
                        dev_points,
                        std::forward<KernelType>(kernel),
                        density_radius,
+                       metric,
+                       size);
+  }
+
+  template <concepts::accelerator TAcc,
+            concepts::queue TQueue,
+            std::floating_point TData>
+  inline void computeAdaptiveBandwidths(TQueue& queue,
+                                        const WorkDiv& work_division,
+                                        TData* rho,
+                                        TData* density_radii,
+                                        TData h0,
+                                        int32_t n_points) {
+    auto d_log_rho = clue::make_device_buffer<TData[]>(queue, n_points);
+
+    alpaka::exec<TAcc>(
+        queue, work_division, KernelComputeLogDensity{}, rho, d_log_rho.data(), n_points);
+
+    auto log_rho_sum = internal::algorithm::reduce(
+        queue, d_log_rho.data(), d_log_rho.data() + n_points, TData{0});
+    auto g = static_cast<TData>(std::exp(static_cast<double>(log_rho_sum) / n_points));
+
+    alpaka::exec<TAcc>(
+        queue, work_division, KernelComputeAdaptiveBandwidths{}, rho, density_radii, h0, g, n_points);
+  }
+
+  template <concepts::accelerator TAcc,
+            concepts::queue TQueue,
+            std::size_t Ndim,
+            std::floating_point TData,
+            concepts::convolutional_kernel KernelType,
+            concepts::distance_metric<Ndim> DistanceMetric>
+  inline void computeLocalDensityAdaptive(TQueue& queue,
+                                          const WorkDiv& work_division,
+                                          internal::TilesView<Ndim, TData>& tiles,
+                                          PointsView<Ndim, TData>& dev_points,
+                                          KernelType&& kernel,
+                                          const TData* density_radii,
+                                          const DistanceMetric& metric,
+                                          int32_t size) {
+    alpaka::exec<TAcc>(queue,
+                       work_division,
+                       KernelCalculateLocalDensityAdaptive{},
+                       tiles,
+                       dev_points,
+                       std::forward<KernelType>(kernel),
+                       density_radii,
                        metric,
                        size);
   }
