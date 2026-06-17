@@ -115,38 +115,38 @@ namespace ALPAKA_BACKEND {
                                      block_size);
     };
     switch (Ndim) {
-      [[unlikely]] case (1):
+      case (1):
         dispatch.template operator()<1>();
         return;
-      [[likely]] case (2):
+      case (2):
         dispatch.template operator()<2>();
         return;
-      [[likely]] case (3):
+      case (3):
         dispatch.template operator()<3>();
         return;
-      [[unlikely]] case (4):
+      case (4):
         dispatch.template operator()<4>();
         return;
-      [[unlikely]] case (5):
+      case (5):
         dispatch.template operator()<5>();
         return;
-      [[unlikely]] case (6):
-        dispatch.template operator()<6>();
-        return;
-      [[unlikely]] case (7):
-        dispatch.template operator()<7>();
-        return;
-      [[unlikely]] case (8):
-        dispatch.template operator()<8>();
-        return;
-      [[unlikely]] case (9):
-        dispatch.template operator()<9>();
-        return;
-      [[unlikely]] case (10):
-        dispatch.template operator()<10>();
-        return;
-      [[unlikely]] default:
-        std::cout << "This library only works up to 10 dimensions\n";
+      // [[unlikely]] case (6):
+      //   dispatch.template operator()<6>();
+      //   return;
+      // [[unlikely]] case (7):
+      //   dispatch.template operator()<7>();
+      //   return;
+      // [[unlikely]] case (8):
+      //   dispatch.template operator()<8>();
+      //   return;
+      // [[unlikely]] case (9):
+      //   dispatch.template operator()<9>();
+      //   return;
+      // [[unlikely]] case (10):
+      //   dispatch.template operator()<10>();
+      //   return;
+      default:
+        std::cout << "This library only works up to 5 dimensions\n";
     }
   }
 
