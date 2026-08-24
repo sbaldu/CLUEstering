@@ -137,7 +137,7 @@ namespace ALPAKA_BACKEND {
         //   dispatch.template operator()<10>();
         return;
       [[unlikely]] default:
-        std::cout << "This library only works up to 10 dimensions\n";
+        std::cout << "The Python interface only supports up to 4 dimensions\n";
     }
   }
 
