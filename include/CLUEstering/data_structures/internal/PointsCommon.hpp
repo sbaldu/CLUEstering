@@ -104,8 +104,8 @@ namespace clue {
     std::int32_t* m_is_seed;
     value_type* m_rho;
     std::int32_t* m_nearest_higher;
-    std::array<element_type*, Ndim> m_sigmas;
-    element_type* m_density_uncertainty;
+    std::array<const element_type*, Ndim> m_sigmas;
+    const element_type* m_density_uncertainty;
     const std::uint32_t* m_tags;
     std::int32_t m_n;
 
@@ -179,11 +179,6 @@ namespace clue {
              "The density_uncertainty array has not been allocated yet, so it cannot be accessed");
       return std::span<const element_type>(m_density_uncertainty, m_n);
     }
-    ALPAKA_FN_HOST_ACC auto density_uncertainty() {
-      assert(m_density_uncertainty != nullptr &&
-             "The density_uncertainty array has not been allocated yet, so it cannot be accessed");
-      return std::span<element_type>(m_density_uncertainty, m_n);
-    }
 
     /// @brief Returns whether per-point sigma values are set for the given dimension
     ALPAKA_FN_HOST_ACC auto has_sigma(std::size_t dim) const { return m_sigmas[dim] != nullptr; }
@@ -194,13 +189,8 @@ namespace clue {
              "The sigma array for this dimension has not been allocated yet");
       return std::span<const element_type>(m_sigmas[dim], m_n);
     }
-    /// @brief Returns a span of the per-point sigma values for the given dimension
-    ALPAKA_FN_HOST_ACC auto sigma(std::size_t dim) {
-      assert(m_sigmas[dim] != nullptr &&
-             "The sigma array for this dimension has not been allocated yet");
-      return std::span<element_type>(m_sigmas[dim], m_n);
-    }
 
+    /// @brief Returns a read-only span of the tags for each point
     ALPAKA_FN_HOST_ACC auto tags() const {
       assert(m_tags != nullptr &&
              "The tags array has not been allocated yet, so it cannot be accessed");

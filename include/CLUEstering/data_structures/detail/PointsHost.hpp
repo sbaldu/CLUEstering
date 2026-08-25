@@ -11,6 +11,8 @@
 #include <alpaka/alpaka.hpp>
 #include <array>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <concepts>
 #include <optional>
 #include <ranges>
@@ -147,7 +149,7 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point TData>
   inline void PointsHost<Ndim, TData>::set_density_uncertainty(
-      std::span<element_type> density_uncertainty) {
+      std::span<const element_type> density_uncertainty) {
     if (density_uncertainty.size() != static_cast<size_t>(m_size)) {
       throw std::invalid_argument(
           "Size of density_uncertainty does not match the number of points");
@@ -157,7 +159,7 @@ namespace clue {
 
   template <std::size_t Ndim, std::floating_point TData>
   inline void PointsHost<Ndim, TData>::set_sigma(std::size_t dim,
-                                                 std::span<element_type> uncertainty) {
+                                                 std::span<const element_type> uncertainty) {
     if (dim >= Ndim) {
       throw std::out_of_range("Dimension out of range in set_sigma");
     }

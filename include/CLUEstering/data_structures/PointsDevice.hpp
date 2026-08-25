@@ -176,13 +176,13 @@ namespace clue {
     ///
     /// @param density_uncertainty A span containing the uncertainty values for each point
     /// @note The uncertainty gets multiplied to the `min_density` parameter
-    void set_density_uncertainty(std::span<element_type> density_uncertainty);
+    void set_density_uncertainty(std::span<const element_type> density_uncertainty);
 
     /// @brief Sets the per-point coordinate sigma for the given dimension
     ///
     /// @param dim The dimension index (must be less than Ndim)
     /// @param uncertainty A span of sigma values, one per point
-    void set_sigma(std::size_t dim, std::span<element_type> uncertainty);
+    void set_sigma(std::size_t dim, std::span<const element_type> uncertainty);
 
     /// @brief Sets the per-point coordinate sigma for all dimensions at once
     ///
@@ -193,7 +193,7 @@ namespace clue {
       auto containers_tuple = std::forward_as_tuple(std::forward<Containers>(uncertainties)...);
       meta::apply<Ndim>([&]<std::size_t Dim>() {
         auto& c = std::get<Dim>(containers_tuple);
-        set_sigma(Dim, std::span<element_type>(c.data(), c.size()));
+        set_sigma(Dim, std::span<const element_type>(c.data(), c.size()));
       });
     }
 
