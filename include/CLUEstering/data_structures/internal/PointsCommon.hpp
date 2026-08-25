@@ -106,7 +106,7 @@ namespace clue {
     std::int32_t* m_nearest_higher;
     std::array<element_type*, Ndim> m_sigmas;
     element_type* m_density_uncertainty;
-    std::uint32_t* m_tags;
+    const std::uint32_t* m_tags;
     std::int32_t m_n;
 
     ALPAKA_FN_HOST_ACC auto coords() const {
