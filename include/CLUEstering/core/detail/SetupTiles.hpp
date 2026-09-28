@@ -19,13 +19,15 @@ namespace clue::detail {
   template <concepts::queue TQueue,
             std::size_t Ndim,
             std::floating_point TInput,
-            concepts::device TDev = decltype(alpaka::getDev(std::declval<TQueue>()))>
+            concepts::device TDev = decltype(alpaka::getDev(std::declval<TQueue>())),
+            concepts::allocator TAllocator = DefaultAllocator>
   void setup_tiles(TQueue& queue,
                    const PointsHost<Ndim, TInput>& points,
                    std::optional<internal::Tiles<Ndim, std::remove_cv_t<TInput>, TDev>>& tiles,
                    int points_per_tile,
                    const std::array<uint8_t, Ndim>& wrapped_coordinates,
-                   std::size_t batch_size = 1) {
+                   std::size_t batch_size = 1,
+                   const TAllocator& allocator = TAllocator{}) {
     // TODO: reconsider the way that we compute the number of tiles
     auto ntiles = nostd::ceil_div(points.size(), points_per_tile);
     int32_t n_per_dim = 1;
@@ -35,12 +37,12 @@ namespace clue::detail {
 
     if (!tiles.has_value()) {
       tiles = std::make_optional<internal::Tiles<Ndim, std::remove_cv_t<TInput>, TDev>>(
-          queue, points.size(), ntiles, batch_size);
+          queue, points.size(), ntiles, batch_size, allocator);
     }
     // check if tiles are large enough for current data
     if ((tiles->extents().values < static_cast<std::size_t>(points.size())) or
         (tiles->extents().keys < static_cast<std::size_t>(ntiles))) {
-      tiles->initialize(queue, points.size(), ntiles, n_per_dim, batch_size);
+      tiles->initialize(queue, points.size(), ntiles, n_per_dim, batch_size, allocator);
     } else {
       tiles->reset(points.size(), ntiles, n_per_dim, batch_size);
     }
@@ -59,13 +61,15 @@ namespace clue::detail {
   template <concepts::queue TQueue,
             std::size_t Ndim,
             std::floating_point TInput,
-            concepts::device TDev = decltype(alpaka::getDev(std::declval<TQueue>()))>
+            concepts::device TDev = decltype(alpaka::getDev(std::declval<TQueue>())),
+            concepts::allocator TAllocator = DefaultAllocator>
   void setup_tiles(TQueue& queue,
                    const PointsDevice<Ndim, TInput, TDev>& points,
                    std::optional<internal::Tiles<Ndim, std::remove_cv_t<TInput>, TDev>>& tiles,
                    int points_per_tile,
                    const std::array<uint8_t, Ndim>& wrapped_coordinates,
-                   std::size_t batch_size = 1) {
+                   std::size_t batch_size = 1,
+                   const TAllocator& allocator = TAllocator{}) {
     auto ntiles = nostd::ceil_div(points.size(), points_per_tile);
     int32_t n_per_dim = 1;
     while (nostd::pow(n_per_dim, Ndim) < ntiles)
@@ -74,12 +78,12 @@ namespace clue::detail {
 
     if (!tiles.has_value()) {
       tiles = std::make_optional<internal::Tiles<Ndim, std::remove_cv_t<TInput>, TDev>>(
-          queue, points.size(), ntiles, batch_size);
+          queue, points.size(), ntiles, batch_size, allocator);
     }
     // check if tiles are large enough for current data
     if ((tiles->extents().values < static_cast<std::size_t>(points.size())) or
         (tiles->extents().keys < static_cast<std::size_t>(ntiles))) {
-      tiles->initialize(queue, points.size(), ntiles, n_per_dim, batch_size);
+      tiles->initialize(queue, points.size(), ntiles, n_per_dim, batch_size, allocator);
     } else {
       tiles->reset(points.size(), ntiles, n_per_dim, batch_size);
     }
