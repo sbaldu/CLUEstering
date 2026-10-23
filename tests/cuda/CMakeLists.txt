@@ -29,6 +29,7 @@ foreach(source ${sources})
   target_include_directories(${target} PRIVATE ${CMAKE_SOURCE_DIR}/include
                                                ${doctest_SOURCE_DIR})
   target_link_libraries(${target} PRIVATE alpaka::alpaka Boost::atomic fmt::fmt)
+  alpaka_finalize(${target})
   target_compile_definitions(
     ${target} PRIVATE ALPAKA_ACC_GPU_CUDA_ENABLED
                       TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/data")

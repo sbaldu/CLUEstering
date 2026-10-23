@@ -17,6 +17,7 @@ foreach(source ${sources})
                              PRIVATE TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
   target_link_libraries(${target} PRIVATE alpaka::alpaka Boost::atomic fmt::fmt
                                           -fsycl)
+  alpaka_finalize(${target})
   set_target_properties(
     ${target}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sycl/cpu
@@ -38,6 +39,7 @@ foreach(source ${sources})
                              PRIVATE TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/data")
   target_link_libraries(${target} PRIVATE alpaka::alpaka Boost::atomic fmt::fmt
                                           -fsycl)
+  alpaka_finalize(${target})
   set_target_properties(
     ${target}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sycl/gpu
