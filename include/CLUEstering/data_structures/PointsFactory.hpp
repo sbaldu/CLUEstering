@@ -14,6 +14,89 @@
 
 CLUE_NAMESPACE_BEGIN
 
+template <std::size_t Ndim, std::floating_point InputType, concepts::queue QueueType>
+auto make_host_points(QueueType& queue,
+                      std::size_t n_points,
+                      const InputType* coordinates,
+                      const InputType* weights,
+                      const int* cluster_indexes);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::queue QueueType>
+auto make_host_points(QueueType& queue,
+                      std::span<const InputType> coordinates,
+                      std::span<const InputType> weights,
+                      std::span<const int> cluster_indexes);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::device DeviceType>
+auto make_host_points(const DeviceType& device,
+                      std::size_t n_points,
+                      const InputType* coordinates,
+                      const InputType* weights,
+                      const int* cluster_indexes);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::device DeviceType>
+auto make_host_points(const DeviceType& device,
+                      std::span<const InputType> coordinates,
+                      std::span<const InputType> weights,
+                      std::span<const int> cluster_indexes);
+
+template <std::size_t Ndim, concepts::queue QueueType, concepts::pointer... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_host_points(QueueType& queue, std::size_t n_points, TBuffers... buffers);
+
+template <std::size_t Ndim, concepts::queue QueueType, std::ranges::contiguous_range... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_host_points(QueueType& queue, TBuffers&&... buffers);
+
+template <std::size_t Ndim, concepts::device DeviceType, concepts::pointer... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_host_points(const DeviceType& device, std::size_t n_points, TBuffers... buffers);
+
+template <std::size_t Ndim, concepts::device DeviceType, std::ranges::contiguous_range... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_host_points(const DeviceType& device, TBuffers&&... buffers);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::queue QueueType>
+auto make_device_points(QueueType& queue,
+                        std::size_t n_points,
+                        const InputType* coordinates,
+                        const InputType* weights,
+                        const int* cluster_indexes);
+template <std::size_t Ndim, std::floating_point InputType, concepts::queue QueueType>
+auto make_device_points(QueueType& queue,
+                        std::span<const InputType> coordinates,
+                        std::span<const InputType> weights,
+                        std::span<const int> cluster_indexes);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::device DeviceType>
+auto make_device_points(const DeviceType& device,
+                        std::size_t n_points,
+                        const InputType* coordinates,
+                        const InputType* weights,
+                        const int* cluster_indexes);
+
+template <std::size_t Ndim, std::floating_point InputType, concepts::device DeviceType>
+auto make_device_points(const DeviceType& device,
+                        std::span<const InputType> coordinates,
+                        std::span<const InputType> weights,
+                        std::span<const int> cluster_indexes);
+
+template <std::size_t Ndim, concepts::queue QueueType, concepts::pointer... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_device_points(QueueType& queue, std::size_t n_points, TBuffers... buffers);
+
+template <std::size_t Ndim, concepts::queue QueueType, std::ranges::contiguous_range... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_device_points(QueueType& queue, TBuffers&&... buffers);
+
+template <std::size_t Ndim, concepts::device DeviceType, concepts::pointer... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_device_points(const DeviceType& device, std::size_t n_points, TBuffers... buffers);
+
+template <std::size_t Ndim, concepts::device DeviceType, std::ranges::contiguous_range... TBuffers>
+  requires(sizeof...(TBuffers) == Ndim + 2 and Ndim > 1)
+auto make_device_points(const DeviceType& device, TBuffers&&... buffers);
+
 /// @brief Factory function to create a clustered points data structure from raw pointers
 /// @param queue The queue to use for memory allocation
 /// @param n_points The number of points
