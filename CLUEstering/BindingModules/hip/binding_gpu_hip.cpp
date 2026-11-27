@@ -31,5 +31,6 @@ namespace clue::alpaka_rocm_async {
     m.def("mainRun", &mainRun<double, clue::GaussianKernel>);
 
     defMainRunSeparate(m);
+    defMainRunDevice<nb::device::rocm>(m);
   }
 };  // namespace clue::alpaka_rocm_async
